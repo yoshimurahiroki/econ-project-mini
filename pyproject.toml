@@ -1,0 +1,109 @@
+[project]
+name = "econ-project"
+version = "0.1.0"
+description = "Minimal empirical economics research stack"
+requires-python = ">=3.11,<3.13"
+authors = [
+  { name = "yoshimurahiroki", email = "yoshimurahiroki@akane.waseda.jp" },
+]
+dependencies = []
+
+# ── Pixi configuration ──────────────────────────────────────────
+[tool.pixi.workspace]
+name = "econ-project"
+channels = ["https://prefix.dev/conda-forge"]
+platforms = ["linux-64"]
+
+[tool.pixi.dependencies]
+# ========= Python base =========
+python = "3.12.*"
+pip = "*"
+setuptools = "*"
+wheel = "*"
+
+# ========= Notebooks / documents =========
+jupyterlab = "*"
+ipykernel = "*"
+ipywidgets = "*"
+quarto = "*"
+pandoc = "*"
+
+# ========= R base / IDE support =========
+r-base = "4.5.*"
+r-irkernel = "*"
+r-languageserver = "*"
+r-yaml = "*"
+r-knitr = "*"
+r-rmarkdown = "*"
+gmp = "*"
+glpk = "*"
+
+# ========= Scientific Python core =========
+numpy = ">=1.26,<3"
+pandas = ">=2.2,<3"
+scipy = ">=1.11,<2"
+scikit-learn = ">=1.4,<2"
+statsmodels = ">=0.14,<1"
+linearmodels = "*"
+
+# ========= Data IO =========
+pyarrow = "*"
+openpyxl = "*"
+pyreadstat = "*"
+duckdb = "*"
+
+# ========= Visualization =========
+matplotlib-base = "*"
+seaborn = "*"
+plotnine = "*"
+
+# ========= Utilities =========
+tqdm = "*"
+pyyaml = "*"
+
+# ========= Minimal development tools =========
+ruff = "*"
+pytest = "*"
+pre-commit = "*"
+
+[tool.pixi.pypi-dependencies]
+# ========= Python econometrics / causal inference =========
+pyfixest = "*"
+rdrobust = "*"
+rddensity = "*"
+csdid = "*"
+drdid = "*"
+
+# Japanese labels in matplotlib
+japanize-matplotlib = "*"
+
+[tool.pixi.tasks]
+test = "if find tests -name 'test_*.py' -o -name '*_test.py' 2>/dev/null | grep -q .; then pytest -q; else echo 'No pytest tests found.'; fi"
+check = "ruff check . && ruff format --check . && pixi run test"
+format = "ruff format . && ruff check --fix ."
+lint = "ruff check ."
+pre-commit = "pre-commit run --all-files"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+exclude = [
+  ".agent_state",
+  ".agents",
+  ".claude",
+  ".cursor",
+  ".github/skills",
+  ".pixi",
+  ".resources",
+  ".ruff_cache",
+  ".venv",
+  "node_modules",
+]
+
+[tool.ruff.lint]
+extend-select = ["I", "UP"]
+ignore = ["E501"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
