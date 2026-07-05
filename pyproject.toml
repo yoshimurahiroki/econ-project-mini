@@ -1,7 +1,7 @@
 [project]
 name = "econ-project"
 version = "0.1.0"
-description = "Minimal infrastructure stack for Python, R, TinyTeX, Quarto, and Jupyter"
+description = "Minimal infrastructure stack for Python, R, TinyTeX, Quarto, Jupyter, and R package build support"
 requires-python = ">=3.12"
 authors = [{ name = "yoshimurahiroki", email = "yoshimurahiroki@akane.waseda.jp" }]
 dependencies = []
@@ -36,6 +36,31 @@ r-base = "*"
 r-irkernel = "*"
 r-languageserver = "*"
 
+# R package build/link infrastructure for CRAN packages installed by rv
+# These keep rv builds inside the pixi/conda-forge toolchain instead of
+# accidentally mixing conda compilers with /usr/include and /usr/lib.
+compilers = "*"
+make = "*"
+pkg-config = "*"
+file = "*"
+automake = "*"
+autoconf = "*"
+m4 = "*"
+libtool = "*"
+zlib = "*"
+libcurl = "*"
+openssl = "*"
+libxml2 = "*"
+libxml2-devel = "*"
+zeromq = "*"
+
+# Prebuilt R infrastructure dependencies that repeatedly trigger source builds
+# from rv/CRAN. These are not project-specific analysis packages.
+r-curl = "*"
+r-xml2 = "*"
+r-pbdzmq = "*"
+r-data.table = "*"
+
 # Quarto / R Markdown / TeX integration infrastructure
 quarto = "*"
 pandoc = "*"
@@ -60,3 +85,5 @@ jupyter-notebook = "jupyter notebook --ip=0.0.0.0 --no-browser"
 quarto-check = "quarto check"
 install-python-kernel = "python -m ipykernel install --user --name econ-project --display-name 'Python (econ-project)'"
 install-r-kernel = "R -q -e 'IRkernel::installspec(user = TRUE, name = \"ir\", displayname = \"R (econ-project)\")'"
+check-pkg-config = "pkg-config --cflags --libs libxml-2.0"
+check-r-build-infra = "R -q -e 'library(curl); library(xml2); library(pbdZMQ); library(data.table); sessionInfo()'"
