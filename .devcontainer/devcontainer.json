@@ -1,124 +1,377 @@
-# Minimal economics research stack for Pixi, rv, TinyTeX, Quarto, and cloud IDE agents.
-FROM ubuntu:22.04
-
-ENV DEBIAN_FRONTEND=noninteractive
-SHELL ["/bin/bash", "-eo", "pipefail", "-c"]
-
-# ========= 1) OS Base =========
-# Keep only infrastructure needed for:
-# - Git/GitHub CLI
-# - Python/R package managers and compiled infrastructure packages
-# - Jupyter/Quarto runtime support
-# - TinyTeX + Japanese fonts
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    ca-certificates curl wget gnupg \
-    git git-lfs openssh-client \
-    make build-essential pkg-config cmake \
-    libcurl4-openssl-dev libssl-dev libxml2-dev libffi-dev \
-    libcairo2-dev libfontconfig1-dev libfreetype6-dev libfribidi-dev libharfbuzz-dev \
-    libpng-dev libjpeg-dev \
-    locales tzdata jq sudo procps zstd unzip sqlite3 \
-    perl xz-utils \
-    fonts-noto-cjk fonts-noto-cjk-extra \
-    openssl && \
-    mkdir -p -m 755 /etc/apt/keyrings && \
-    wget -qO- https://cli.github.com/packages/githubcli-archive-keyring.gpg | tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null && \
-    chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg && \
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null && \
-    apt-get update && \
-    apt-get install -y --no-install-recommends gh && \
-    rm -rf /var/lib/apt/lists/*
-
-# Node.js LTS
-RUN curl -fsSL https://deb.nodesource.com/setup_lts.x | bash - && \
-    apt-get update && apt-get install -y --no-install-recommends nodejs && \
-    rm -rf /var/lib/apt/lists/*
-
-RUN sed -i 's/^# *\(ja_JP.UTF-8 UTF-8\)/\1/' /etc/locale.gen && locale-gen
-ENV LANG=ja_JP.UTF-8 LC_ALL=ja_JP.UTF-8
-
-# ========= 1.1) TinyTeX =========
-# The installer fetches the current TinyTeX daily release; tlmgr remains
-# available for installing any missing TeX packages later.
-ENV TINYTEX_HOME=/opt/TinyTeX
-ENV PATH="${TINYTEX_HOME}/bin/x86_64-linux:${PATH}"
-RUN curl -fsSL https://yihui.org/tinytex/install-unx.sh -o /tmp/install-tinytex.sh && \
-    sh /tmp/install-tinytex.sh --admin --no-path && \
-    mv /root/.TinyTeX "${TINYTEX_HOME}" && \
-    rm -f /tmp/install-tinytex.sh && \
-    "${TINYTEX_HOME}/bin/x86_64-linux/tlmgr" option repository ctan && \
-    "${TINYTEX_HOME}/bin/x86_64-linux/tlmgr" update --self --all && \
-    "${TINYTEX_HOME}/bin/x86_64-linux/tlmgr" install \
-      latexmk \
-      xetex \
-      luatex \
-      luatexja \
-      collection-latexrecommended \
-      collection-latexextra \
-      collection-fontsrecommended \
-      collection-bibtexextra \
-      collection-langjapanese \
-      biber && \
-    chmod -R a+rX "${TINYTEX_HOME}"
-
-# ========= 1.2) Global NPM Packages =========
-# Keep the default image lean. Optional MCP servers are added only when a task
-# actually needs them; setup_ide_mcp.sh detects what is installed.
-RUN npm install -g repomix
-
-# ========= 2) User Setup =========
-ARG USERNAME=vscode
-ARG USER_UID=1000
-ARG USER_GID=1000
-RUN groupadd --gid "$USER_GID" "$USERNAME" || true && \
-    useradd --uid "$USER_UID" --gid "$USER_GID" -m -s /bin/bash "$USERNAME" || true && \
-    mkdir -p /etc/sudoers.d && \
-    echo "$USERNAME ALL=(root) NOPASSWD:ALL" > /etc/sudoers.d/$USERNAME && \
-    chmod 0440 /etc/sudoers.d/$USERNAME && \
-    chown -R "$USERNAME:$USERNAME" "${TINYTEX_HOME}"
-
-USER $USERNAME
-WORKDIR /workspaces/econ-project
-ENV PATH="/home/$USERNAME/.cargo/bin:/home/$USERNAME/.local/bin:/home/$USERNAME/go/bin:${PATH}"
-
-# Rust is kept because it is useful for modern Python/R tooling and rv itself.
-RUN curl --proto '=https' --tlsv1.2 -fsSL https://sh.rustup.rs | \
-    sh -s -- -y --profile minimal --default-toolchain stable
-
-# ========= Git Identity =========
-ARG GIT_USER_NAME=yoshimurahiroki
-ARG GIT_USER_EMAIL=yoshimurahiroki@akane.waseda.jp
-RUN command -v git >/dev/null 2>&1 && \
-    git config --global user.name "$GIT_USER_NAME" && \
-    git config --global user.email "$GIT_USER_EMAIL"
-
-# ========= 3) Pixi =========
-RUN curl -fsSL https://pixi.sh/install.sh | bash
-ENV PATH="/home/$USERNAME/.pixi/bin:$PATH"
-
-# ========= 4) Runtime Dependency Setup =========
-# The workspace .pixi directory is mounted as a devcontainer volume, so any
-# Pixi environment created during image build would be hidden at runtime.
-# setup-environment.sh installs project dependencies after the container starts.
-RUN mkdir -p /tmp/package-lists
-WORKDIR /workspaces/econ-project
-
-# ========= 5.5) rv =========
-RUN curl -sSL https://raw.githubusercontent.com/A2-ai/rv/refs/heads/main/scripts/install.sh | bash
-ENV PATH="/home/$USERNAME/.local/bin:/home/$USERNAME/go/bin:$PATH"
-
-# ========= 6) Runtime Kernel Registration =========
-# Kernelspecs are registered from the workspace environment by the
-# devcontainer setup script. Registering them here would point at /tmp/pixi,
-# which is hidden by the runtime workspace and .pixi volume.
-WORKDIR /workspaces/econ-project
-
-# ========= 7) On-demand AI References =========
-# setup_ai_skills.sh can fetch optional reference repositories after creation.
-RUN sudo mkdir -p /workspaces/econ-project/.resources && \
-    sudo chown -R $USERNAME:$USERNAME /workspaces/econ-project/.resources
-
-# ========= 8) Default Command =========
-USER root
-CMD ["/bin/bash"]
+{
+  "name": "econ-dev",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "remoteUser": "vscode",
+  "workspaceFolder": "/workspaces/econ-project",
+  "updateRemoteUserUID": true,
+  "mounts": [
+    "type=volume,source=econ_data,target=/workspaces/econ-project/data",
+    "type=volume,source=econ_pixi_cache,target=/home/vscode/.cache/rattler",
+    "type=volume,source=econ_pixi_env,target=/workspaces/econ-project/.pixi"
+  ],
+  "runArgs": [
+    "--init",
+    "--hostname=econ-dev"
+  ],
+  "features": {
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
+      "version": "latest",
+      "enableNonRootDocker": "true",
+      "moby": "true"
+    }
+  },
+  "hostRequirements": {
+    "gpu": "optional"
+  },
+  "forwardPorts": [
+    8765
+  ],
+  "portsAttributes": {},
+  "remoteEnv": {
+    "ECC_UPDATE_SKILLS": "0",
+    "ECC_FETCH_AI_REFERENCES": "0",
+    "ENABLE_CONTEXT_MCP": "0",
+    "PATH": "/usr/local/bin:/workspaces/econ-project/.pixi/envs/default/bin:${containerEnv:PATH}",
+    "QUARTO_PYTHON": "/workspaces/econ-project/.pixi/envs/default/bin/python",
+    "QUARTO_SHARE_PATH": "/workspaces/econ-project/.pixi/envs/default/share/quarto",
+    "QUARTO_DENO": "/workspaces/econ-project/.pixi/envs/default/bin/deno",
+    "QUARTO_DENO_DOM": "/workspaces/econ-project/.pixi/envs/default/lib/deno_dom.so",
+    "QUARTO_PANDOC": "/workspaces/econ-project/.pixi/envs/default/bin/pandoc",
+    "QUARTO_ESBUILD": "/workspaces/econ-project/.pixi/envs/default/bin/esbuild",
+    "QUARTO_TYPST": "/workspaces/econ-project/.pixi/envs/default/bin/typst",
+    "QUARTO_DART_SASS": "/workspaces/econ-project/.pixi/envs/default/bin/sass",
+    "QUARTO_CONDA_PREFIX": "/workspaces/econ-project/.pixi/envs/default"
+  },
+  "postCreateCommand": "bash .devcontainer/setup-environment.sh",
+  "updateContentCommand": "bash .devcontainer/setup-environment.sh",
+  "customizations": {
+    "antigravity": {
+      "extensions": [
+        "ms-python.python",
+        "ms-toolsai.jupyter",
+        "ms-python.vscode-pylance",
+        "ms-python.mypy-type-checker",
+        "charliermarsh.ruff",
+        "ms-python.black-formatter",
+        "ms-python.isort",
+        "pytest-dev.pytest-vscode",
+        "James-Yu.latex-workshop",
+        "tecosaur.latex-utilities",
+        "quarto.quarto",
+        "REditorSupport.r",
+        "RDebugger.r-debugger",
+        "ikuyadeu.r-lsp",
+        "redhat.vscode-yaml",
+        "tamasfe.even-better-toml",
+        "DavidAnson.vscode-markdownlint",
+        "ms-vscode.makefile-tools",
+        "EditorConfig.EditorConfig",
+        "ms-python.vscode-python-envs",
+        "ms-python.debugpy",
+        "ms-toolsai.jupyter-keymap",
+        "ms-toolsai.jupyter-renderers",
+        "ms-toolsai.vscode-jupyter-cell-tags",
+        "ms-toolsai.vscode-jupyter-slideshow",
+        "ms-toolsai.datawrangler",
+        "ms-toolsai.tensorboard",
+        "njpwerner.autodocstring",
+        "usernamehw.errorlens",
+        "Gruntfuggly.todo-tree",
+        "oderwat.indent-rainbow",
+        "mechatroner.rainbow-csv",
+        "janisdd.vscode-edit-csv",
+        "GrapeCity.gc-excelviewer",
+        "RandomFractalsInc.vscode-data-preview",
+        "RandomFractalsInc.tabular-data-viewer",
+        "qwtel.sqlite-viewer",
+        "msrvida.vscode-sanddance",
+        "RandomFractalsInc.geo-data-viewer",
+        "RandomFractalsInc.vscode-vega-viewer",
+        "RandomFractalsInc.vscode-data-table",
+        "ms-vscode.hexeditor",
+        "mtxr.sqltools",
+        "mtxr.sqltools-driver-sqlite",
+        "mtxr.sqltools-driver-pg",
+        "mtxr.sqltools-driver-mysql",
+        "mtxr.sqltools-driver-mssql",
+        "Evidence.sqltools-duckdb-driver",
+        "ms-mssql.mssql",
+        "julialang.language-julia",
+        "kylebarron.stata-enhanced",
+        "lakeFS.lakefs-dvc",
+        "yzhang.markdown-all-in-one",
+        "bierner.markdown-mermaid",
+        "bierner.markdown-preview-github-styles",
+        "valentjn.vscode-ltex",
+        "streetsidesoftware.code-spell-checker",
+        "marp-team.marp-vscode",
+        "hediet.vscode-drawio",
+        "redhat.vscode-xml",
+        "esbenp.prettier-vscode",
+        "ms-azuretools.vscode-docker",
+        "ms-vscode-remote.remote-containers",
+        "mhutchie.git-graph",
+        "GitHub.vscode-pull-request-github",
+        "github.vscode-github-actions",
+        "timonwong.shellcheck",
+        "foxundermoon.shell-format",
+        "humao.rest-client",
+        "dotenv.dotenv-vscode"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "remote.extensionKind": {
+          "openai.chatgpt": [
+            "ui"
+          ]
+        },
+        "git.untrackedChanges": "hidden",
+        "python.formatting.provider": "none",
+        "python.analysis.typeCheckingMode": "strict",
+        "python.defaultInterpreterPath": "${workspaceFolder}/.pixi/envs/default/bin/python",
+        "python-envs.workspaceSearchPaths": [],
+        "python.terminal.activateEnvironment": false,
+        "python.terminal.activateEnvInCurrentTerminal": false,
+        "quarto.path": "/usr/local/bin/quarto",
+        "jupyter.notebookFileRoot": "${workspaceFolder}",
+        "latex-workshop.latex.recipe.default": "lualatex (with build dir)",
+        "latex-workshop.latex.recipes": [
+          {
+            "name": "lualatex (with build dir)",
+            "tools": [
+              "lualatex-with-build-dir"
+            ]
+          }
+        ],
+        "latex-workshop.latex.tools": [
+          {
+            "name": "lualatex-with-build-dir",
+            "command": "bash",
+            "args": [
+              "-lc",
+              "cd %DIR% && mkdir -p .latex-build && lualatex -shell-escape -interaction=nonstopmode -file-line-error -output-directory=.latex-build %DOCFILE%.tex && cp .latex-build/%DOCFILE%.pdf %DOCFILE%.pdf && rm -f %DOCFILE%.aux %DOCFILE%.log %DOCFILE%.nav %DOCFILE%.out %DOCFILE%.snm %DOCFILE%.toc %DOCFILE%.bbl %DOCFILE%.blg %DOCFILE%.synctex.gz %DOCFILE%.fls %DOCFILE%.fdb_latexmk %DOCFILE%.bcf %DOCFILE%.run.xml || true"
+            ]
+          }
+        ],
+        "files.exclude": {
+          "**/env": true,
+          "**/.venv": true,
+          "**/__pycache__": true,
+          "**/*.pyc": true,
+          "**/.resources": true,
+          "**/.agent_state": true
+        },
+        "search.exclude": {
+          "**/.pixi": true,
+          "**/node_modules": true,
+          "**/.resources": true,
+          "**/.agent_state": true
+        },
+        "files.watcherExclude": {
+          "**/.pixi/**": true,
+          "**/node_modules/**": true,
+          "**/.resources/**": true,
+          "**/.agent_state/**": true
+        },
+        "ruff.lint.args": [
+          "--config=pyproject.toml"
+        ],
+        "ruff.format.args": [
+          "--config=pyproject.toml"
+        ],
+        "r.rterm.linux": "/workspaces/econ-project/.pixi/envs/default/bin/R",
+        "r.rpath.linux": "/workspaces/econ-project/.pixi/envs/default/bin/R",
+        "code-runner.executorMap": {
+          "python": "/workspaces/econ-project/.pixi/envs/default/bin/python -u",
+          "r": "/workspaces/econ-project/.pixi/envs/default/bin/Rscript"
+        },
+        "notebook.formatOnSave.enabled": true,
+        "python.testing.pytestEnabled": true,
+        "python.testing.unittestEnabled": false,
+        "python.testing.cwd": "${workspaceFolder}",
+        "python.analysis.diagnosticMode": "workspace",
+        "sqltools.useNodeRuntime": true,
+        "sqltools.disableNodeDetectNotifications": true,
+        "markdown.extension.toc.updateOnSave": false,
+        "ltex.language": "en-US",
+        "files.associations": {
+          "*.qmd": "quarto",
+          "*.do": "stata",
+          "*.ado": "stata",
+          "*.Rmd": "rmd",
+          "*.R": "r",
+          "*.ipynb": "jupyter-notebook",
+          "*.parquet": "parquet",
+          "*.duckdb": "duckdb",
+          "*.db": "sqlite",
+          "*.sqlite": "sqlite"
+        }
+      }
+    },
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-toolsai.jupyter",
+        "ms-python.vscode-pylance",
+        "ms-python.mypy-type-checker",
+        "charliermarsh.ruff",
+        "ms-python.black-formatter",
+        "ms-python.isort",
+        "pytest-dev.pytest-vscode",
+        "James-Yu.latex-workshop",
+        "tecosaur.latex-utilities",
+        "quarto.quarto",
+        "REditorSupport.r",
+        "RDebugger.r-debugger",
+        "ikuyadeu.r-lsp",
+        "redhat.vscode-yaml",
+        "tamasfe.even-better-toml",
+        "DavidAnson.vscode-markdownlint",
+        "ms-vscode.makefile-tools",
+        "EditorConfig.EditorConfig",
+        "ms-python.vscode-python-envs",
+        "ms-python.debugpy",
+        "ms-toolsai.jupyter-keymap",
+        "ms-toolsai.jupyter-renderers",
+        "ms-toolsai.vscode-jupyter-cell-tags",
+        "ms-toolsai.vscode-jupyter-slideshow",
+        "ms-toolsai.datawrangler",
+        "ms-toolsai.tensorboard",
+        "njpwerner.autodocstring",
+        "usernamehw.errorlens",
+        "Gruntfuggly.todo-tree",
+        "oderwat.indent-rainbow",
+        "mechatroner.rainbow-csv",
+        "janisdd.vscode-edit-csv",
+        "GrapeCity.gc-excelviewer",
+        "RandomFractalsInc.vscode-data-preview",
+        "RandomFractalsInc.tabular-data-viewer",
+        "qwtel.sqlite-viewer",
+        "msrvida.vscode-sanddance",
+        "RandomFractalsInc.geo-data-viewer",
+        "RandomFractalsInc.vscode-vega-viewer",
+        "RandomFractalsInc.vscode-data-table",
+        "ms-vscode.hexeditor",
+        "mtxr.sqltools",
+        "mtxr.sqltools-driver-sqlite",
+        "mtxr.sqltools-driver-pg",
+        "mtxr.sqltools-driver-mysql",
+        "mtxr.sqltools-driver-mssql",
+        "Evidence.sqltools-duckdb-driver",
+        "ms-mssql.mssql",
+        "julialang.language-julia",
+        "kylebarron.stata-enhanced",
+        "lakeFS.lakefs-dvc",
+        "yzhang.markdown-all-in-one",
+        "bierner.markdown-mermaid",
+        "bierner.markdown-preview-github-styles",
+        "valentjn.vscode-ltex",
+        "streetsidesoftware.code-spell-checker",
+        "marp-team.marp-vscode",
+        "hediet.vscode-drawio",
+        "redhat.vscode-xml",
+        "esbenp.prettier-vscode",
+        "ms-azuretools.vscode-docker",
+        "ms-vscode-remote.remote-containers",
+        "mhutchie.git-graph",
+        "GitHub.vscode-pull-request-github",
+        "github.vscode-github-actions",
+        "timonwong.shellcheck",
+        "foxundermoon.shell-format",
+        "humao.rest-client",
+        "dotenv.dotenv-vscode"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "remote.extensionKind": {
+          "openai.chatgpt": [
+            "ui"
+          ]
+        },
+        "git.untrackedChanges": "hidden",
+        "python.formatting.provider": "none",
+        "python.analysis.typeCheckingMode": "strict",
+        "python.defaultInterpreterPath": "${workspaceFolder}/.pixi/envs/default/bin/python",
+        "python-envs.workspaceSearchPaths": [],
+        "python.terminal.activateEnvironment": false,
+        "python.terminal.activateEnvInCurrentTerminal": false,
+        "quarto.path": "/usr/local/bin/quarto",
+        "jupyter.notebookFileRoot": "${workspaceFolder}",
+        "latex-workshop.latex.recipe.default": "lualatex (with build dir)",
+        "latex-workshop.latex.recipes": [
+          {
+            "name": "lualatex (with build dir)",
+            "tools": [
+              "lualatex-with-build-dir"
+            ]
+          }
+        ],
+        "latex-workshop.latex.tools": [
+          {
+            "name": "lualatex-with-build-dir",
+            "command": "bash",
+            "args": [
+              "-lc",
+              "cd %DIR% && mkdir -p .latex-build && lualatex -shell-escape -interaction=nonstopmode -file-line-error -output-directory=.latex-build %DOCFILE%.tex && cp .latex-build/%DOCFILE%.pdf %DOCFILE%.pdf && rm -f %DOCFILE%.aux %DOCFILE%.log %DOCFILE%.nav %DOCFILE%.out %DOCFILE%.snm %DOCFILE%.toc %DOCFILE%.bbl %DOCFILE%.blg %DOCFILE%.synctex.gz %DOCFILE%.fls %DOCFILE%.fdb_latexmk %DOCFILE%.bcf %DOCFILE%.run.xml || true"
+            ]
+          }
+        ],
+        "files.exclude": {
+          "**/env": true,
+          "**/.venv": true,
+          "**/__pycache__": true,
+          "**/*.pyc": true,
+          "**/.resources": true,
+          "**/.agent_state": true
+        },
+        "search.exclude": {
+          "**/.pixi": true,
+          "**/node_modules": true,
+          "**/.resources": true,
+          "**/.agent_state": true
+        },
+        "files.watcherExclude": {
+          "**/.pixi/**": true,
+          "**/node_modules/**": true,
+          "**/.resources/**": true,
+          "**/.agent_state/**": true
+        },
+        "ruff.lint.args": [
+          "--config=pyproject.toml"
+        ],
+        "ruff.format.args": [
+          "--config=pyproject.toml"
+        ],
+        "r.rterm.linux": "${workspaceFolder}/.pixi/envs/default/bin/R",
+        "code-runner.executorMap": {
+          "python": "${workspaceFolder}/.pixi/envs/default/bin/python -u",
+          "r": "${workspaceFolder}/.pixi/envs/default/bin/Rscript"
+        },
+        "notebook.formatOnSave.enabled": true,
+        "python.testing.pytestEnabled": true,
+        "python.testing.unittestEnabled": false,
+        "python.testing.cwd": "${workspaceFolder}",
+        "python.analysis.diagnosticMode": "workspace",
+        "sqltools.useNodeRuntime": true,
+        "sqltools.disableNodeDetectNotifications": true,
+        "markdown.extension.toc.updateOnSave": false,
+        "ltex.language": "en-US",
+        "files.associations": {
+          "*.qmd": "quarto",
+          "*.do": "stata",
+          "*.ado": "stata",
+          "*.Rmd": "rmd",
+          "*.R": "r",
+          "*.ipynb": "jupyter-notebook",
+          "*.parquet": "parquet",
+          "*.duckdb": "duckdb",
+          "*.db": "sqlite",
+          "*.sqlite": "sqlite"
+        }
+      }
+    }
+  }
+}
