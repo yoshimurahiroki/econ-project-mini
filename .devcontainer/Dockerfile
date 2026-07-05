@@ -1,31 +1,27 @@
-# Economics research stack for Pixi, rv, LaTeX, Quarto, and cloud IDE agents.
+# Minimal economics research stack for Pixi, rv, TinyTeX, Quarto, and cloud IDE agents.
 FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 SHELL ["/bin/bash", "-eo", "pipefail", "-c"]
 
 # ========= 1) OS Base =========
+# Keep only infrastructure needed for:
+# - Git/GitHub CLI
+# - Python/R package managers and compiled infrastructure packages
+# - Jupyter/Quarto runtime support
+# - TinyTeX + Japanese fonts
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    software-properties-common gnupg ca-certificates curl wget && \
-    add-apt-repository -y ppa:deadsnakes/ppa && \
-    apt-get update && \
-    apt-get install -y --no-install-recommends \
-    git git-lfs make build-essential pkg-config cmake default-jdk \
-    libxml2-dev libxslt1-dev libffi-dev libssl-dev libcurl4-openssl-dev \
+    ca-certificates curl wget gnupg \
+    git git-lfs openssh-client \
+    make build-essential pkg-config cmake \
+    libcurl4-openssl-dev libssl-dev libxml2-dev libffi-dev \
     libcairo2-dev libfontconfig1-dev libfreetype6-dev libfribidi-dev libharfbuzz-dev \
-    libmagick++-dev libpng-dev libjpeg-dev libtiff-dev libwebp-dev libuv1-dev libzmq3-dev \
-    libgit2-dev libglpk-dev libgmp3-dev libgsl-dev libmpfr-dev libssh-dev libssh2-1-dev \
-    libabsl-dev libx11-dev libgl1-mesa-dev libglu1-mesa-dev \
-    graphviz libgraphviz-dev \
-    libblas-dev liblapack-dev \
-    python3 python3-venv python3-pip python3-dev python3.12 python3.12-venv python3.12-dev pipx \
-    locales tzdata jq golang-go bubblewrap libfuse2 libgtk-3-0 file \
-    texlive-full pandoc-citeproc \
+    libpng-dev libjpeg-dev \
+    locales tzdata jq sudo procps zstd unzip sqlite3 \
+    perl xz-utils \
     fonts-noto-cjk fonts-noto-cjk-extra \
-    openssh-client openssl \
-    poppler-utils tesseract-ocr tesseract-ocr-jpn \
-    sudo procps zstd unzip sqlite3 libsqlite3-dev redis-server pari-gp && \
+    openssl && \
     mkdir -p -m 755 /etc/apt/keyrings && \
     wget -qO- https://cli.github.com/packages/githubcli-archive-keyring.gpg | tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null && \
     chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg && \
@@ -42,6 +38,30 @@ RUN curl -fsSL https://deb.nodesource.com/setup_lts.x | bash - && \
 RUN sed -i 's/^# *\(ja_JP.UTF-8 UTF-8\)/\1/' /etc/locale.gen && locale-gen
 ENV LANG=ja_JP.UTF-8 LC_ALL=ja_JP.UTF-8
 
+# ========= 1.1) TinyTeX =========
+# The installer fetches the current TinyTeX daily release; tlmgr remains
+# available for installing any missing TeX packages later.
+ENV TINYTEX_HOME=/opt/TinyTeX
+ENV PATH="${TINYTEX_HOME}/bin/x86_64-linux:${PATH}"
+RUN curl -fsSL https://yihui.org/tinytex/install-unx.sh -o /tmp/install-tinytex.sh && \
+    sh /tmp/install-tinytex.sh --admin --no-path && \
+    mv /root/.TinyTeX "${TINYTEX_HOME}" && \
+    rm -f /tmp/install-tinytex.sh && \
+    "${TINYTEX_HOME}/bin/x86_64-linux/tlmgr" option repository ctan && \
+    "${TINYTEX_HOME}/bin/x86_64-linux/tlmgr" update --self --all && \
+    "${TINYTEX_HOME}/bin/x86_64-linux/tlmgr" install \
+      latexmk \
+      xetex \
+      luatex \
+      luatexja \
+      collection-latexrecommended \
+      collection-latexextra \
+      collection-fontsrecommended \
+      collection-bibtexextra \
+      collection-langjapanese \
+      biber && \
+    chmod -R a+rX "${TINYTEX_HOME}"
+
 # ========= 1.2) Global NPM Packages =========
 # Keep the default image lean. Optional MCP servers are added only when a task
 # actually needs them; setup_ide_mcp.sh detects what is installed.
@@ -55,13 +75,14 @@ RUN groupadd --gid "$USER_GID" "$USERNAME" || true && \
     useradd --uid "$USER_UID" --gid "$USER_GID" -m -s /bin/bash "$USERNAME" || true && \
     mkdir -p /etc/sudoers.d && \
     echo "$USERNAME ALL=(root) NOPASSWD:ALL" > /etc/sudoers.d/$USERNAME && \
-    chmod 0440 /etc/sudoers.d/$USERNAME
+    chmod 0440 /etc/sudoers.d/$USERNAME && \
+    chown -R "$USERNAME:$USERNAME" "${TINYTEX_HOME}"
 
 USER $USERNAME
 WORKDIR /workspaces/econ-project
-ENV PATH="/home/$USERNAME/.cargo/bin:/home/$USERNAME/.local/bin:/home/$USERNAME/go/bin:$PATH"
+ENV PATH="/home/$USERNAME/.cargo/bin:/home/$USERNAME/.local/bin:/home/$USERNAME/go/bin:${PATH}"
 
-# Rust is required by Rust-backed R packages such as ciflyr and clarabel.
+# Rust is kept because it is useful for modern Python/R tooling and rv itself.
 RUN curl --proto '=https' --tlsv1.2 -fsSL https://sh.rustup.rs | \
     sh -s -- -y --profile minimal --default-toolchain stable
 
