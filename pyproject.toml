@@ -59,7 +59,7 @@ zeromq = "*"
 r-curl = "*"
 r-xml2 = "*"
 r-pbdzmq = "*"
-r-data.table = "*"
+"r-data.table" = "*"
 
 # Quarto / R Markdown / TeX integration infrastructure
 quarto = "*"
