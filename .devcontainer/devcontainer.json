@@ -8,7 +8,6 @@
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/econ-project,type=bind,consistency=cached",
   "workspaceFolder": "/workspaces/econ-project",
   "updateRemoteUserUID": true
-}
   "remoteUser": "vscode",
   "workspaceFolder": "/workspaces/econ-project",
   "updateRemoteUserUID": true,
