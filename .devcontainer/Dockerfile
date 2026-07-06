@@ -47,7 +47,7 @@ RUN curl -fsSL https://yihui.org/tinytex/install-unx.sh -o /tmp/install-tinytex.
     sh /tmp/install-tinytex.sh --admin --no-path && \
     mv /root/.TinyTeX "${TINYTEX_HOME}" && \
     rm -f /tmp/install-tinytex.sh && \
-    "${TINYTEX_HOME}/bin/x86_64-linux/tlmgr" option repository ctan && \
+    "${TINYTEX_HOME}/bin/x86_64-linux/tlmgr" option repository https://tlnet.yihui.org/ && \
     "${TINYTEX_HOME}/bin/x86_64-linux/tlmgr" update --self --all && \
     "${TINYTEX_HOME}/bin/x86_64-linux/tlmgr" install \
       latexmk \
