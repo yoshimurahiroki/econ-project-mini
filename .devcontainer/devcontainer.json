@@ -1,7 +1,7 @@
 {
   "name": "econ-dev",
   "build": {
-    "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/econ-project,type=bind,consistency=cached",,
+    "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/econ-project,type=bind,consistency=cached",
     "dockerfile": "Dockerfile",
     "context": ".."
   },
