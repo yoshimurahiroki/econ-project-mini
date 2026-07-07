@@ -3,7 +3,9 @@ name = "econ-project"
 version = "0.1.0"
 description = "Minimal infrastructure stack for Python, R, TinyTeX, Quarto, Jupyter, and R package build support"
 requires-python = ">=3.12"
-authors = [{ name = "yoshimurahiroki", email = "yoshimurahiroki@akane.waseda.jp" }]
+authors = [
+    { name = "yoshimurahiroki", email = "yoshimurahiroki@akane.waseda.jp" },
+]
 dependencies = []
 
 # ── Pixi configuration ──────────────────────────────────────────
@@ -54,6 +56,12 @@ openssl = "*"
 libxml2 = "*"
 libxml2-devel = "*"
 zeromq = "*"
+librsvg = "*"
+expat = "*"
+fontconfig = "*"
+glpk = "*"
+xz = "*"
+xorg-xorgproto = "*"
 
 # Prebuilt R infrastructure dependencies that repeatedly trigger source builds
 # from rv/CRAN. These are not project-specific analysis packages.
