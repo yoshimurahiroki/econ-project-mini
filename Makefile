@@ -87,10 +87,7 @@ r-install: prepare-pixi
 		export NANONEXT_LIBS=1; \
 		unset NANONEXT_TLS; \
 		unset CMAKE_PREFIX_PATH; \
-		JAVA_BIN="$$(command -v java)"; \
-		export JAVA_HOME="$$(dirname "$$(dirname "$$(readlink -f "$$JAVA_BIN")")")"; \
-		export PATH="$$JAVA_HOME/bin:$$PATH"; \
-		export LD_LIBRARY_PATH="$$JAVA_HOME/lib/server:$$JAVA_HOME/lib:$$CONDA_PREFIX/lib:$${LD_LIBRARY_PATH:-}"; \
+		unset JAVA_HOME; \
 		ln -sf libxml2.so.16 "$$CONDA_PREFIX/lib/libxml2.so" 2>/dev/null || true; \
 		echo "Checking pixi/conda-forge paths..."; \
 		pkg-config --cflags librsvg-2.0; \
@@ -99,10 +96,6 @@ r-install: prepare-pixi
 		test -f "$$CONDA_PREFIX/include/glpk.h"; \
 		test -f "$$CONDA_PREFIX/lib/libglpk.so" || test -f "$$CONDA_PREFIX/lib/libglpk.a"; \
 		test -f "$$CONDA_PREFIX/lib/liblzma.so" || test -f "$$CONDA_PREFIX/lib/liblzma.so.5"; \
-		echo "Checking Java..."; \
-		echo "JAVA_HOME=$$JAVA_HOME"; \
-		java -version; \
-		R CMD javareconf; \
 		if pgrep -u "$$(id -u)" -x rv >/dev/null; then \
 			echo "Another rv process is running; wait for it to finish before r-install." >&2; \
 			exit 1; \
@@ -123,12 +116,15 @@ r-plan: prepare-pixi
 		export NANONEXT_LIBS=1; \
 		unset NANONEXT_TLS; \
 		unset CMAKE_PREFIX_PATH; \
-		JAVA_BIN="$$(command -v java)"; \
-		export JAVA_HOME="$$(dirname "$$(dirname "$$(readlink -f "$$JAVA_BIN")")")"; \
-		export PATH="$$JAVA_HOME/bin:$$PATH"; \
-		export LD_LIBRARY_PATH="$$JAVA_HOME/lib/server:$$JAVA_HOME/lib:$$CONDA_PREFIX/lib:$${LD_LIBRARY_PATH:-}"; \
+		unset JAVA_HOME; \
 		ln -sf libxml2.so.16 "$$CONDA_PREFIX/lib/libxml2.so" 2>/dev/null || true; \
-		R CMD javareconf; \
+		echo "Checking pixi/conda-forge paths..."; \
+		pkg-config --cflags librsvg-2.0; \
+		pkg-config --libs librsvg-2.0; \
+		pkg-config --modversion libxml-2.0; \
+		test -f "$$CONDA_PREFIX/include/glpk.h"; \
+		test -f "$$CONDA_PREFIX/lib/libglpk.so" || test -f "$$CONDA_PREFIX/lib/libglpk.a"; \
+		test -f "$$CONDA_PREFIX/lib/liblzma.so" || test -f "$$CONDA_PREFIX/lib/liblzma.so.5"; \
 		rv plan \
 	'
 
