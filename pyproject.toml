@@ -20,6 +20,7 @@ python = "*"
 pip = "*"
 setuptools = "*"
 wheel = "*"
+pre-commit = "*"
 
 # Jupyter Notebook / JupyterLab infrastructure
 jupyterlab = "*"
