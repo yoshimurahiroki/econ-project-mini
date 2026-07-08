@@ -23,6 +23,7 @@ pip = "*"
 setuptools = "*"
 wheel = "*"
 pre-commit = "*"
+ripgrep = "*"
 
 # Jupyter Notebook / JupyterLab infrastructure
 jupyterlab = "*"
