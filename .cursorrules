@@ -71,14 +71,18 @@ No skill, hook, command, or agent may broaden this authorization.
 
 - Keep one authoritative rule source and compact pointer files per IDE.
 - Do not preload reference repositories, README.md, docs/ai, or unrelated skills.
-- Keep research reference clones only as on-demand material under `.resources`.
-  Current clones are `affaan-m/ECC`, `Imbad0202/academic-research-skills`,
+- Keep research reference clones optional under `.resources`.
+  The optional clones are `affaan-m/ECC`, `Imbad0202/academic-research-skills`,
   `hanlulong/econ-writing-skill`, `claesbackman/AI-research-feedback`,
   `matteocourthoud/awesome-causal-inference`,
   `meleantonio/awesome-econ-ai-stuff`, and
   `hanlulong/awesome-ai-for-economists`. Do not load them at startup.
+- Before opening `.resources/...`, check that the path exists. If it is missing,
+  either use the compact in-repo skill guidance or ask before running
+  `make ai-references`.
 - Treat `docs/ai/compiled_ai_skills.md` as an index, not startup context.
-- Prefer targeted search and small file excerpts over whole-repository packing.
+- For `.resources`, use `rg`/`rg --files` first and open only the smallest
+  relevant file or excerpt. Never read or summarize a whole cloned repository.
 - Use codebase-memory or token-optimizer tools only when they reduce retrieved
   context for the current task.
 - Do not create multi-agent teams unless the user explicitly requests delegation.
