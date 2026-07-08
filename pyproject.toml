@@ -91,6 +91,14 @@ r-reticulate = "*"
 # Intentionally empty. Add project-specific PyPI packages only when an analysis
 # actually needs them.
 
+[tool.ruff]
+exclude = [
+    ".pixi",
+    ".resources",
+    "rv",
+    "scripts/temporary",
+]
+
 [tool.pixi.tasks]
 python-version = "python --version"
 r-version = "R --version"
