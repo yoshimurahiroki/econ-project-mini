@@ -1,4 +1,4 @@
-以下が変更版の `README.md` です。
+
 
 # econ-project
 
