@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Validate the minimal cloud-agent surface for econ-project."""
 
+import os
 import subprocess
 from pathlib import Path
 
@@ -45,7 +46,7 @@ ALLOWED_SKILLS = {
     "econ-writing",
 }
 
-REQUIRED_FILES = (
+CORE_REQUIRED_FILES = (
     ".cursorrules",
     ".agents/skills/academic-research-resources/SKILL.md",
     ".agents/skills/causal-inference-resources/SKILL.md",
@@ -53,6 +54,9 @@ REQUIRED_FILES = (
     ".agents/skills/econ-ai-resources/SKILL.md",
     ".agents/skills/econ-research-feedback/SKILL.md",
     ".agents/skills/econ-writing/SKILL.md",
+)
+
+OPTIONAL_REFERENCE_PATHS = (
     ".resources/econ-ai/AI-research-feedback",
     ".resources/econ-ai/awesome-ai-for-economists",
     ".resources/econ-ai/awesome-causal-inference",
@@ -61,6 +65,12 @@ REQUIRED_FILES = (
     ".resources/research-ai/ECC",
     ".resources/research-ai/academic-research-skills",
 )
+
+TRUTHY_ENV_VALUES = {"1", "true", "yes", "on"}
+
+
+def env_flag(*, name: str) -> bool:
+    return os.environ.get(name, "").strip().lower() in TRUTHY_ENV_VALUES
 
 
 def validate_content(path: Path, content: str) -> list[str]:
@@ -95,13 +105,21 @@ def validate_project_policy(base_path: Path) -> list[str]:
 
 
 def validate_required_surface(base_path: Path) -> list[str]:
+    required_files = list(CORE_REQUIRED_FILES)
+    if env_flag(name="ECC_REQUIRE_AI_REFERENCES") or env_flag(name="ECC_FETCH_AI_REFERENCES"):
+        required_files.extend(OPTIONAL_REFERENCE_PATHS)
+
     violations = [
-        f"{relative_path}: required file or on-demand reference is missing"
-        for relative_path in REQUIRED_FILES
+        f"{relative_path}: required file or enabled optional reference is missing"
+        for relative_path in required_files
         if not (base_path / relative_path).exists()
     ]
 
     skills_path = base_path / ".agents" / "skills"
+    if not skills_path.exists():
+        violations.append(".agents/skills: required skills directory is missing")
+        return violations
+
     actual_skills = {path.name for path in skills_path.iterdir() if path.is_dir()}
     extra_skills = sorted(actual_skills - ALLOWED_SKILLS)
     if extra_skills:
