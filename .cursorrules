@@ -87,6 +87,43 @@ No skill, hook, command, or agent may broaden this authorization.
   context for the current task.
 - Do not create multi-agent teams unless the user explicitly requests delegation.
 
+## Context MCP Escalation Policy
+
+Default to `rg` and direct file reads. Do not enable context MCP tools at
+startup.
+
+The agent may recommend enabling context MCP tools when at least one of these
+conditions is met:
+
+- The task requires searching across multiple `.resources` repositories.
+- Two targeted `rg` searches fail to identify a small relevant file set.
+- The likely relevant material spans more than three files or more than one
+  external skill repository.
+- The task asks for comparison, consolidation, or deduplication across skill
+  repositories.
+- The task requires repeated lookup of the same reference corpus across the
+  session.
+
+Before enabling context MCP tools, state the reason in one sentence.
+
+The only approved command for enabling context MCP tools is:
+
+```bash
+ENABLE_CONTEXT_MCP=1 bash scripts/setup_ide_mcp.sh
+```
+
+Do not enable broader MCP tools, remote services, or unrelated agents.
+
+After enabling context MCP tools, continue to minimize context:
+use the MCP only to locate or summarize the smallest relevant file set, then
+read only the needed files or excerpts.
+
+If MCP setup fails, fall back to `rg` and report the failure.
+
+If `AUTO_ENABLE_CONTEXT_MCP=1` is set, the agent may run the approved MCP
+enablement command without asking again when the escalation conditions are met.
+If `AUTO_ENABLE_CONTEXT_MCP` is not set, ask before running the command.
+
 ## Verification
 
 - Configuration smoke test: `make test`, then `make check`.
