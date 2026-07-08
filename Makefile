@@ -1,6 +1,6 @@
 # Minimal commands for the econ-project research environment.
 
-.PHONY: help prepare-pixi sync install setup-dev setup-extensions register-kernels setup-r-kernel check format test clean \
+.PHONY: help prepare-pixi sync install setup-dev setup-extensions register-kernels setup-r-kernel check format test clean ai-references \
 	build-paper build-slides quarto-html quarto-pdf quarto-reveal \
 	r-install r-plan
 
@@ -19,6 +19,7 @@ help:
 	@echo "  setup-r-kernel - Install R packages, then register Python and R kernels"
 	@echo "  format         - Format and autofix Python code"
 	@echo "  test           - Validate AI surface and run pytest when tests exist"
+	@echo "  ai-references  - Fetch optional skill repositories under .resources and validate them"
 	@echo "  check          - Run lint, format check, mypy, and tests"
 	@echo "  clean          - Remove generated caches and build artifacts"
 	@echo "  r-install      - Sync R dependencies with rv"
@@ -62,6 +63,10 @@ test:
 	else \
 		echo "No pytest tests found; existing tests are reset."; \
 	fi
+
+ai-references:
+	ECC_FETCH_AI_REFERENCES=1 bash scripts/setup_ai_skills.sh
+	ECC_REQUIRE_AI_REFERENCES=1 PYTHONDONTWRITEBYTECODE=1 $(PIXI_RUN) python scripts/sync_rules.py
 
 check:
 	$(PIXI_RUN) ruff check .
