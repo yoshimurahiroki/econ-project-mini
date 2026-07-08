@@ -24,6 +24,9 @@ setuptools = "*"
 wheel = "*"
 pre-commit = "*"
 ripgrep = "*"
+ruff = "*"
+mypy = "*"
+pytest = "*"
 
 # Jupyter Notebook / JupyterLab infrastructure
 jupyterlab = "*"
@@ -82,6 +85,7 @@ r-rmarkdown = "*"
 r-knitr = "*"
 r-tinytex = "*"
 r-yaml = "*"
+r-reticulate = "*"
 
 [tool.pixi.pypi-dependencies]
 # Intentionally empty. Add project-specific PyPI packages only when an analysis
