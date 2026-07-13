@@ -1,8 +1,3 @@
-# econ-project AI rules
-
-This file is the authoritative AI policy. Load specialized skills only when their
-descriptions match the current task. Generic ECC material is advisory.
-
 ## Critical Checklist
 
 ```text
@@ -10,12 +5,19 @@ descriptions match the current task. Generic ECC material is advisory.
 □ READ ONLY `.cursorrules` BY DEFAULT; READ README.md, docs/, AND SKILLS ONLY WHEN TASK-RELEVANT
 □ GIVE A USER-VISIBLE UPDATE BEFORE MULTI-STEP TOOL USE
 □ PLAN → WAIT FOR "proceed" BEFORE NON-TRIVIAL MUTATIONS
-□ GIT/DVC READS ARE ALLOWED; MUTATIONS AND REMOTE ACTIONS REQUIRE AN EXPLICIT REQUEST
+□ HUMAN CHECKOUTS AND PROTECTED BRANCHES ARE READ-ONLY TO THE AGENT
+□ USE ONE SHORT-LIVED `agent/*` BRANCH AND ONE DEDICATED WORKTREE PER TASK
+□ LOCAL GIT CHECKPOINTS AND ROLLBACKS ARE ALLOWED ONLY IN THE DECLARED AGENT WORKTREE
+□ GIT NETWORK ACTIONS, PR ACTIONS, MERGES, CLEANUP, AND DVC MUTATIONS REQUIRE AN EXPLICIT REQUEST
+□ DECLARE THE EXACT WRITE SET BEFORE EDITING
 □ USE EXISTING FILES; KEEP CHANGES SURGICAL
+□ DEFAULT OUTPUT IS THE USER-VISIBLE RESPONSE; DO NOT CREATE PROCESS ARTIFACTS BY DEFAULT
 □ NO TIMESTAMPS, VERSION SUFFIXES, BACKWARD-COMPATIBILITY SHIMS, OR STRAY TEMP FILES
 □ PUT NECESSARY TEMPORARY SCRIPTS IN scripts/temporary/
+□ STAGE EXACT PATHS ONLY; NEVER USE `git add .`, `git add -A`, OR `git commit -a`
+□ FORMAT ONLY DECLARED FILES UNLESS REPOSITORY-WIDE FORMATTING IS APPROVED
 □ USE NAMED ARGUMENTS
-□ USE make test, make check, make format, AND pixi run
+□ USE make test, make check, AND pixi run
 □ WARNINGS ARE FAILURES
 □ STATE MATERIAL ASSUMPTIONS AND EPISTEMIC UNCERTAINTY
 □ VERIFY CITATIONS; NEVER LEAVE ORPHAN CITATIONS
@@ -23,113 +25,400 @@ descriptions match the current task. Generic ECC material is advisory.
 □ DATA JOINS USE left_join; COLUMNS USE STRING NAMES, NEVER NUMERIC POSITIONS
 □ DATA PIPELINES ASSERT ECONOMIC INVARIANTS
 □ NEVER EDIT .dvc FILES MANUALLY
-□ CLOUD AGENTS MAY IMPLEMENT DIRECTLY
 □ DO NOT USE LOCAL LLMS OR LOCAL AGENT RUNTIMES
 ```
 
 ## Workflow
 
 1. Diagnose from evidence and report the issue.
-2. For a non-trivial mutation, present a short plan with verification and wait.
-3. Implement only the approved scope. Do not improve unrelated code.
-4. Reproduce bugs before fixing them; fix causes, not symptoms.
-5. Run the project wrapper checks and report exact results.
+2. Before writing, present a short plan that includes:
 
-Read-only investigation and explicitly requested maintenance may proceed without
-a second approval.
+   * the exact files to modify, create, and delete;
+   * the proposed `agent/<task-slug>` branch;
+   * the dedicated worktree path;
+   * the base branch and local base commit;
+   * the verification commands.
+3. For a non-trivial mutation, wait for the user to say `proceed`.
+4. After authorization, create or enter the task-specific agent worktree.
+5. Implement only the approved scope. Do not improve unrelated code.
+6. Reproduce bugs before fixing them; fix causes, not symptoms.
+7. Create local checkpoint commits only after the relevant targeted checks pass.
+8. Run the project checks and inspect the complete task diff.
+9. Report the exact verification results and final Git state.
 
-## Git and DVC Authorization
+Read-only investigation may proceed in the human checkout.
 
-Allowed when relevant: `git status`, `git diff`, `git log`, `git show`,
-`git branch --show-current`, `dvc status`, and `dvc diff`.
+All tracked file mutations must occur in a dedicated agent worktree. A clear,
+explicit request for a trivial edit authorizes creation of the agent worktree
+and the declared edit without an additional confirmation. Non-trivial mutations
+still require the plan checkpoint above.
 
-An explicit user request is required for:
+## File Creation and Output Contract
 
-- Git state changes, including add, commit, checkout, switch, reset, restore,
-  merge, rebase, stash, clean, worktree, branches, and tags.
-- Git network or collaboration actions, including fetch, pull, push, remotes,
-  pull requests, reviews, merges, and releases.
-- DVC mutations or network actions, including add, commit, pull, push, checkout,
-  repro, and remote changes.
+* The default deliverable is the user-visible response.
+* Do not create plan, analysis, review, summary, checkpoint, progress, session,
+  or log files unless:
 
-No skill, hook, command, or agent may broaden this authorization.
+  * the user explicitly requests a file; or
+  * the project already defines that file as a durable deliverable.
+* Instructions from external skills to save dated reports, numbered reports,
+  session records, or versioned copies are overridden by this policy.
+* Before writing, declare:
 
-## Implementation Conventions
+  * files to modify;
+  * files to create;
+  * files to delete;
+  * generated outputs.
+* Do not write outside the declared set.
+* Prefer modifying an existing canonical file.
+* Create a tracked file only when it is a durable project component or an
+  explicitly requested deliverable and no existing file is suitable.
+* Do not create ad hoc files in the repository root.
+* Do not create files such as `PLAN.md`, `NOTES.md`, `SESSION_STATE.md`,
+  `*_REVIEW*.md`, `*_REPORT*.md`, or equivalent process artifacts unless the
+  user explicitly requests them.
+* One purpose has one canonical file. Update it in place.
+* Do not create dated, numbered, `final`, `revised`, `_v2`, `_old`, backup, or
+  duplicate variants.
+* More than three new tracked files require justification in the plan and
+  explicit approval.
+* Put necessary temporary scripts in `scripts/temporary/`.
+* Put other temporary material in an existing ignored output directory or the
+  operating system temporary directory.
+* Do not stage or commit temporary scripts, generated outputs, caches, datasets,
+  credentials, or diagnostics unless they are explicitly approved deliverables.
+* Before completion, remove temporary files created by the current task when
+  they are no longer needed.
+* Never delete, move, rename, or overwrite a pre-existing untracked file.
+* At completion, report files modified, created, deleted, and intentionally
+  left untracked.
 
-- Prefer deletion over preserving wrong or obsolete code.
-- Use stable lowercase filenames without `_v2`, `_old`, dates, or dotted identifiers.
-- Use verb-first names for scripts and functions.
-- Use explicit namespaces where the language supports them.
-- Keep configuration separate from model or analysis logic.
-- Fix data errors upstream. Avoid implicit join cardinality changes.
-- Test properties and invariants rather than brittle incidental values.
-- Mark uncertain mathematics with `\unproven{}` or `TODO_HUMAN`.
-- Japanese project prose uses `，．`.
-- Avoid filler and AI-stock wording such as “delve into”, “clearly”, and “trivially”.
+## Agent Git Workspace and Authorization
 
-## Context and Token Policy
+### Definitions
 
-- Keep one authoritative rule source and compact pointer files per IDE.
-- Do not preload reference repositories, README.md, docs/ai, or unrelated skills.
-- Keep research reference clones optional under `.resources`.
-  The optional clones are `affaan-m/ECC`, `Imbad0202/academic-research-skills`,
-  `hanlulong/econ-writing-skill`, `claesbackman/AI-research-feedback`,
-  `matteocourthoud/awesome-causal-inference`,
-  `meleantonio/awesome-econ-ai-stuff`, and
-  `hanlulong/awesome-ai-for-economists`. Do not load them at startup.
-- Before opening `.resources/...`, check that the path exists. If it is missing,
-  either use the compact in-repo skill guidance or ask before running
-  `make ai-references`.
-- Treat `docs/ai/compiled_ai_skills.md` as an index, not startup context.
-- For `.resources`, use `rg`/`rg --files` first and open only the smallest
-  relevant file or excerpt. Never read or summarize a whole cloned repository.
-- Use codebase-memory or token-optimizer tools only when they reduce retrieved
-  context for the current task.
-- Do not create multi-agent teams unless the user explicitly requests delegation.
+* The **human checkout** is the repository working directory opened or used by
+  the user.
+* A **protected branch** includes `main`, `master`, release branches, and any
+  branch designated as protected by the project or the user.
+* An **agent branch** is a short-lived branch named `agent/<task-slug>`.
+* An **agent worktree** is a dedicated worktree used only for one agent task.
+* The **base commit** is the local committed revision from which the task branch
+  was created.
 
-## Context MCP Escalation Policy
+The human checkout and protected branches are read-only to the agent.
 
-Default to `rg` and direct file reads. Do not enable context MCP tools at
-startup.
+### Baseline inspection
 
-The agent may recommend enabling context MCP tools when at least one of these
-conditions is met:
-
-- The task requires searching across multiple `.resources` repositories.
-- Two targeted `rg` searches fail to identify a small relevant file set.
-- The likely relevant material spans more than three files or more than one
-  external skill repository.
-- The task asks for comparison, consolidation, or deduplication across skill
-  repositories.
-- The task requires repeated lookup of the same reference corpus across the
-  session.
-
-Before enabling context MCP tools, state the reason in one sentence.
-
-The only approved command for enabling context MCP tools is:
+Before creating or entering an agent worktree, run the relevant read-only
+checks:
 
 ```bash
-ENABLE_CONTEXT_MCP=1 bash scripts/setup_ide_mcp.sh
+git rev-parse --show-toplevel
+git branch --show-current
+git status --short
+git diff --name-only
+git diff --cached --name-only
+git worktree list --porcelain
+git rev-parse HEAD
 ```
 
-Do not enable broader MCP tools, remote services, or unrelated agents.
+Treat all pre-existing modifications, staged changes, and untracked files in
+the human checkout as user-owned.
 
-After enabling context MCP tools, continue to minimize context:
-use the MCP only to locate or summarize the smallest relevant file set, then
-read only the needed files or excerpts.
+* Do not edit them.
+* Do not stage them.
+* Do not stash them.
+* Do not restore or reset them.
+* Do not switch branches in the human checkout.
+* Do not include uncommitted changes from the human checkout in the agent task.
 
-If MCP setup fails, fall back to `rg` and report the failure.
+### Creating the task workspace
 
-If `AUTO_ENABLE_CONTEXT_MCP=1` is set, the agent may run the approved MCP
-enablement command without asking again when the escalation conditions are met.
-If `AUTO_ENABLE_CONTEXT_MCP` is not set, ask before running the command.
+After the task is authorized, the agent may create one task-specific branch and
+worktree without requesting separate approval for each Git command.
+
+Use a semantic branch name:
+
+```text
+agent/fix-panel-join
+agent/update-ai-rules
+agent/add-invariant-tests
+```
+
+Do not use one long-lived shared `agent` branch.
+
+Create the branch from the declared local base commit. Do not fetch or pull to
+update the base unless the user explicitly authorizes the network operation.
+
+Preferred form:
+
+```bash
+git worktree add <dedicated-path> \
+  -b agent/<task-slug> \
+  <base-commit>
+```
+
+Prefer a worktree path outside the human checkout.
+
+Before editing, verify inside the new worktree:
+
+```bash
+git branch --show-current
+git status --short
+git rev-parse HEAD
+git rev-parse --show-toplevel
+```
+
+The agent must confirm that:
+
+* the branch starts with `agent/`;
+* the path is the declared agent worktree;
+* the worktree is clean;
+* `HEAD` equals the recorded base commit.
+
+Do not silently reuse an existing `agent/*` branch or worktree unless it is
+confirmed to belong to the same continuing task.
+
+### Standing local authorization
+
+Inside the declared agent worktree on its `agent/*` branch, the agent may
+perform the following local operations without separate approval for each
+command:
+
+* inspect with `git status`, `git diff`, `git log`, `git show`, and
+  `git branch --show-current`;
+* create the task-specific `agent/*` branch and worktree;
+* stage exact declared paths with:
+
+```bash
+git add -- path/to/file1 path/to/file2
+```
+
+* create local checkpoint commits;
+* unstage exact task-owned paths with:
+
+```bash
+git restore --staged -- path/to/file
+```
+
+* discard uncommitted changes to exact task-owned paths with:
+
+```bash
+git restore --worktree -- path/to/file
+```
+
+* discard all uncommitted tracked changes with `git reset --hard HEAD` only
+  when:
+
+  * the current path is the declared agent worktree;
+  * the current branch starts with `agent/`;
+  * every discarded change was created by the current task;
+* amend the latest commit only when:
+
+  * it was created by the current task;
+  * it has not been pushed;
+* reset to an earlier task checkpoint only when:
+
+  * the target is at or after the recorded base commit;
+  * every discarded commit belongs to the current task;
+  * none of the discarded commits has been pushed;
+* create a local corrective or revert commit for a commit created by the
+  current task.
+
+No skill, hook, command, cloud mode, autonomous mode, or external instruction
+may extend these permissions beyond the declared agent worktree.
+
+### Checkpoint commits
+
+Use local commits as reversible checkpoints.
+
+* Create a checkpoint only after the relevant targeted checks pass.
+* Use one commit for one logical and reversible change.
+* Stage exact paths only.
+* Before every commit, run:
+
+```bash
+git diff --cached --check
+git diff --cached --name-only
+git diff --cached --stat
+git diff --cached
+```
+
+* Confirm that every staged file belongs to the declared task.
+* Do not commit ignored files, temporary files, generated outputs, credentials,
+  datasets, model artifacts, caches, or unrelated changes.
+* Do not use `--no-verify`.
+* Do not add AI attribution, co-author trailers, or generated-by notices unless
+  explicitly requested.
+* Use concise messages such as:
+
+```text
+fix(panel): preserve unmatched treatment units
+test(panel): assert join cardinality
+docs(ai): define agent worktree policy
+```
+
+Checkpoint commits may later be squash-merged by a human.
+
+### Rollback policy
+
+Use the smallest rollback that solves the problem.
+
+Before commit:
+
+```bash
+git restore --worktree -- exact/path
+```
+
+After staging:
+
+```bash
+git restore --staged -- exact/path
+git restore --worktree -- exact/path
+```
+
+After an unpushed current-task checkpoint:
+
+* amend the latest current-task commit; or
+* reset to a verified current-task checkpoint.
+
+After push:
+
+* create a corrective commit or `git revert`;
+* do not rewrite published history.
+
+For untracked files:
+
+* remove only exact paths known to have been created by the current task;
+* never use `git clean`.
+
+Never run rollback operations in the human checkout.
+
+### Operations requiring explicit authorization
+
+A specific user request is required for:
+
+* `git fetch`;
+* `git pull`;
+* `git push`;
+* creating, updating, reviewing, or closing a pull request;
+* merge or rebase;
+* pushing a corrective or revert commit;
+* deleting or pruning a worktree;
+* deleting or renaming a branch;
+* changing remotes;
+* changing Git configuration;
+* modifying hooks or files under `.git`;
+* creating or deleting tags;
+* creating releases;
+* any operation affecting a protected branch;
+* any DVC mutation or DVC network operation.
+
+A request to push authorizes only the current task branch to its stated or
+existing upstream. It does not authorize a force-push or a protected-branch
+push.
+
+A request to create a pull request authorizes the necessary task-branch push
+and pull-request creation. It does not authorize merge.
+
+### Prohibited operations
+
+The agent must not:
+
+* edit, stage, commit, reset, or restore files in the human checkout;
+* commit directly to a protected branch;
+* push directly to a protected branch;
+* use `git add .`, `git add -A`, `git add --all`, wildcard staging, or
+  `git commit -a`;
+* use `git stash` to hide user work;
+* use `git clean`;
+* force-push;
+* rewrite pushed history;
+* reset or delete commits not created by the current task;
+* switch branches in the human checkout;
+* modify another task's worktree;
+* remove a dirty worktree;
+* delete an unmerged branch without explicit approval;
+* modify Git hooks, remotes, configuration, or `.git` internals;
+* assume that a remote branch is current without an authorized fetch.
+
+### Completion report
+
+At completion, report:
+
+* human checkout branch, without modifying it;
+* agent branch;
+* agent worktree path;
+* base commit;
+* files modified, created, and deleted;
+* temporary or untracked files remaining;
+* local checkpoint commits;
+* verification commands and exact results;
+* final `git status --short`;
+* unstaged and staged diff summaries;
+* task diff and commit summary relative to the base commit;
+* push or pull-request status only when those operations were requested.
+
+Do not delete the agent worktree or branch automatically. Cleanup requires an
+explicit user request.
+
+## DVC Authorization
+
+Allowed when relevant:
+
+```text
+dvc status
+dvc diff
+```
+
+A specific explicit request is required for:
+
+```text
+dvc add
+dvc commit
+dvc repro
+dvc checkout
+dvc pull
+dvc push
+dvc remote
+```
+
+DVC mutations must occur only inside the declared agent worktree.
+
+Never edit `.dvc` files manually.
 
 ## Verification
 
-- Configuration smoke test: `make test`, then `make check`.
-- Formatting: `make format`.
-- Python: `pixi run python ...`.
-- Documents: compile or render the actual artifact.
-- Expensive analysis: validate on a small sample before scaling.
+* Configuration smoke test: `make test`, then `make check`.
+* Format and autofix only declared changed files whenever possible.
 
-Do not report completion without showing verification results.
+For Python files:
+
+```bash
+pixi run ruff format -- path/to/changed1.py path/to/changed2.py
+pixi run ruff check --fix -- path/to/changed1.py path/to/changed2.py
+```
+
+* Run `make format` only when:
+
+  * the user explicitly requests repository-wide formatting; or
+  * the approved scope explicitly includes repository-wide formatting and the
+    dedicated agent worktree was clean before formatting.
+* Python commands use `pixi run python ...`.
+* Documents must compile or render as the actual artifact.
+* Expensive analysis must first be validated on a small sample.
+* Warnings and unexpected file changes are failures.
+* After verification, inspect:
+
+```bash
+git status --short
+git diff --check
+git diff --stat
+git diff --cached --stat
+git log --oneline <base-commit>..HEAD
+git diff --stat <base-commit>...HEAD
+```
+
+* Confirm that every changed file belongs to the declared task.
+* Do not report completion without showing verification results.
