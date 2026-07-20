@@ -100,12 +100,16 @@ exclude = [
     "scripts/temporary",
 ]
 
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+
 [tool.pixi.tasks]
 python-version = "python --version"
 r-version = "R --version"
 jupyter-lab = "jupyter lab --ip=0.0.0.0 --no-browser"
 jupyter-notebook = "jupyter notebook --ip=0.0.0.0 --no-browser"
-quarto-check = "quarto check"
+quarto-check = "quarto check --no-strict"
 install-python-kernel = "python -m ipykernel install --user --name econ-project --display-name 'Python (econ-project)'"
 install-r-kernel = "R -q -e 'IRkernel::installspec(user = TRUE, name = \"ir\", displayname = \"R (econ-project)\")'"
 check-pkg-config = "pkg-config --cflags --libs libxml-2.0"
