@@ -35,6 +35,8 @@
     "ECC_UPDATE_SKILLS": "0",
     "ECC_FETCH_AI_REFERENCES": "0",
     "ENABLE_CONTEXT_MCP": "0",
+    "LANG": "ja_JP.UTF-8",
+    "LC_ALL": "ja_JP.UTF-8",
     "PATH": "/usr/local/bin:/workspaces/econ-project/.pixi/envs/default/bin:${containerEnv:PATH}",
     "QUARTO_PYTHON": "/workspaces/econ-project/.pixi/envs/default/bin/python",
     "QUARTO_SHARE_PATH": "/workspaces/econ-project/.pixi/envs/default/share/quarto",
