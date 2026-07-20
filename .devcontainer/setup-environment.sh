@@ -3,6 +3,10 @@ set -euo pipefail
 
 cd /workspaces/econ-project
 
+# The bind-mounted workspace can retain the host owner's UID. Trust only this
+# exact path so Git remains usable without weakening ownership checks globally.
+git config --global --replace-all safe.directory /workspaces/econ-project
+
 sudo mkdir -p .pixi data /home/vscode/.cache/rattler /home/vscode/.cache/rv
 sudo chown -R vscode:vscode .pixi data /home/vscode/.cache/rattler /home/vscode/.cache/rv
 sudo chmod -R u+rwX .pixi data /home/vscode/.cache/rattler /home/vscode/.cache/rv
@@ -86,3 +90,5 @@ run_logged /tmp/sync_rules.log pixi run python scripts/sync_rules.py
 sed -i '/\/workspaces\/econ-project\/\.pixi\/envs\/default\/bin:\$PATH/d' ~/.bashrc
 grep -q "usr/local/bin:.*\.pixi/envs/default/bin" ~/.bashrc || \
   echo "export PATH=/usr/local/bin:/workspaces/econ-project/.pixi/envs/default/bin:\$PATH" >> ~/.bashrc
+sed -i '/^export LANG=ja_JP\.UTF-8$/d; /^export LC_ALL=ja_JP\.UTF-8$/d' ~/.bashrc
+printf '%s\n' 'export LANG=ja_JP.UTF-8' 'export LC_ALL=ja_JP.UTF-8' >> ~/.bashrc
