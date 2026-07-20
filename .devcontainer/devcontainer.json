@@ -31,6 +31,10 @@
     8765
   ],
   "portsAttributes": {},
+  "containerEnv": {
+    "LANG": "ja_JP.UTF-8",
+    "LC_ALL": "ja_JP.UTF-8"
+  },
   "remoteEnv": {
     "ECC_UPDATE_SKILLS": "0",
     "ECC_FETCH_AI_REFERENCES": "0",
