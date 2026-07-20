@@ -23,7 +23,6 @@ fi
 
 tee .pixi/envs/default/bin/quarto >/dev/null <<'EOF'
 #!/usr/bin/env bash
-cd /workspaces/econ-project
 export PATH="/workspaces/econ-project/.pixi/envs/default/bin:$PATH"
 export QUARTO_PYTHON="/workspaces/econ-project/.pixi/envs/default/bin/python"
 export QUARTO_SHARE_PATH="/workspaces/econ-project/.pixi/envs/default/share/quarto"
@@ -35,25 +34,13 @@ export QUARTO_TYPST="/workspaces/econ-project/.pixi/envs/default/bin/typst"
 export QUARTO_DART_SASS="/workspaces/econ-project/.pixi/envs/default/bin/sass"
 export QUARTO_CONDA_PREFIX="/workspaces/econ-project/.pixi/envs/default"
 
-if [ "${1:-}" = "render" ]; then
-  has_format=0
-  for arg in "$@"; do
-    case "$arg" in
-      --to|--to=*|-t|-t=*) has_format=1 ;;
-    esac
-  done
-
-  if [ "$has_format" -eq 0 ]; then
-    for arg in "$@"; do
-      case "$arg" in
-        *.qmd)
-          if grep -Eq '^[[:space:]]*pdf:[[:space:]]*$|^[[:space:]]*format:[[:space:]]*pdf[[:space:]]*$' "$arg"; then
-            exec /workspaces/econ-project/.pixi/envs/default/bin/quarto-cli-real "$@" --to pdf
-          fi
-          ;;
-      esac
-    done
-  fi
+project_root="$PWD"
+while [ "$project_root" != "/" ] && [ ! -f "$project_root/tex/paper/econsocart.cls" ]; do
+  project_root="$(dirname "$project_root")"
+done
+if [ -f "$project_root/tex/paper/econsocart.cls" ]; then
+  export TEXINPUTS="$project_root/tex/paper:${TEXINPUTS:-}"
+  export BSTINPUTS="$project_root/tex/paper:${BSTINPUTS:-}"
 fi
 
 exec /workspaces/econ-project/.pixi/envs/default/bin/quarto-cli-real "$@"
@@ -71,11 +58,8 @@ sudo chmod 0755 /usr/local/bin/quarto
 bash .devcontainer/register-kernels.sh
 
 if [ "${INSTALL_R_PACKAGES:-1}" = "1" ]; then
-  if make r-install; then
-    bash .devcontainer/register-kernels.sh
-  else
-    echo "R package installation failed; Python kernel remains registered." >&2
-  fi
+  make r-install
+  bash .devcontainer/register-kernels.sh
 fi
 
 if [ "${INSTALL_PLAYWRIGHT_BROWSERS:-0}" = "1" ]; then
