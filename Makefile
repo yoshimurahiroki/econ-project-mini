@@ -1,13 +1,16 @@
 # Minimal commands for the econ-project research environment.
 
-.PHONY: help prepare-pixi sync install setup-dev setup-extensions register-kernels setup-r-kernel check format test clean ai-references \
-	build-paper build-slides quarto-html quarto-pdf quarto-reveal \
-	r-install r-plan
+.PHONY: help prepare-pixi sync install setup-dev setup-extensions register-kernels setup-r-kernel \
+	check check-code check-ai check-mcp check-r check-qmd check-pdf format test clean ai-references \
+	build-paper build-slides qmd-pdf quarto-html quarto-pdf quarto-reveal r-install r-plan
 
 PIXI ?= pixi
 PIXI_RUN = $(PIXI) run
 THREAD_ENV = OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1
 R_MAKEVARS_USER ?= $(CURDIR)/scripts/r-makevars
+QMD ?=
+PDF ?=
+RFILE ?=
 
 help:
 	@echo "Available commands:"
@@ -18,9 +21,14 @@ help:
 	@echo "  register-kernels - Register Jupyter kernels for the Pixi Python/R environments"
 	@echo "  setup-r-kernel - Install R packages, then register Python and R kernels"
 	@echo "  format         - Format and autofix Python code"
-	@echo "  test           - Validate AI surface and run pytest when tests exist"
+	@echo "  test           - Run pytest when tests exist"
 	@echo "  ai-references  - Fetch optional skill repositories under .resources and validate them"
-	@echo "  check          - Run lint, format check, mypy, and tests"
+	@echo "  check          - Run code and AI-rule checks"
+	@echo "  check-code     - Run Python lint, type checks, and tests"
+	@echo "  check-ai       - Validate project AI rules and pointers"
+	@echo "  check-mcp      - Validate user-specific MCP configuration"
+	@echo "  qmd-pdf        - Render QMD as an ECTA PDF (QMD=path)"
+	@echo "  check-pdf      - Inspect PDF metadata, fonts, and text (PDF=path)"
 	@echo "  clean          - Remove generated caches and build artifacts"
 	@echo "  r-install      - Sync R dependencies with rv"
 	@echo "  build-paper    - Build the LaTeX paper"
@@ -57,22 +65,33 @@ format:
 	$(PIXI_RUN) ruff check --fix .
 
 test:
-	PYTHONDONTWRITEBYTECODE=1 $(PIXI_RUN) python scripts/sync_rules.py
 	@if find tests -name 'test_*.py' -o -name '*_test.py' 2>/dev/null | grep -q .; then \
 		$(THREAD_ENV) $(PIXI_RUN) pytest -q; \
 	else \
-		echo "No pytest tests found; existing tests are reset."; \
+		echo "No pytest tests found."; \
 	fi
 
 ai-references:
 	ECC_FETCH_AI_REFERENCES=1 bash scripts/setup_ai_skills.sh
 	ECC_REQUIRE_AI_REFERENCES=1 PYTHONDONTWRITEBYTECODE=1 $(PIXI_RUN) python scripts/sync_rules.py
 
-check:
+check-code:
 	$(PIXI_RUN) ruff check .
 	$(PIXI_RUN) ruff format --check .
 	$(PIXI_RUN) mypy scripts/sync_rules.py
 	$(MAKE) test
+
+check-ai:
+	PYTHONDONTWRITEBYTECODE=1 $(PIXI_RUN) python scripts/sync_rules.py
+
+check-mcp:
+	bash scripts/setup_ide_mcp.sh --check
+
+check: check-code check-ai
+
+check-r:
+	@test -n "$(RFILE)" || { echo "Usage: make check-r RFILE=path/to/file.R" >&2; exit 2; }
+	$(PIXI_RUN) Rscript -e "invisible(parse(file='$(RFILE)'))"
 
 clean:
 	find . -type f -name "*.pyc" -delete
@@ -150,8 +169,21 @@ build-slides:
 quarto-html:
 	$(PIXI_RUN) quarto render . --to html
 
-quarto-pdf:
-	$(PIXI_RUN) quarto render . --to pdf
+qmd-pdf:
+	@test -n "$(QMD)" || { echo "Usage: make qmd-pdf QMD=path/to/file.qmd" >&2; exit 2; }
+	TEXINPUTS="$(CURDIR)/tex/paper:$${TEXINPUTS:-}" \
+	BSTINPUTS="$(CURDIR)/tex/paper:$${BSTINPUTS:-}" \
+	$(PIXI_RUN) quarto render "$(QMD)" --to pdf
+
+quarto-pdf: qmd-pdf
+
+check-qmd: qmd-pdf
+
+check-pdf:
+	@test -n "$(PDF)" || { echo "Usage: make check-pdf PDF=path/to/file.pdf" >&2; exit 2; }
+	$(PIXI_RUN) pdfinfo "$(PDF)"
+	$(PIXI_RUN) pdffonts "$(PDF)"
+	$(PIXI_RUN) pdftotext -layout "$(PDF)" /dev/null
 
 quarto-reveal:
 	$(PIXI_RUN) quarto render . --to revealjs
