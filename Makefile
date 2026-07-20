@@ -2,7 +2,7 @@
 
 .PHONY: help prepare-pixi sync install setup-dev setup-extensions register-kernels setup-r-kernel \
 	check check-code check-ai check-mcp check-r check-qmd check-pdf format test clean ai-references \
-	build-paper build-slides qmd-pdf quarto-html quarto-pdf quarto-reveal r-install r-plan
+	build-paper build-slides qmd-pdf slides-pdf quarto-html quarto-pdf quarto-reveal r-install r-plan
 
 PIXI ?= pixi
 PIXI_RUN = $(PIXI) run
@@ -28,6 +28,7 @@ help:
 	@echo "  check-ai       - Validate project AI rules and pointers"
 	@echo "  check-mcp      - Validate user-specific MCP configuration"
 	@echo "  qmd-pdf        - Render QMD as an ECTA PDF (QMD=path)"
+	@echo "  slides-pdf     - Render QMD as Metropolis slides (QMD=path)"
 	@echo "  check-pdf      - Inspect PDF metadata, fonts, and text (PDF=path)"
 	@echo "  clean          - Remove generated caches and build artifacts"
 	@echo "  r-install      - Sync R dependencies with rv"
@@ -174,6 +175,10 @@ qmd-pdf:
 	TEXINPUTS="$(CURDIR)/tex/paper:$${TEXINPUTS:-}" \
 	BSTINPUTS="$(CURDIR)/tex/paper:$${BSTINPUTS:-}" \
 	$(PIXI_RUN) quarto render "$(QMD)" --to pdf
+
+slides-pdf:
+	@test -n "$(QMD)" || { echo "Usage: make slides-pdf QMD=path/to/file.qmd" >&2; exit 2; }
+	$(PIXI_RUN) quarto render "$(QMD)" --to beamer
 
 quarto-pdf: qmd-pdf
 
