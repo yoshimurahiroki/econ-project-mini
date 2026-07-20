@@ -3,7 +3,9 @@
 
 set -euo pipefail
 
-PROJECT_ROOT="/workspaces/econ-project"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+export PROJECT_ROOT
 MODE="write"
 
 for arg in "$@"; do
@@ -21,7 +23,7 @@ import os
 import shutil
 from collections import OrderedDict
 
-project_root = "/workspaces/econ-project"
+project_root = os.environ["PROJECT_ROOT"]
 servers = OrderedDict()
 if os.environ.get("ENABLE_GOOGLE_DRIVE_MCP") == "1" and os.path.exists(
     f"{project_root}/secrets/credentials.json"
