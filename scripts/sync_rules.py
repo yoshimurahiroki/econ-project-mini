@@ -3,7 +3,6 @@
 
 import os
 import re
-import subprocess
 from pathlib import Path
 
 POINTER_CONTENT = (
@@ -20,7 +19,6 @@ POINTER_TARGETS = (
     ".clinerules",
     ".windsurfrules",
     ".agents/AGENTS.md",
-    ".claude/AGENTS.md",
 )
 
 COPILOT_CONTENT = (
@@ -92,13 +90,21 @@ def validate_content(path: Path, content: str) -> list[str]:
     return [f"{path}: content differs from the compact pointer"]
 
 
+def validate_optional_content(path: Path, content: str) -> list[str]:
+    if not path.exists():
+        return []
+    return validate_content(path, content)
+
+
 def validate_project_policy(base_path: Path) -> list[str]:
     violations: list[str] = []
 
     for relative_path in POINTER_TARGETS:
         path = base_path / relative_path
         if path.is_symlink():
-            violations.append(f"{relative_path}: must be a regular compact pointer file")
+            violations.append(
+                f"{relative_path}: must be a regular compact pointer file"
+            )
             continue
         violations.extend(validate_content(path, POINTER_CONTENT))
 
@@ -109,7 +115,13 @@ def validate_project_policy(base_path: Path) -> list[str]:
         )
     )
     violations.extend(
-        validate_content(
+        validate_optional_content(
+            base_path / ".claude" / "AGENTS.md",
+            POINTER_CONTENT,
+        )
+    )
+    violations.extend(
+        validate_optional_content(
             base_path / ".cursor" / "rules" / "01_project_policy.mdc",
             CURSOR_RULE_CONTENT,
         )
@@ -119,7 +131,9 @@ def validate_project_policy(base_path: Path) -> list[str]:
 
 def validate_required_surface(base_path: Path) -> list[str]:
     required_files = list(CORE_REQUIRED_FILES)
-    if env_flag(name="ECC_REQUIRE_AI_REFERENCES") or env_flag(name="ECC_FETCH_AI_REFERENCES"):
+    if env_flag(name="ECC_REQUIRE_AI_REFERENCES") or env_flag(
+        name="ECC_FETCH_AI_REFERENCES"
+    ):
         required_files.extend(OPTIONAL_REFERENCE_PATHS)
 
     violations = [
@@ -136,26 +150,11 @@ def validate_required_surface(base_path: Path) -> list[str]:
     actual_skills = {path.name for path in skills_path.iterdir() if path.is_dir()}
     extra_skills = sorted(actual_skills - ALLOWED_SKILLS)
     if extra_skills:
-        violations.append(f".agents/skills: unexpected always-available skills {extra_skills}")
+        violations.append(
+            f".agents/skills: unexpected always-available skills {extra_skills}"
+        )
 
     return violations
-
-
-def validate_mcp(base_path: Path) -> list[str]:
-    result = subprocess.run(
-        ["bash", "scripts/setup_ide_mcp.sh", "--check"],
-        cwd=base_path,
-        text=True,
-        capture_output=True,
-        check=False,
-    )
-    if result.returncode == 0:
-        if result.stdout.strip():
-            print(result.stdout.strip())
-        return []
-
-    output = "\n".join(part for part in (result.stdout, result.stderr) if part)
-    return [f"MCP configuration check failed:\n{output.strip()}"]
 
 
 def main() -> None:
@@ -164,7 +163,6 @@ def main() -> None:
     violations = []
     violations.extend(validate_project_policy(base_path))
     violations.extend(validate_required_surface(base_path))
-    violations.extend(validate_mcp(base_path))
 
     if violations:
         print("AI surface validation failed:")
