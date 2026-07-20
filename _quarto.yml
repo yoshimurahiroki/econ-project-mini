@@ -1,0 +1,37 @@
+project:
+  type: default
+
+format:
+  pdf:
+    pdf-engine: lualatex
+    documentclass: econsocart
+    classoption:
+      - ecta
+      - nameyear
+      - final
+    template-partials:
+      - tex/paper/fonts.latex
+    colorlinks: true
+    linkcolor: blue
+    citecolor: blue
+    urlcolor: blue
+    hyperrefoptions:
+      - pagebackref
+    include-in-header:
+      text: |
+        \usepackage{float}
+        \usepackage{booktabs}
+        \usepackage{longtable}
+        \startlocaldefs
+        \endlocaldefs
+        \let\econsocarttitle\title
+        \let\econsocartauthor\author
+        \renewcommand{\title}[1]{}
+        \renewcommand{\author}[1]{}
+        \renewcommand{\date}[1]{}
+        \providecommand{\maketitle}{}
+
+execute:
+  error: true
+  warning: true
+  freeze: false
