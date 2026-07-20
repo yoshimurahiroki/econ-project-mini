@@ -12,6 +12,12 @@
       "problemMatcher": []
     },
     {
+      "label": "Render Current QMD (Metropolis Slides)",
+      "type": "shell",
+      "command": "make slides-pdf QMD=\"${relativeFile}\"",
+      "problemMatcher": []
+    },
+    {
       "label": "Check Project Code",
       "type": "shell",
       "command": "make check-code",
