@@ -109,7 +109,9 @@ only when the task requires them.
 - The default QMD output is an Econometric Society PDF using
   `tex/paper/econsocart.cls`, `econsocart.cfg`, and LuaLaTeX.
 - Japanese text must remain supported through `luatexja`.
-- Use `make qmd-pdf QMD=path/to/file.qmd` for rendering.
+- Use `make qmd-pdf QMD=path/to/file.qmd` for papers.
+- Use `make slides-pdf QMD=path/to/slides.qmd` for presentations based on
+  `tex/slides/main.tex`.
 - Do not copy the class or configuration file into analysis directories.
 - Keep QMD source canonical. Keep a rendered PDF only when it is a requested
   deliverable.
@@ -125,7 +127,8 @@ Run targeted checks, not every available check.
 - QMD: render the complete document from a clean process.
 - PDF: confirm metadata, fonts, and extracted text; inspect page images only
   when layout changed.
-- TeX or Quarto infrastructure: render `tex/paper/quarto_template.qmd`.
+- TeX or Quarto infrastructure: render the relevant `tex/paper/quarto_template.qmd`
+  or `tex/slides/quarto_template.qmd`.
 - AI rules or pointer files: run `make check-ai`.
 - MCP runtime configuration: run `make check-mcp` only when MCP files change.
 - Repository-wide infrastructure: run `make check`.
