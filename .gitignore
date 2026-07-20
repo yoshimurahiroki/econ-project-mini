@@ -121,3 +121,6 @@ repomix.txt
 !.vscode/tasks.json
 !.vscode/launch.json
 .devcontainer/local-history/
+
+/.quarto/
+**/*.quarto_ipynb
