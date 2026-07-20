@@ -1,893 +1,150 @@
 # econ-project AI rules
 
-This file is the authoritative AI policy. Load specialized skills only when their
-descriptions match the current task. Generic ECC material is advisory.
-
-## Critical Checklist
-
-```text
-□ REPORT THE ISSUE BEFORE EDITING OR EXECUTING
-□ READ ONLY `.cursorrules` BY DEFAULT; READ README.md, docs/, AND SKILLS ONLY WHEN TASK-RELEVANT
-□ GIVE A USER-VISIBLE UPDATE BEFORE MULTI-STEP TOOL USE
-□ PLAN → WAIT FOR "proceed" BEFORE NON-TRIVIAL MUTATIONS
-□ HUMAN CHECKOUTS AND PROTECTED BRANCHES ARE READ-ONLY TO THE AGENT
-□ USE ONE SHORT-LIVED `agent/*` BRANCH AND ONE DEDICATED WORKTREE PER TASK
-□ LOCAL GIT CHECKPOINTS AND ROLLBACKS ARE ALLOWED ONLY IN THE DECLARED AGENT WORKTREE
-□ GIT NETWORK ACTIONS, PR ACTIONS, MERGES, CLEANUP, AND DVC MUTATIONS REQUIRE AN EXPLICIT REQUEST
-□ DECLARE THE EXACT WRITE SET BEFORE EDITING
-□ USE EXISTING FILES; KEEP CHANGES SURGICAL
-□ DEFAULT OUTPUT IS THE USER-VISIBLE RESPONSE; DO NOT CREATE PROCESS ARTIFACTS BY DEFAULT
-□ NO TIMESTAMPS, VERSION SUFFIXES, BACKWARD-COMPATIBILITY SHIMS, OR STRAY TEMP FILES
-□ PUT NECESSARY TEMPORARY SCRIPTS IN scripts/temporary/
-□ STAGE EXACT PATHS ONLY; NEVER USE `git add .`, `git add -A`, OR `git commit -a`
-□ FORMAT ONLY DECLARED FILES UNLESS REPOSITORY-WIDE FORMATTING IS APPROVED
-□ USE NAMED ARGUMENTS
-□ USE make test, make check, AND pixi run
-□ WARNINGS ARE FAILURES
-□ STATE MATERIAL ASSUMPTIONS AND EPISTEMIC UNCERTAINTY
-□ VERIFY CITATIONS; NEVER LEAVE ORPHAN CITATIONS
-□ MANUSCRIPT REVIEWS ARE READ-ONLY UNLESS EDITING IS EXPLICITLY REQUESTED
-□ EMPIRICAL ANALYSIS MUST HAVE ONE CANONICAL INTERACTIVE ARTIFACT THAT SHOWS THE ANALYSIS PATH AND RESULTS
-□ PREFER `.qmd`; USE `.ipynb` ONLY WHEN JUPYTER-SPECIFIC INTERACTIVITY OR PROJECT CONVENTIONS REQUIRE IT
-□ DO NOT CREATE BOTH `.qmd` AND `.ipynb` FOR THE SAME ANALYSIS
-□ RUN INTERACTIVE ANALYSES FROM A CLEAN SESSION, TOP TO BOTTOM
-□ KEEP REUSABLE LOGIC IN EXISTING MODULES OR SCRIPTS; CALL IT FROM THE INTERACTIVE ARTIFACT
-□ SHOW SAMPLE CONSTRUCTION, VARIABLE DEFINITIONS, ESTIMAND, DIAGNOSTICS, TABLES, FIGURES, AND MAIN RESULTS
-□ DO NOT COMMIT RENDERED HTML, CACHE FILES, OR LARGE NOTEBOOK OUTPUTS UNLESS EXPLICITLY APPROVED
-□ DATA JOINS USE left_join; COLUMNS USE STRING NAMES, NEVER NUMERIC POSITIONS
-□ DATA PIPELINES ASSERT ECONOMIC INVARIANTS
-□ NEVER EDIT .dvc FILES MANUALLY
-□ DO NOT USE LOCAL LLMS OR LOCAL AGENT RUNTIMES
-```
-
-## Workflow
-
-1. Diagnose from evidence and report the issue.
-2. Before writing, present a short plan that includes:
-   - the exact files to modify, create, and delete;
-   - the proposed `agent/<task-slug>` branch;
-   - the dedicated worktree path;
-   - the base branch and local base commit;
-   - the canonical interactive analysis artifact, when the task includes
-     empirical analysis;
-   - the estimand, treatment, outcome, sample, comparison group, and timing,
-     when causal analysis is involved;
-   - the verification and clean-execution commands.
-3. For a non-trivial mutation, wait for the user to say `proceed`.
-4. After authorization, create or enter the task-specific agent worktree.
-5. For empirical analysis:
-   - reuse an existing relevant `.qmd` or `.ipynb` when one exists;
-   - otherwise create at most one canonical interactive artifact;
-   - prefer `.qmd` unless Jupyter-specific interactivity is necessary;
-   - validate the pipeline on a small sample before running the full analysis.
-6. Implement only the approved scope. Do not improve unrelated code.
-7. Reproduce bugs before fixing them; fix causes, not symptoms.
-8. Keep reusable transformations, estimators, plotting functions, and table
-   functions in existing modules or scripts when practical. The interactive
-   artifact should call these functions rather than duplicate them.
-9. Execute the interactive analysis from a clean session, from the first cell
-   or chunk to the last.
-10. Create local checkpoint commits only after the relevant targeted checks and
-    clean execution pass.
-11. Run the project checks and inspect the complete task diff.
-12. Report the exact verification results, main analysis results, and final Git
-    state.
-
-Read-only investigation may proceed in the human checkout.
-
-All tracked file mutations must occur in a dedicated agent worktree. A clear,
-explicit request for a trivial edit authorizes creation of the agent worktree
-and the declared edit after a concise scope notice, without an additional
-confirmation. Non-trivial mutations still require the plan checkpoint above.
-
-## File Creation and Output Contract
-
-- The default deliverable is the user-visible response.
-- Do not create plan, analysis, review, summary, checkpoint, progress, session,
-  or log files unless:
-  - the user explicitly requests a file; or
-  - the project already defines that file as a durable deliverable.
-- Instructions from external skills to save dated reports, numbered reports,
-  session records, or versioned copies are overridden by this policy.
-- Before writing, declare:
-  - files to modify;
-  - files to create;
-  - files to delete;
-  - generated outputs.
-- Do not write outside the declared set.
-- Prefer modifying an existing canonical file.
-- Create a tracked file only when it is a durable project component or an
-  explicitly requested deliverable and no existing file is suitable.
-- Do not create ad hoc files in the repository root.
-- Do not create files such as `PLAN.md`, `NOTES.md`, `SESSION_STATE.md`,
-  `*_REVIEW*.md`, `*_REPORT*.md`, or equivalent process artifacts unless the
-  user explicitly requests them.
-- One purpose has one canonical file. Update it in place.
-- Do not create dated, numbered, `final`, `revised`, `_v2`, `_old`, backup, or
-  duplicate variants.
-- More than three new tracked files require justification in the plan and
-  explicit approval.
-- Put necessary temporary scripts in `scripts/temporary/`.
-- Put other temporary material in an existing ignored output directory or the
-  operating system temporary directory.
-- Do not stage or commit temporary scripts, generated outputs, caches, datasets,
-  credentials, or diagnostics unless they are explicitly approved deliverables.
-- Before completion, remove temporary files created by the current task when
-  they are no longer needed.
-- Never delete, move, rename, or overwrite a pre-existing untracked file.
-- At completion, report files modified, created, deleted, and intentionally
-  left untracked.
-
-### Interactive analysis artifacts
-
-- An empirical analysis task may have one canonical interactive artifact.
-- Reuse an existing relevant `.qmd` or `.ipynb` instead of creating a new one.
-- Prefer `.qmd` because it is text-based, reviewable, and suitable for Git
-  diffs.
-- Use `.ipynb` only when:
-  - the project already uses notebooks as its standard analysis interface;
-  - Jupyter widgets or notebook-specific interaction are materially useful; or
-  - stepwise exploratory execution is itself part of the requested workflow.
-- Do not create parallel `.qmd`, `.ipynb`, and standalone script versions of
-  the same analysis.
-- When durable reusable logic is needed:
-  - place it in an existing module or script;
-  - import or source it from the interactive artifact;
-  - keep the narrative, diagnostics, tables, figures, and interpretation in
-    the interactive artifact.
-- Use an existing project directory for interactive analysis artifacts.
-- Do not create a new `notebooks/`, `analysis/`, or `reports/` directory when an
-  equivalent project directory already exists.
-- Use stable lowercase filenames without dates, version suffixes, author names,
-  or status suffixes.
-- Do not create one notebook or Quarto file per minor model specification.
-  Present related specifications in sections, parameters, or named chunks
-  within the same canonical artifact.
-- Rendered HTML, PDF previews, notebook checkpoints, caches, freeze directories,
-  widget state, and temporary figures are generated outputs.
-- Store generated previews under an existing ignored output directory or the
-  operating system temporary directory.
-- Do not commit generated previews unless the user explicitly requests a
-  durable rendered report.
-- Do not write tables and figures manually. Generate them from code.
-- Do not copy numerical results from one file into another by hand.
-
-## Interactive Analysis and Reproducibility
-
-### Canonical format
-
-For empirical analysis, maintain one canonical interactive artifact that lets a
-researcher understand:
-
-- the research question;
-- the estimand;
-- the data inputs;
-- sample construction;
-- variable definitions;
-- transformations;
-- descriptive evidence;
-- estimation;
-- identification assumptions;
-- diagnostics;
-- robustness checks;
-- main tables and figures;
-- interpretation and limitations.
-
-Prefer a Quarto document:
-
-```text
-path/to/analysis.qmd
-```
-
-Use a Jupyter notebook only when notebook-specific interaction is materially
-useful:
-
-```text
-path/to/analysis.ipynb
-```
-
-Do not create both formats for the same analysis.
-
-### Required document structure
-
-The canonical interactive artifact should contain, when relevant:
-
-1. **Purpose and research question**
-   - State the economic question in one sentence.
-   - Distinguish the economic mechanism from a narrow policy evaluation.
-
-2. **Estimand and design**
-   - Define the estimand before selecting an estimator.
-   - State the treatment, outcome, sample, comparison group, and timing.
-   - State the identifying assumptions and major threats.
-
-3. **Environment and inputs**
-   - Identify the input datasets and their expected locations.
-   - State the unit of observation.
-   - Record material package or environment assumptions.
-   - Do not include secrets, credentials, or machine-specific absolute paths.
-
-4. **Data construction**
-   - Show sample restrictions and observation counts at each major step.
-   - Report join keys and expected join cardinality.
-   - Assert uniqueness, missingness, support, and other economic invariants.
-   - Explain exclusions rather than silently dropping observations.
-
-5. **Descriptive analysis**
-   - Show relevant summary statistics and distributions.
-   - Show treatment timing, treatment support, or assignment patterns when
-     applicable.
-   - Use compact tables and figures rather than raw dataframe dumps.
-
-6. **Main estimation**
-   - Present the exact estimating equation or algorithm.
-   - Define dependent variables, treatment variables, controls, fixed effects,
-     weights, and standard-error construction.
-   - Report magnitudes and units, not only signs and statistical significance.
-
-7. **Identification and diagnostics**
-   - Include design-specific diagnostics.
-   - For DiD, address staggered adoption, treatment-effect heterogeneity,
-     aggregation weights, pre-trends, no anticipation, comparison-group
-     validity, clustering, and interference when relevant.
-   - For IV, report first-stage strength, exclusion reasoning, and the LATE
-     population.
-   - For RDD, report bandwidth, functional-form choices, manipulation checks,
-     and covariate balance when relevant.
-   - For synthetic control or matrix-completion designs, report donor-pool
-     construction, pre-treatment fit, placebo or permutation diagnostics, and
-     sensitivity to predictor and donor choices when relevant.
-   - For multi-valued or switching treatments, define treatment states and
-     treatment paths explicitly. Do not collapse them to a binary treatment
-     unless the estimand justifies that aggregation.
-
-8. **Robustness and heterogeneity**
-   - Organize related specifications in the same artifact.
-   - Do not create a separate file for each robustness check.
-   - Distinguish pre-specified, exploratory, and post hoc analyses.
-
-9. **Results and interpretation**
-   - Display final tables and figures close to the code that creates them.
-   - Interpret magnitudes in economically meaningful units.
-   - Separate evidence from speculation.
-   - State limitations and residual identification risk.
-
-10. **Reproducibility checks**
-    - Record whether the document ran from a clean session.
-    - Record the relevant verification commands and results.
-    - Do not claim reproducibility if execution depended on hidden state or
-      manual intervention.
-
-### Code-cell and chunk discipline
-
-- Use short, purpose-specific cells or chunks.
-- Use informative chunk labels.
-- Avoid cells whose result depends on execution in a non-linear order.
-- Do not rely on variables created manually in an interactive console.
-- Define configuration and paths near the beginning of the document.
-- Use project-relative paths.
-- Use named arguments for function calls.
-- Set random seeds for stochastic procedures.
-- Make randomness local and explicit when possible.
-- Avoid suppressing warnings globally.
-- Treat warnings as failures unless a specific warning is explained and shown
-  to be harmless.
-- Do not hide errors, failed joins, dropped observations, convergence failures,
-  or failed model specifications.
-- Do not display entire large datasets.
-- Show small, targeted previews and summary checks instead.
-
-### Separation of narrative and reusable logic
-
-The interactive artifact is the readable analysis record. Reusable production
-logic should not be trapped in notebook state.
-
-- Exploratory transformations may begin in the interactive artifact.
-- When a transformation, estimator, table, or figure is reused:
-  - move it into an existing appropriately scoped module or script;
-  - add tests for important properties or invariants;
-  - call it from the interactive artifact.
-- Do not duplicate the same implementation in a script and notebook.
-- Keep model configuration separate from data-cleaning and estimation logic.
-- Fix data errors upstream rather than patching final tables or figures.
-
-### Quarto execution
-
-For a `.qmd` analysis:
-
-- render from a clean process;
-- do not rely on an already-running notebook kernel;
-- use the project environment;
-- prefer a command such as:
-
-```bash
-pixi run quarto render path/to/analysis.qmd
-```
-
-  when Quarto is available through the project environment.
-- When the project defines a Make target or wrapper for rendering, use that
-  wrapper instead.
-- Render to an ignored output location unless the rendered artifact is an
-  explicitly requested deliverable.
-- Do not commit `_freeze/`, cache directories, generated HTML dependencies, or
-  preview files unless the project explicitly treats them as source artifacts.
-
-### Jupyter execution
-
-For an `.ipynb` analysis:
-
-- restart the kernel and run all cells from top to bottom;
-- do not accept a notebook that only works in the current interactive state;
-- prefer execution through the project environment, for example:
-
-```bash
-pixi run jupyter nbconvert \
-  --to notebook \
-  --execute \
-  --inplace \
-  path/to/analysis.ipynb
-```
-
-  when the required Jupyter tooling is installed.
-- Use the project wrapper when one exists.
-- Keep only outputs needed to understand the analysis.
-- Remove large raw-data displays, repeated debug output, widget state, and
-  embedded binary output.
-- Normalize volatile notebook metadata when project tooling supports it.
-- Do not clear all meaningful outputs when the notebook itself is the requested
-  readable analysis deliverable.
-- Do not commit a notebook with an execution error.
-
-### Generated tables and figures
-
-- Generate tables and figures programmatically.
-- Use stable output filenames.
-- Do not include dates or specification numbers in output filenames unless the
-  project already requires them.
-- Keep temporary outputs outside tracked source directories.
-- Regenerate outputs from the canonical interactive artifact.
-- A figure or table must be traceable to:
-  - the code that generated it;
-  - the input data;
-  - the sample definition;
-  - the model or calculation;
-  - the corresponding interpretation.
-
-### Small-sample validation
-
-Before expensive execution:
-
-- run the data pipeline on a small, representative sample;
-- check schemas, joins, units, missingness, and invariants;
-- confirm that tables and figures render;
-- confirm that the estimator completes;
-- then run the full analysis.
-
-A small-sample result is a pipeline validation, not substantive evidence.
-Do not interpret it as the final empirical result.
-
-### Completion standard
-
-An empirical analysis is not complete unless:
-
-- the canonical interactive artifact executes from a clean session;
-- its code runs in documented order;
-- the reported main results are generated by that execution;
-- the main sample and estimand are stated;
-- important data invariants pass;
-- important warnings are resolved or explicitly documented;
-- no unexpected files are created;
-- the Git diff contains only declared task files;
-- the agent reports the render or notebook execution result.
-
-## Agent Git Workspace and Authorization
-
-### Definitions
-
-- The **human checkout** is the repository working directory opened or used by
-  the user.
-- A **protected branch** includes `main`, `master`, release branches, and any
-  branch designated as protected by the project or the user.
-- An **agent branch** is a short-lived branch named `agent/<task-slug>`.
-- An **agent worktree** is a dedicated worktree used only for one agent task.
-- The **base commit** is the local committed revision from which the task branch
-  was created.
-
-The human checkout and protected branches are read-only to the agent.
-
-### Baseline inspection
-
-Before creating or entering an agent worktree, run the relevant read-only
-checks:
-
-```bash
-git rev-parse --show-toplevel
-git branch --show-current
-git status --short
-git diff --name-only
-git diff --cached --name-only
-git worktree list --porcelain
-git rev-parse HEAD
-```
-
-Treat all pre-existing modifications, staged changes, and untracked files in
-the human checkout as user-owned.
-
-- Do not edit them.
-- Do not stage them.
-- Do not stash them.
-- Do not restore or reset them.
-- Do not switch branches in the human checkout.
-- Do not include uncommitted changes from the human checkout in the agent task.
-
-### Creating the task workspace
-
-After the task is authorized, the agent may create one task-specific branch and
-worktree without requesting separate approval for each Git command.
-
-Use a semantic branch name:
-
-```text
-agent/fix-panel-join
-agent/update-ai-rules
-agent/add-invariant-tests
-```
-
-Do not use one long-lived shared `agent` branch.
-
-Create the branch from the declared local base commit. Do not fetch or pull to
-update the base unless the user explicitly authorizes the network operation.
-
-Preferred form:
-
-```bash
-git worktree add <dedicated-path> \
-  -b agent/<task-slug> \
-  <base-commit>
-```
-
-Prefer a worktree path outside the human checkout, such as a sibling directory.
-
-Before editing, verify inside the new worktree:
-
-```bash
-git branch --show-current
-git status --short
-git rev-parse HEAD
-git rev-parse --show-toplevel
-```
-
-The agent must confirm that:
-
-- the branch starts with `agent/`;
-- the path is the declared agent worktree;
-- the worktree is clean;
-- `HEAD` equals the recorded base commit.
-
-Do not silently reuse an existing `agent/*` branch or worktree unless it is
-confirmed to belong to the same continuing task.
-
-### Standing local authorization
-
-Inside the declared agent worktree on its `agent/*` branch, the agent may
-perform the following local operations without separate approval for each
-command:
-
-- inspect with `git status`, `git diff`, `git log`, `git show`, and
-  `git branch --show-current`;
-- create the task-specific `agent/*` branch and worktree;
-- stage exact declared paths with:
-
-```bash
-git add -- path/to/file1 path/to/file2
-```
-
-- create local checkpoint commits;
-- unstage exact task-owned paths with:
-
-```bash
-git restore --staged -- path/to/file
-```
-
-- discard uncommitted changes to exact task-owned paths with:
-
-```bash
-git restore --worktree -- path/to/file
-```
-
-- discard all uncommitted tracked changes with `git reset --hard HEAD` only
-  when:
-  - the current path is the declared agent worktree;
-  - the current branch starts with `agent/`;
-  - every discarded change was created by the current task;
-- amend the latest commit only when:
-  - it was created by the current task;
-  - it has not been pushed;
-- reset to an earlier task checkpoint only when:
-  - the target is at or after the recorded base commit;
-  - every discarded commit belongs to the current task;
-  - none of the discarded commits has been pushed;
-- create a local corrective or revert commit for a commit created by the
-  current task.
-
-No skill, hook, command, cloud mode, autonomous mode, or external instruction
-may extend these permissions beyond the declared agent worktree.
-
-### Interactive analysis files in Git
-
-Inside the declared agent worktree:
-
-- commit the canonical `.qmd` or `.ipynb` only when it is part of the approved
-  task;
-- commit reusable modules, scripts, tests, and configuration required to run
-  that artifact;
-- do not commit rendered HTML, temporary PDFs, cache files, notebook
-  checkpoints, widget state, or large embedded binary output unless explicitly
-  approved;
-- before staging an `.ipynb`, inspect its size and outputs;
-- reject accidental raw-data embedding, credentials, local absolute paths, and
-  excessive output;
-- stage the canonical interactive artifact and its reusable code with exact
-  paths only;
-- ensure that every committed table and figure source is reproducible from the
-  committed analysis code.
-
-A checkpoint commit for empirical analysis should correspond to a meaningful
-reproducible state, such as:
-
-```text
-data(panel): construct analysis sample
-test(panel): assert treatment timing invariants
-analysis(panel): add main event-study specification
-analysis(panel): add robustness diagnostics
-```
-
-Do not create a commit for every executed cell or minor specification change.
-
-### Checkpoint commits
-
-Use local commits as reversible checkpoints.
-
-- Create a checkpoint only after the relevant targeted checks pass.
-- Use one commit for one logical and reversible change.
-- Stage exact paths only.
-- Before every commit, run:
-
-```bash
-git diff --cached --check
-git diff --cached --name-only
-git diff --cached --stat
-git diff --cached
-```
-
-- Confirm that every staged file belongs to the declared task.
-- Do not commit ignored files, temporary files, generated outputs, credentials,
-  datasets, model artifacts, caches, or unrelated changes.
-- Do not use `--no-verify`.
-- Do not add AI attribution, co-author trailers, or generated-by notices unless
-  explicitly requested.
-- Use concise messages such as:
-
-```text
-fix(panel): preserve unmatched treatment units
-test(panel): assert join cardinality
-docs(ai): define agent worktree policy
-```
-
-Checkpoint commits may later be squash-merged by a human.
-
-### Rollback policy
-
-Use the smallest rollback that solves the problem.
-
-Before commit:
-
-```bash
-git restore --worktree -- exact/path
-```
-
-After staging:
-
-```bash
-git restore --staged -- exact/path
-git restore --worktree -- exact/path
-```
-
-After an unpushed current-task checkpoint:
-
-- amend the latest current-task commit; or
-- reset to a verified current-task checkpoint.
-
-After push:
-
-- create a corrective commit or `git revert`;
-- do not rewrite published history.
-
-For untracked files:
-
-- remove only exact paths known to have been created by the current task;
-- never use `git clean`.
-
-Never run rollback operations in the human checkout.
-
-### Operations requiring explicit authorization
-
-A specific user request is required for:
-
-- `git fetch`;
-- `git pull`;
-- `git push`;
-- creating, updating, reviewing, or closing a pull request;
-- merge or rebase;
-- pushing a corrective or revert commit;
-- deleting or pruning a worktree;
-- deleting or renaming a branch;
-- changing remotes;
-- changing Git configuration;
-- modifying hooks or files under `.git`;
-- creating or deleting tags;
-- creating releases;
-- any operation affecting a protected branch;
-- any DVC mutation or DVC network operation.
-
-A request to push authorizes only the current task branch to its stated or
-existing upstream. It does not authorize a force-push or a protected-branch
-push.
-
-A request to create a pull request authorizes the necessary task-branch push
-and pull-request creation. It does not authorize merge.
-
-### Prohibited operations
-
-The agent must not:
-
-- edit, stage, commit, reset, or restore files in the human checkout;
-- commit directly to a protected branch;
-- push directly to a protected branch;
-- use `git add .`, `git add -A`, `git add --all`, wildcard staging, or
-  `git commit -a`;
-- use `git stash` to hide user work;
-- use `git clean`;
-- force-push;
-- rewrite pushed history;
-- reset or delete commits not created by the current task;
-- switch branches in the human checkout;
-- modify another task's worktree;
-- remove a dirty worktree;
-- delete an unmerged branch without explicit approval;
-- modify Git hooks, remotes, configuration, or `.git` internals;
-- assume that a remote branch is current without an authorized fetch.
-
-### Completion report
-
-At completion, report:
-
-- human checkout branch, without modifying it;
-- agent branch;
-- agent worktree path;
-- base commit;
-- files modified, created, and deleted;
-- temporary or untracked files remaining;
-- local checkpoint commits;
-- verification commands and exact results;
-- final `git status --short`;
-- unstaged and staged diff summaries;
-- task diff and commit summary relative to the base commit;
-- push or pull-request status only when those operations were requested.
-
-Do not delete the agent worktree or branch automatically. Cleanup requires an
-explicit user request.
-
-## DVC Authorization
-
-Allowed when relevant:
-
-```text
-dvc status
-dvc diff
-```
-
-A specific explicit request is required for:
-
-```text
-dvc add
-dvc commit
-dvc repro
-dvc checkout
-dvc pull
-dvc push
-dvc remote
-```
-
-DVC mutations must occur only inside the declared agent worktree.
-
-Never edit `.dvc` files manually.
-
-## Implementation Conventions
-
-- Prefer deletion over preserving wrong or obsolete code.
-- Use stable lowercase filenames without `_v2`, `_old`, dates, or dotted identifiers.
-- Use verb-first names for scripts and functions.
-- Use explicit namespaces where the language supports them.
-- Keep configuration separate from model or analysis logic.
-- Fix data errors upstream. Avoid implicit join cardinality changes.
-- Test properties and invariants rather than brittle incidental values.
-- Mark uncertain mathematics with `\unproven{}` or `TODO_HUMAN`.
-- Japanese project prose uses `，．`.
-- Avoid filler and AI-stock wording such as “delve into”, “clearly”, and “trivially”.
-- Prefer `.qmd` as the canonical interactive empirical-analysis format.
-- Use `.ipynb` only when Jupyter-specific interaction or existing project
-  conventions justify it.
-- Use one canonical interactive artifact per analysis question or tightly
-  related analysis family.
-- Keep descriptive analysis, diagnostics, estimation, tables, figures, and
-  interpretation together in the canonical artifact.
-- Extract reusable logic into existing modules or scripts and test its
-  invariants.
-- Do not duplicate implementation across `.qmd`, `.ipynb`, and scripts.
-- Use project-relative paths and explicit configuration.
-- Do not depend on hidden notebook state.
-- Report observation counts after material filters, joins, and reshaping.
-- Label exploratory analysis as exploratory.
-- Do not manually edit generated estimates, tables, or figures.
-
-## Context and Token Policy
-
-- Keep one authoritative rule source and compact pointer files per IDE.
-- Do not preload reference repositories, README.md, docs/ai, or unrelated skills.
-- Keep research reference clones optional under `.resources`.
-  The optional clones are `affaan-m/ECC`, `Imbad0202/academic-research-skills`,
-  `hanlulong/econ-writing-skill`, `claesbackman/AI-research-feedback`,
-  `matteocourthoud/awesome-causal-inference`,
-  `meleantonio/awesome-econ-ai-stuff`, and
-  `hanlulong/awesome-ai-for-economists`. Do not load them at startup.
-- Before opening `.resources/...`, check that the path exists. If it is missing,
-  either use the compact in-repo skill guidance or ask before running
-  `make ai-references`.
-- Treat `docs/ai/compiled_ai_skills.md` as an index, not startup context.
-- For `.resources`, use `rg`/`rg --files` first and open only the smallest
-  relevant file or excerpt. Never read or summarize a whole cloned repository.
-- Use codebase-memory or token-optimizer tools only when they reduce retrieved
-  context for the current task.
-- Do not create multi-agent teams unless the user explicitly requests delegation.
-
-## Context MCP Escalation Policy
-
-Default to `rg` and direct file reads. Do not enable context MCP tools at
-startup.
-
-The agent may recommend enabling context MCP tools when at least one of these
-conditions is met:
-
-- The task requires searching across multiple `.resources` repositories.
-- Two targeted `rg` searches fail to identify a small relevant file set.
-- The likely relevant material spans more than three files or more than one
-  external skill repository.
-- The task asks for comparison, consolidation, or deduplication across skill
-  repositories.
-- The task requires repeated lookup of the same reference corpus across the
-  session.
-
-Before enabling context MCP tools, state the reason in one sentence.
-
-The only approved command for enabling context MCP tools is:
-
-```bash
-ENABLE_CONTEXT_MCP=1 bash scripts/setup_ide_mcp.sh
-```
-
-Do not enable broader MCP tools, remote services, or unrelated agents.
-
-After enabling context MCP tools, continue to minimize context:
-use the MCP only to locate or summarize the smallest relevant file set, then
-read only the needed files or excerpts.
-
-If MCP setup fails, fall back to `rg` and report the failure.
-
-If `AUTO_ENABLE_CONTEXT_MCP=1` is set, the agent may run the approved MCP
-enablement command without asking again when the escalation conditions are met.
-If `AUTO_ENABLE_CONTEXT_MCP` is not set, ask before running the command.
-
-## Verification
-
-- Configuration smoke test: `make test`, then `make check`.
-- Format and autofix only declared changed files whenever possible.
-
-For Python files:
-
-```bash
-pixi run ruff format -- path/to/changed1.py path/to/changed2.py
-pixi run ruff check --fix -- path/to/changed1.py path/to/changed2.py
-```
-
-- Run `make format` only when:
-  - the user explicitly requests repository-wide formatting; or
-  - the approved scope explicitly includes repository-wide formatting and the
-    dedicated agent worktree was clean before formatting.
-- Python commands use `pixi run python ...`.
-- Documents must compile or render as the actual artifact.
-- Expensive analysis must first be validated on a small sample.
-- Warnings and unexpected file changes are failures.
-
-### Interactive empirical analysis verification
-
-For every modified or created `.qmd`:
-
-1. Start from a clean process.
-2. Render the complete document.
-3. Confirm that all chunks execute in document order.
-4. Confirm that main tables and figures are generated.
-5. Confirm that the rendered results match the reported results.
-6. Confirm that generated files are written only to approved or ignored
-   locations.
-
-Preferred command when available:
-
-```bash
-pixi run quarto render path/to/analysis.qmd
-```
-
-For every modified or created `.ipynb`:
-
-1. Restart the kernel.
-2. Execute all cells from top to bottom.
-3. Confirm that no cell has an execution error.
-4. Confirm that results do not depend on hidden state.
-5. Remove large debug outputs and accidental embedded data.
-6. Confirm that meaningful tables, figures, and diagnostics remain visible.
-
-Preferred command when available:
-
-```bash
-pixi run jupyter nbconvert \
-  --to notebook \
-  --execute \
-  --inplace \
-  path/to/analysis.ipynb
-```
-
-When the project provides dedicated Quarto, Jupyter, or analysis Make targets,
-use the project wrapper instead of inventing a parallel command.
-
-For empirical analysis, also verify:
-
-- input paths are project-relative;
-- the unit of observation is stated;
-- sample counts are reported at material steps;
-- join cardinality assumptions are asserted;
-- treatment, outcome, sample, comparison group, and timing are defined;
-- the estimand is stated before the estimator;
-- random seeds are explicit when applicable;
-- model warnings and convergence failures are resolved;
-- main numerical results are produced by the final clean execution;
-- generated outputs have stable names;
-- no raw data or secrets are embedded in tracked artifacts.
-
-After all verification, inspect:
-
-```bash
-git status --short
-git diff --check
-git diff --stat
-git diff --cached --stat
-git log --oneline <base-commit>..HEAD
-git diff --stat <base-commit>...HEAD
-```
-
-Also inspect generated-file locations and confirm that:
-
-- every changed tracked file belongs to the declared task;
-- no notebook checkpoints, caches, rendered previews, temporary figures, or
-  unexpected output directories were added;
-- no generated result was edited manually;
-- the canonical interactive artifact is sufficient to understand and rerun the
+This is the authoritative project policy. Read other documentation or skills
+only when the task requires them.
+
+## Priorities
+
+1. Produce the requested result correctly.
+2. Preserve user work and limit changes to the requested scope.
+3. Use the minimum sufficient prose, code, files, and checks.
+4. Keep empirical work reproducible from one canonical QMD.
+
+## Communication
+
+- Lead with the result or the blocking fact.
+- Use short sentences and the minimum useful structure.
+- Do not repeat the plan, tool history, unchanged context, or obvious facts.
+- Add a caveat only when it changes correctness, interpretation, or action.
+- Do not add optional diagnostics, robustness checks, or methodological
+  discussion unless requested or required by the estimator.
+- Distinguish verified facts from material uncertainty. Omit immaterial
+  uncertainty and generic disclaimer language.
+- For multi-step work, give one short start update and further updates only at
+  meaningful phase boundaries or during a long-running command.
+- Final responses normally contain only: outcome, changed files, targeted
+  verification, and unresolved blockers.
+- Report detailed Git state only when Git operations were requested or it is
+  needed to protect user work.
+
+## Authorization and scope
+
+- A direct request to edit or build authorizes ordinary in-scope changes.
+- Ask for confirmation only when the change is destructive, materially broad,
+  or depends on a consequential unresolved choice.
+- Before editing, state the files to modify, create, and delete. A one-line
+  scope notice is enough for a small change.
+- Do not create plan, progress, review, backup, dated, or version-suffixed files
+  unless explicitly requested.
+- Use existing files and directories. One purpose has one canonical file.
+- Preserve pre-existing tracked and untracked user changes.
+- Temporary files belong in `/tmp` or `scripts/temporary/` and must be removed
+  when no longer needed.
+
+## Git and worktrees
+
+- The human checkout and protected branches are read-only to the agent.
+- Tracked edits occur on an `agent/*` branch in a dedicated worktree.
+- Reuse an existing task worktree when the user requests it or the task is a
+  continuation. Do not create another worktree unnecessarily.
+- Local inspection, exact-path staging, and task-owned checkpoint commits are
+  allowed in the declared agent worktree.
+- Never use `git add .`, `git add -A`, `git commit -a`, `git stash`, `git clean`,
+  force-push, or destructive resets affecting user work.
+- Fetch, pull, push, merge, rebase, PR actions, branch/worktree deletion, Git
+  configuration changes, and DVC mutations require an explicit request.
+- Do not modify `.git` internals or edit `.dvc` files manually.
+
+## Minimal implementation
+
+- Prefer direct code over abstraction.
+- Create a helper only when it is reused or isolates genuinely complex logic.
+- Return only objects consumed by the canonical artifact or public interface.
+- Delete unused branches, diagnostics, flags, labels, and compatibility code.
+- Do not create variables solely to generate narrative conclusions.
+- Do not validate hypothetical conditions unrelated to the actual data
+  contract. Keep checks for required columns, material sample restrictions,
+  estimator support, joins, and finite values when relevant.
+- Use explicit namespaces. Use named arguments when they improve clarity; omit
+  them for simple, unambiguous calls.
+- Comments explain non-obvious decisions, not line-by-line mechanics.
+- Format only declared files.
+
+## R and Python dependencies
+
+- Keep the default environment minimal. Do not add speculative analysis
+  packages.
+- When an R analysis needs a new package, use `rv add <package>`. Commit the
+  resulting `rproject.toml` and `rv.lock` changes with that analysis.
+- Do not use `install.packages()` for project dependencies.
+- When a Python analysis needs a new package, prefer
+  `pixi add <conda-package>`. Use `pixi add --pypi <package>` only when needed.
+  Commit the resulting `pyproject.toml` and `pixi.lock` changes with that
   analysis.
+- Cross-task infrastructure tools, such as PDF inspection utilities, may be
+  part of the default Pixi environment.
+- Run R and Python through the project environment (`rv run`, `pixi run`, or
+  project Make targets) when practical.
 
-Do not report completion without showing:
+## Empirical analysis
 
-- the clean-execution command;
-- whether the render or notebook execution succeeded;
-- the canonical interactive artifact path;
-- the main result locations within the artifact;
-- verification results;
-- the final Git state.
+- Use one canonical `.qmd` per analysis question or tightly related family.
+- Do not create parallel QMD, notebook, and script implementations.
+- Put data construction, estimation, and reusable calculations in a concise R
+  or Python script when separation is useful.
+- Put narrative, captions, and document-specific table formatting in the QMD.
+- State the outcome, comparison, adjustment variables, sample, and reported
+  uncertainty needed to answer the question.
+- Include only tables, figures, diagnostics, and assumptions needed by the
+  assignment or method.
+- Generate numerical results, tables, and figures from code. Do not copy them
+  manually into prose.
+- Use project-relative paths with an environment-variable override for external
+  or restricted data.
+- Set stochastic seeds explicitly.
+- Run the final QMD from a clean process, top to bottom.
+
+## Quarto and PDF
+
+- The default QMD output is an Econometric Society PDF using
+  `tex/paper/econsocart.cls`, `econsocart.cfg`, and LuaLaTeX.
+- Japanese text must remain supported through `luatexja`.
+- Use `make qmd-pdf QMD=path/to/file.qmd` for rendering.
+- Do not copy the class or configuration file into analysis directories.
+- Keep QMD source canonical. Keep a rendered PDF only when it is a requested
+  deliverable.
+- For PDF verification, use `pdfinfo`, `pdffonts`, and `pdftotext`. Rasterize
+  only pages that need visual inspection.
+
+## Verification by changed file
+
+Run targeted checks, not every available check.
+
+- R script: parse it and run the affected analysis or focused test.
+- Python file: run Ruff on changed files and the affected test.
+- QMD: render the complete document from a clean process.
+- PDF: confirm metadata, fonts, and extracted text; inspect page images only
+  when layout changed.
+- TeX or Quarto infrastructure: render `tex/paper/quarto_template.qmd`.
+- AI rules or pointer files: run `make check-ai`.
+- MCP runtime configuration: run `make check-mcp` only when MCP files change.
+- Repository-wide infrastructure: run `make check`.
+
+Relevant warnings are failures. Known unrelated warnings or pre-existing
+failures do not block a targeted task and should be reported at most once.
+
+After editing, always run `git diff --check` and inspect the task diff. Do not
+run unrelated formatters or checks merely to satisfy a generic checklist.
+
+## Safety
+
+- Use `rg` or `rg --files` for search.
+- Use `apply_patch` for text edits.
+- Never overwrite or delete a pre-existing untracked file.
+- Delete only exact paths created by the current task or explicitly named by
+  the user.
+- Do not expose secrets, credentials, private data, or machine-specific paths
+  in tracked artifacts.
+- Verify citations before use. Do not invent citations or claims.
+- Manuscript review is read-only unless editing is explicitly requested.
+- Do not use local LLMs or local agent runtimes.
