@@ -1,164 +1,31 @@
-#!/usr/bin/env python3
-"""Validate the minimal cloud-agent surface for econ-project."""
-
-import os
 from pathlib import Path
 
-POINTER_CONTENT = (
-    "# econ-project AI rules\n\n"
-    "Read and follow `.cursorrules`; it is the single authoritative policy.\n"
-    "Do not duplicate or extend its rules in this file.\n"
-)
-
-POINTER_TARGETS = (
-    "AGENTS.md",
-    "CLAUDE.md",
-    "CODEX.md",
-    ".antigravityrules",
-    ".clinerules",
-    ".windsurfrules",
-    ".agents/AGENTS.md",
-)
-
-COPILOT_CONTENT = (
-    "# GitHub Copilot instructions\n\n"
-    "Read and follow [`.cursorrules`](../.cursorrules). "
-    "It is the authoritative policy.\n"
-)
-
-CURSOR_RULE_CONTENT = (
-    "---\n"
-    "description: econ-project policy pointer\n"
-    "globs: *\n"
-    "---\n\n"
-    "Read and follow `.cursorrules`; it is the single authoritative policy.\n"
-    "Do not duplicate or extend its rules in Cursor rules.\n"
-)
-
-ALLOWED_SKILLS = {
-    "academic-research-resources",
-    "causal-inference-resources",
-    "ecc-resources",
-    "econ-ai-resources",
-    "econ-research-feedback",
-    "econ-writing",
-}
-
-CORE_REQUIRED_FILES = (
-    ".cursorrules",
-    ".agents/skills/academic-research-resources/SKILL.md",
-    ".agents/skills/causal-inference-resources/SKILL.md",
-    ".agents/skills/ecc-resources/SKILL.md",
-    ".agents/skills/econ-ai-resources/SKILL.md",
-    ".agents/skills/econ-research-feedback/SKILL.md",
-    ".agents/skills/econ-writing/SKILL.md",
-)
-
-OPTIONAL_REFERENCE_PATHS = (
-    ".resources/econ-ai/AI-research-feedback",
-    ".resources/econ-ai/awesome-ai-for-economists",
-    ".resources/econ-ai/awesome-causal-inference",
-    ".resources/econ-ai/awesome-econ-ai-stuff",
-    ".resources/econ-ai/econ-writing-skill",
-    ".resources/research-ai/ECC",
-    ".resources/research-ai/academic-research-skills",
-)
-
-TRUTHY_ENV_VALUES = {"1", "true", "yes", "on"}
+from scripts import sync_rules
 
 
-def env_flag(*, name: str) -> bool:
-    return os.environ.get(name, "").strip().lower() in TRUTHY_ENV_VALUES
+def test_env_flag_accepts_truthy_value(monkeypatch) -> None:
+    monkeypatch.setenv("FEATURE_FLAG", " YES ")
+
+    assert sync_rules.env_flag(name="FEATURE_FLAG")
 
 
-def validate_content(path: Path, content: str) -> list[str]:
-    if path.exists() and path.read_text(encoding="utf-8") == content:
-        return []
-    return [f"{path}: content differs from the compact pointer"]
+def test_env_flag_rejects_unset_value(monkeypatch) -> None:
+    monkeypatch.delenv("FEATURE_FLAG", raising=False)
+
+    assert not sync_rules.env_flag(name="FEATURE_FLAG")
 
 
-def validate_optional_content(path: Path, content: str) -> list[str]:
-    if not path.exists():
-        return []
-    return validate_content(path, content)
+def test_validate_content_reports_mismatch(tmp_path: Path) -> None:
+    path = tmp_path / "pointer.md"
+    path.write_text("unexpected\n", encoding="utf-8")
 
-
-def validate_project_policy(base_path: Path) -> list[str]:
-    violations: list[str] = []
-
-    for relative_path in POINTER_TARGETS:
-        path = base_path / relative_path
-        if path.is_symlink():
-            violations.append(
-                f"{relative_path}: must be a regular compact pointer file"
-            )
-            continue
-        violations.extend(validate_content(path, POINTER_CONTENT))
-
-    violations.extend(
-        validate_content(
-            base_path / ".github" / "copilot-instructions.md",
-            COPILOT_CONTENT,
-        )
-    )
-    violations.extend(
-        validate_optional_content(
-            base_path / ".claude" / "AGENTS.md",
-            POINTER_CONTENT,
-        )
-    )
-    violations.extend(
-        validate_optional_content(
-            base_path / ".cursor" / "rules" / "01_project_policy.mdc",
-            CURSOR_RULE_CONTENT,
-        )
-    )
-    return violations
-
-
-def validate_required_surface(base_path: Path) -> list[str]:
-    required_files = list(CORE_REQUIRED_FILES)
-    if env_flag(name="ECC_REQUIRE_AI_REFERENCES") or env_flag(
-        name="ECC_FETCH_AI_REFERENCES"
-    ):
-        required_files.extend(OPTIONAL_REFERENCE_PATHS)
-
-    violations = [
-        f"{relative_path}: required file or enabled optional reference is missing"
-        for relative_path in required_files
-        if not (base_path / relative_path).exists()
+    assert sync_rules.validate_content(path, "expected\n") == [
+        f"{path}: content differs from the compact pointer"
     ]
 
-    skills_path = base_path / ".agents" / "skills"
-    if not skills_path.exists():
-        violations.append(".agents/skills: required skills directory is missing")
-        return violations
 
-    actual_skills = {path.name for path in skills_path.iterdir() if path.is_dir()}
-    extra_skills = sorted(actual_skills - ALLOWED_SKILLS)
-    if extra_skills:
-        violations.append(
-            f".agents/skills: unexpected always-available skills {extra_skills}"
-        )
-
-    return violations
-
-
-def main() -> None:
-    base_path = Path(__file__).resolve().parents[1]
-
-    violations = []
-    violations.extend(validate_project_policy(base_path))
-    violations.extend(validate_required_surface(base_path))
-
-    if violations:
-        print("AI surface validation failed:")
-        for violation in violations:
-            print(f"- {violation}")
-        raise SystemExit(1)
-
-    print("AI surface validation passed.")
-
-
-if __name__ == "__main__":
-    main()
+def test_validate_optional_content_accepts_missing_file(tmp_path: Path) -> None:
+    assert (
+        sync_rules.validate_optional_content(tmp_path / "optional.md", "expected\n")
+        == []
+    )
