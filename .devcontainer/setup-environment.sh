@@ -74,18 +74,7 @@ if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   pixi run bash -lc "pre-commit install"
 fi
 
-run_logged() {
-  local log_path="$1"
-  shift
-  if ! "$@" > "$log_path" 2>&1; then
-    cat "$log_path" >&2
-    return 1
-  fi
-}
-
-run_logged /tmp/setup_ide_mcp.log bash scripts/setup_ide_mcp.sh
-run_logged /tmp/setup_ai_skills.log bash scripts/setup_ai_skills.sh
-run_logged /tmp/sync_rules.log pixi run python scripts/sync_rules.py
+bash scripts/setup_ide_mcp.sh
 
 sed -i '/\/workspaces\/econ-project\/\.pixi\/envs\/default\/bin:\$PATH/d' ~/.bashrc
 grep -q "usr/local/bin:.*\.pixi/envs/default/bin" ~/.bashrc || \

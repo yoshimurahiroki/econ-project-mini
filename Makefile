@@ -1,41 +1,21 @@
-# Minimal commands for the econ-project research environment.
-
-.PHONY: help prepare-pixi sync install setup-dev setup-extensions register-kernels setup-r-kernel \
-	check check-code check-ai check-mcp check-r check-qmd check-pdf format test clean ai-references \
-	build-paper build-slides qmd-pdf slides-pdf quarto-html quarto-pdf quarto-reveal r-install r-plan
+# Project commands; checks require an explicit target.
+.PHONY: help prepare-pixi sync install setup-dev setup-extensions register-kernels setup-r-kernel format lint test clean r-install r-plan build-paper build-slides quarto-html qmd-pdf slides-pdf quarto-pdf quarto-reveal
 
 PIXI ?= pixi
 PIXI_RUN = $(PIXI) run
 THREAD_ENV = OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1
 R_MAKEVARS_USER ?= $(CURDIR)/scripts/r-makevars
+FILE ?=
+TEST ?=
 QMD ?=
-PDF ?=
-RFILE ?=
 
 help:
-	@echo "Available commands:"
-	@echo "  prepare-pixi   - Ensure Pixi and rv cache directories are writable"
-	@echo "  sync           - Install Python dependencies with pixi"
-	@echo "  setup-dev      - Sync dependencies and install pre-commit hooks"
-	@echo "  setup-extensions - Install IDE extensions from devcontainer.json or fallback list"
-	@echo "  register-kernels - Register Jupyter kernels for the Pixi Python/R environments"
-	@echo "  setup-r-kernel - Install R packages, then register Python and R kernels"
-	@echo "  format         - Format and autofix Python code"
-	@echo "  test           - Run pytest when tests exist"
-	@echo "  ai-references  - Fetch optional skill repositories under .resources and validate them"
-	@echo "  check          - Run code and AI-rule checks"
-	@echo "  check-code     - Run Python lint, type checks, and tests"
-	@echo "  check-ai       - Validate project AI rules and pointers"
-	@echo "  check-mcp      - Validate user-specific MCP configuration"
-	@echo "  qmd-pdf        - Render QMD as an ECTA PDF (QMD=path)"
-	@echo "  slides-pdf     - Render QMD as Metropolis slides (QMD=path)"
-	@echo "  check-pdf      - Inspect PDF metadata, fonts, and text (PDF=path)"
-	@echo "  clean          - Remove generated caches and build artifacts"
-	@echo "  r-install      - Sync R dependencies with rv"
-	@echo "  build-paper    - Build the LaTeX paper"
-	@echo "  build-slides   - Build the LaTeX slides"
-	@echo "  quarto-*       - Render Quarto outputs"
-
+	@echo "sync / r-install / r-plan: project dependencies"
+	@echo "build-paper / build-slides / quarto-*: requested documents"
+	@echo "test TEST=path::node: one selected test"
+	@echo "lint FILE=path / format FILE=path: explicit file operations"
+	@echo "Project export: python scripts/export_project.py --output /tmp/econ-project"
+	@echo "clean: remove generated caches and build files"
 
 prepare-pixi:
 	sudo mkdir -p .pixi /home/vscode/.cache /home/vscode/.cache/R /home/vscode/.cache/rattler /home/vscode/.cache/rv
@@ -62,37 +42,16 @@ setup-r-kernel: sync r-install
 	bash .devcontainer/register-kernels.sh
 
 format:
-	$(PIXI_RUN) ruff format .
-	$(PIXI_RUN) ruff check --fix .
+	@test -n "$(FILE)" || { echo "Specify a file with FILE=..." >&2; exit 2; }
+	$(PIXI_RUN) ruff format -- "$(FILE)"
+
+lint:
+	@test -n "$(FILE)" || { echo "Specify a file with FILE=..." >&2; exit 2; }
+	$(PIXI_RUN) ruff check -- "$(FILE)"
 
 test:
-	@if find tests -name 'test_*.py' -o -name '*_test.py' 2>/dev/null | grep -q .; then \
-		$(THREAD_ENV) $(PIXI_RUN) pytest -q; \
-	else \
-		echo "No pytest tests found."; \
-	fi
-
-ai-references:
-	ECC_FETCH_AI_REFERENCES=1 bash scripts/setup_ai_skills.sh
-	ECC_REQUIRE_AI_REFERENCES=1 PYTHONDONTWRITEBYTECODE=1 $(PIXI_RUN) python scripts/sync_rules.py
-
-check-code:
-	$(PIXI_RUN) ruff check .
-	$(PIXI_RUN) ruff format --check .
-	$(PIXI_RUN) mypy scripts/sync_rules.py
-	$(MAKE) test
-
-check-ai:
-	PYTHONDONTWRITEBYTECODE=1 $(PIXI_RUN) python scripts/sync_rules.py
-
-check-mcp:
-	bash scripts/setup_ide_mcp.sh --check
-
-check: check-code check-ai
-
-check-r:
-	@test -n "$(RFILE)" || { echo "Usage: make check-r RFILE=path/to/file.R" >&2; exit 2; }
-	$(PIXI_RUN) Rscript -e "invisible(parse(file='$(RFILE)'))"
+	@test -n "$(TEST)" || { echo "Specify a test path or node with TEST=..." >&2; exit 2; }
+	$(THREAD_ENV) $(PIXI_RUN) pytest -q -p no:cacheprovider -- "$(TEST)"
 
 clean:
 	find . -type f -name "*.pyc" -delete
@@ -181,14 +140,6 @@ slides-pdf:
 	$(PIXI_RUN) quarto render "$(QMD)" --to beamer
 
 quarto-pdf: qmd-pdf
-
-check-qmd: qmd-pdf
-
-check-pdf:
-	@test -n "$(PDF)" || { echo "Usage: make check-pdf PDF=path/to/file.pdf" >&2; exit 2; }
-	$(PIXI_RUN) pdfinfo "$(PDF)"
-	$(PIXI_RUN) pdffonts "$(PDF)"
-	$(PIXI_RUN) pdftotext -layout "$(PDF)" /dev/null
 
 quarto-reveal:
 	$(PIXI_RUN) quarto render . --to revealjs
