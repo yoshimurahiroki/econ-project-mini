@@ -100,10 +100,6 @@ exclude = [
     "scripts/temporary",
 ]
 
-[tool.pytest.ini_options]
-pythonpath = ["."]
-testpaths = ["tests"]
-
 [tool.pixi.tasks]
 python-version = "python --version"
 r-version = "R --version"

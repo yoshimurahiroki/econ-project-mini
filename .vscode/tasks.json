@@ -16,19 +16,6 @@
       "type": "shell",
       "command": "make slides-pdf QMD=\"${relativeFile}\"",
       "problemMatcher": []
-    },
-    {
-      "label": "Check Project Code",
-      "type": "shell",
-      "command": "make check-code",
-      "group": "test",
-      "problemMatcher": []
-    },
-    {
-      "label": "Check AI Rules",
-      "type": "shell",
-      "command": "make check-ai",
-      "problemMatcher": []
     }
   ]
 }
