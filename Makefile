@@ -1,4 +1,4 @@
-# Project commands; checks require an explicit target.
+# Explicit project operations; no automatic verification chain.
 .PHONY: help prepare-pixi sync install setup-dev setup-extensions register-kernels setup-r-kernel format lint test clean r-install r-plan build-paper build-slides quarto-html qmd-pdf slides-pdf quarto-pdf quarto-reveal
 
 PIXI ?= pixi
@@ -10,12 +10,10 @@ TEST ?=
 QMD ?=
 
 help:
-	@echo "sync / r-install / r-plan: project dependencies"
-	@echo "build-paper / build-slides / quarto-*: requested documents"
-	@echo "test TEST=path::node: one selected test"
-	@echo "lint FILE=path / format FILE=path: explicit file operations"
+	@echo "sync / r-install / r-plan: dependencies"
+	@echo "build-paper / build-slides / quarto-*: documents"
+	@echo "test TEST=path::node / lint FILE=path / format FILE=path: explicit targets"
 	@echo "Project export: python scripts/export_project.py --output /tmp/econ-project"
-	@echo "clean: remove generated caches and build files"
 
 prepare-pixi:
 	sudo mkdir -p .pixi /home/vscode/.cache /home/vscode/.cache/R /home/vscode/.cache/rattler /home/vscode/.cache/rv
@@ -26,40 +24,29 @@ prepare-pixi:
 
 sync: prepare-pixi
 	$(PIXI) install
-
 install: sync
-
 setup-dev: sync
 	$(PIXI_RUN) pre-commit install
-
 setup-extensions:
 	bash scripts/setup_extensions.sh
-
 register-kernels: sync
 	bash .devcontainer/register-kernels.sh
-
 setup-r-kernel: sync r-install
 	bash .devcontainer/register-kernels.sh
 
 format:
-	@test -n "$(FILE)" || { echo "Specify a file with FILE=..." >&2; exit 2; }
+	@test -n "$(FILE)" || { echo "Specify FILE=path" >&2; exit 2; }
 	$(PIXI_RUN) ruff format -- "$(FILE)"
-
 lint:
-	@test -n "$(FILE)" || { echo "Specify a file with FILE=..." >&2; exit 2; }
+	@test -n "$(FILE)" || { echo "Specify FILE=path" >&2; exit 2; }
 	$(PIXI_RUN) ruff check -- "$(FILE)"
-
 test:
-	@test -n "$(TEST)" || { echo "Specify a test path or node with TEST=..." >&2; exit 2; }
+	@test -n "$(TEST)" || { echo "Specify TEST=path::node" >&2; exit 2; }
 	$(THREAD_ENV) $(PIXI_RUN) pytest -q -p no:cacheprovider -- "$(TEST)"
 
-clean:
-	find . -type f -name "*.pyc" -delete
-	find . -type d -name "__pycache__" -prune -exec rm -rf {} +
-	find tex -type f \( -name "*.aux" -o -name "*.bbl" -o -name "*.blg" -o -name "*.log" -o -name "*.out" -o -name "*.toc" -o -name "*.synctex.gz" -o -name "*.run.xml" -o -name "*.fdb_latexmk" -o -name "*.fls" \) -delete
-	rm -rf .agent_state .coverage .mypy_cache .pytest_cache .ruff_cache _site _book .quarto
-
-r-install: prepare-pixi
+r-install: RV_ACTION = sync
+r-plan: RV_ACTION = plan
+r-install r-plan: prepare-pixi
 	$(PIXI_RUN) bash -lc ' \
 		set -euo pipefail; \
 		export PKG_CONFIG="$$CONDA_PREFIX/bin/pkg-config"; \
@@ -69,47 +56,12 @@ r-install: prepare-pixi
 		export R_MAKEVARS_USER="$(R_MAKEVARS_USER)"; \
 		export XML_CONFIG="$$CONDA_PREFIX/bin/xml2-config"; \
 		export NANONEXT_LIBS=1; \
-		unset NANONEXT_TLS; \
-		unset CMAKE_PREFIX_PATH; \
-		unset JAVA_HOME; \
+		unset NANONEXT_TLS CMAKE_PREFIX_PATH JAVA_HOME; \
 		ln -sf libxml2.so.16 "$$CONDA_PREFIX/lib/libxml2.so" 2>/dev/null || true; \
-		echo "Checking pixi/conda-forge paths..."; \
-		pkg-config --cflags librsvg-2.0; \
-		pkg-config --libs librsvg-2.0; \
-		pkg-config --modversion libxml-2.0; \
-		test -f "$$CONDA_PREFIX/include/glpk.h"; \
-		test -f "$$CONDA_PREFIX/lib/libglpk.so" || test -f "$$CONDA_PREFIX/lib/libglpk.a"; \
-		test -f "$$CONDA_PREFIX/lib/liblzma.so" || test -f "$$CONDA_PREFIX/lib/liblzma.so.5"; \
-		if pgrep -u "$$(id -u)" -x rv >/dev/null; then \
-			echo "Another rv process is running; wait for it to finish before r-install." >&2; \
-			exit 1; \
+		if [ "$(RV_ACTION)" = sync ] && pgrep -u "$$(id -u)" -x rv >/dev/null; then \
+			echo "Another rv process is running." >&2; exit 1; \
 		fi; \
-		find rv/library -type d -name "__rv__staging" -prune -exec rm -rf {} + 2>/dev/null || true; \
-		rv sync \
-	'
-
-r-plan: prepare-pixi
-	$(PIXI_RUN) bash -lc ' \
-		set -euo pipefail; \
-		export PKG_CONFIG="$$CONDA_PREFIX/bin/pkg-config"; \
-		export PKG_CONFIG_PATH="$$CONDA_PREFIX/lib/pkgconfig:$$CONDA_PREFIX/share/pkgconfig:$${PKG_CONFIG_PATH:-}"; \
-		export LIBRARY_PATH="$$CONDA_PREFIX/lib:$${LIBRARY_PATH:-}"; \
-		export LD_LIBRARY_PATH="$$CONDA_PREFIX/lib:$${LD_LIBRARY_PATH:-}"; \
-		export R_MAKEVARS_USER="$(R_MAKEVARS_USER)"; \
-		export XML_CONFIG="$$CONDA_PREFIX/bin/xml2-config"; \
-		export NANONEXT_LIBS=1; \
-		unset NANONEXT_TLS; \
-		unset CMAKE_PREFIX_PATH; \
-		unset JAVA_HOME; \
-		ln -sf libxml2.so.16 "$$CONDA_PREFIX/lib/libxml2.so" 2>/dev/null || true; \
-		echo "Checking pixi/conda-forge paths..."; \
-		pkg-config --cflags librsvg-2.0; \
-		pkg-config --libs librsvg-2.0; \
-		pkg-config --modversion libxml-2.0; \
-		test -f "$$CONDA_PREFIX/include/glpk.h"; \
-		test -f "$$CONDA_PREFIX/lib/libglpk.so" || test -f "$$CONDA_PREFIX/lib/libglpk.a"; \
-		test -f "$$CONDA_PREFIX/lib/liblzma.so" || test -f "$$CONDA_PREFIX/lib/liblzma.so.5"; \
-		rv plan \
+		rv $(RV_ACTION) \
 	'
 
 build-paper:
@@ -118,28 +70,26 @@ build-paper:
 	pbibtex ecta_template || true && \
 	lualatex -shell-escape -interaction=nonstopmode ecta_template.tex && \
 	lualatex -shell-escape -interaction=nonstopmode ecta_template.tex
-
 build-slides:
 	cd tex/slides && \
 	lualatex -shell-escape -interaction=nonstopmode main.tex && \
 	pbibtex main || true && \
 	lualatex -shell-escape -interaction=nonstopmode main.tex && \
 	lualatex -shell-escape -interaction=nonstopmode main.tex
-
 quarto-html:
 	$(PIXI_RUN) quarto render . --to html
-
 qmd-pdf:
-	@test -n "$(QMD)" || { echo "Usage: make qmd-pdf QMD=path/to/file.qmd" >&2; exit 2; }
+	@test -n "$(QMD)" || { echo "Specify QMD=path" >&2; exit 2; }
 	TEXINPUTS="$(CURDIR)/tex/paper:$${TEXINPUTS:-}" \
 	BSTINPUTS="$(CURDIR)/tex/paper:$${BSTINPUTS:-}" \
 	$(PIXI_RUN) quarto render "$(QMD)" --to pdf
-
 slides-pdf:
-	@test -n "$(QMD)" || { echo "Usage: make slides-pdf QMD=path/to/file.qmd" >&2; exit 2; }
+	@test -n "$(QMD)" || { echo "Specify QMD=path" >&2; exit 2; }
 	$(PIXI_RUN) quarto render "$(QMD)" --to beamer
-
 quarto-pdf: qmd-pdf
-
 quarto-reveal:
 	$(PIXI_RUN) quarto render . --to revealjs
+
+clean:
+	rm -rf -- .coverage .mypy_cache .pytest_cache .ruff_cache _site _book .quarto
+	find tex -type f \( -name '*.aux' -o -name '*.blg' -o -name '*.log' -o -name '*.out' -o -name '*.toc' -o -name '*.synctex.gz' -o -name '*.run.xml' -o -name '*.fdb_latexmk' -o -name '*.fls' \) -delete
