@@ -8,8 +8,8 @@ cd /workspaces/econ-project
 git config --global --replace-all safe.directory /workspaces/econ-project
 
 sudo mkdir -p .pixi data /home/vscode/.cache/rattler /home/vscode/.cache/rv
-sudo chown -R vscode:vscode .pixi data /home/vscode/.cache/rattler /home/vscode/.cache/rv
-sudo chmod -R u+rwX .pixi data /home/vscode/.cache/rattler /home/vscode/.cache/rv
+sudo chown vscode:vscode .pixi data /home/vscode/.cache/rattler /home/vscode/.cache/rv
+sudo chmod u+rwX .pixi data /home/vscode/.cache/rattler /home/vscode/.cache/rv
 
 pixi install
 
