@@ -6,7 +6,7 @@ find_project_root <- function(path = getwd()) {
     }
     parent <- dirname(path)
     if (identical(parent, path)) {
-      stop("Could not find rproject.toml.", call. = FALSE)
+      stop("Project marker rproject.toml is missing.", call. = FALSE)
     }
     path <- parent
   }

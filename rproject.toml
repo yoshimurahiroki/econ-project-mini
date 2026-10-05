@@ -2,10 +2,8 @@
 name = "econ-project"
 r_version = "4.5"
 
-# rv resolves package versions from the configured repositories. Keep this list
-# minimal: only R-side infrastructure needed for Jupyter, Quarto/R Markdown,
-# TinyTeX integration, and editor support. Analysis packages are intentionally
-# not declared here.
+# rv resolves package versions from the configured repositories.
+# These packages provide Jupyter, Quarto/R Markdown, TinyTeX and editor support.
 repositories = [
   { alias = "CRAN", url = "https://cran.r-project.org/" },
 ]
