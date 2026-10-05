@@ -8,10 +8,12 @@ R_MAKEVARS_USER ?= $(CURDIR)/scripts/r-makevars
 FILE ?=
 TEST ?=
 QMD ?=
+PAPER ?= tex/paper/ecta_template.tex
+SLIDES ?= tex/slides/main.tex
 
 help:
 	@echo "sync / r-install / r-plan: dependencies"
-	@echo "build-paper / build-slides / quarto-*: documents"
+	@echo "build-paper PAPER=path / build-slides SLIDES=path / quarto-* QMD=path: documents"
 	@echo "test TEST=path::node / lint FILE=path / format FILE=path: explicit targets"
 	@echo "Project export: python scripts/export_project.py --output /tmp/econ-project"
 
@@ -65,19 +67,19 @@ r-install r-plan: prepare-pixi
 	'
 
 build-paper:
-	cd tex/paper && \
-	lualatex -shell-escape -interaction=nonstopmode ecta_template.tex && \
-	pbibtex ecta_template || true && \
-	lualatex -shell-escape -interaction=nonstopmode ecta_template.tex && \
-	lualatex -shell-escape -interaction=nonstopmode ecta_template.tex
+	cd "$(dir $(PAPER))" && \
+	lualatex -shell-escape -interaction=nonstopmode -halt-on-error "$(notdir $(PAPER))" && \
+	if grep -Fq '\bibdata{' "$(basename $(notdir $(PAPER))).aux"; then pbibtex "$(basename $(notdir $(PAPER)))"; fi && \
+	lualatex -shell-escape -interaction=nonstopmode -halt-on-error "$(notdir $(PAPER))" && \
+	lualatex -shell-escape -interaction=nonstopmode -halt-on-error "$(notdir $(PAPER))"
 build-slides:
-	cd tex/slides && \
-	lualatex -shell-escape -interaction=nonstopmode main.tex && \
-	pbibtex main || true && \
-	lualatex -shell-escape -interaction=nonstopmode main.tex && \
-	lualatex -shell-escape -interaction=nonstopmode main.tex
+	cd "$(dir $(SLIDES))" && \
+	lualatex -shell-escape -interaction=nonstopmode -halt-on-error "$(notdir $(SLIDES))" && \
+	if grep -Fq '\bibdata{' "$(basename $(notdir $(SLIDES))).aux"; then pbibtex "$(basename $(notdir $(SLIDES)))"; fi && \
+	lualatex -shell-escape -interaction=nonstopmode -halt-on-error "$(notdir $(SLIDES))" && \
+	lualatex -shell-escape -interaction=nonstopmode -halt-on-error "$(notdir $(SLIDES))"
 quarto-html:
-	$(PIXI_RUN) quarto render . --to html
+	$(PIXI_RUN) quarto render "$(if $(strip $(QMD)),$(QMD),.)" --to html
 qmd-pdf:
 	@test -n "$(QMD)" || { echo "Specify QMD=path" >&2; exit 2; }
 	TEXINPUTS="$(CURDIR)/tex/paper:$${TEXINPUTS:-}" \
@@ -88,7 +90,7 @@ slides-pdf:
 	$(PIXI_RUN) quarto render "$(QMD)" --to beamer
 quarto-pdf: qmd-pdf
 quarto-reveal:
-	$(PIXI_RUN) quarto render . --to revealjs
+	$(PIXI_RUN) quarto render "$(if $(strip $(QMD)),$(QMD),.)" --to revealjs
 
 clean:
 	rm -rf -- .coverage .mypy_cache .pytest_cache .ruff_cache _site _book .quarto
