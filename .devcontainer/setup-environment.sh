@@ -63,7 +63,6 @@ bash .devcontainer/register-kernels.sh
 
 if [ "${INSTALL_R_PACKAGES:-1}" = "1" ]; then
   make r-install
-  bash .devcontainer/register-kernels.sh
 fi
 
 if [ "${INSTALL_PLAYWRIGHT_BROWSERS:-0}" = "1" ]; then
@@ -73,8 +72,6 @@ fi
 if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   pixi run bash -lc "pre-commit install"
 fi
-
-bash scripts/setup_ide_mcp.sh
 
 sed -i '/\/workspaces\/econ-project\/\.pixi\/envs\/default\/bin:\$PATH/d' ~/.bashrc
 grep -q "usr/local/bin:.*\.pixi/envs/default/bin" ~/.bashrc || \
