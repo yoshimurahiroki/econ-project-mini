@@ -1,7 +1,7 @@
 [project]
 name = "econ-project"
 version = "0.1.0"
-description = "Minimal infrastructure stack for Python, R, TinyTeX, Quarto, Jupyter, and R package build support"
+description = "Infrastructure stack for Python, R, TinyTeX, Quarto, Jupyter, and R package build support"
 requires-python = ">=3.12"
 authors = [
     { name = "yoshimurahiroki", email = "yoshimurahiroki@akane.waseda.jp" },
@@ -10,7 +10,7 @@ dependencies = []
 
 # ── Pixi configuration ──────────────────────────────────────────
 # Use wildcard specs so Pixi resolves the latest compatible versions available
-# from the configured channel. Analysis libraries are intentionally not listed.
+# from the configured channel.
 [tool.pixi.workspace]
 name = "econ-project"
 channels = ["https://prefix.dev/conda-forge"]
@@ -44,8 +44,7 @@ r-irkernel = "*"
 r-languageserver = "*"
 
 # R package build/link infrastructure for CRAN packages installed by rv
-# These keep rv builds inside the pixi/conda-forge toolchain instead of
-# accidentally mixing conda compilers with /usr/include and /usr/lib.
+# rv builds use the Pixi/conda-forge compilers, headers and libraries.
 compilers = "*"
 make = "*"
 pkg-config = "*"
@@ -68,7 +67,7 @@ xz = "*"
 xorg-xorgproto = "*"
 
 # Prebuilt R infrastructure dependencies that repeatedly trigger source builds
-# from rv/CRAN. These are not project-specific analysis packages.
+# from rv/CRAN.
 r-curl = "*"
 r-xml2 = "*"
 r-pbdzmq = "*"
@@ -89,8 +88,7 @@ r-yaml = "*"
 r-reticulate = "*"
 
 [tool.pixi.pypi-dependencies]
-# Intentionally empty. Add project-specific PyPI packages only when an analysis
-# actually needs them.
+# Add project-specific PyPI dependencies for the adopted analysis.
 
 [tool.ruff]
 exclude = [

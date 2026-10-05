@@ -1,6 +1,6 @@
 # econ-project-mini
 
-Python・R・Quarto・LaTeXを使う経済学研究のテンプレートである。miniは文書作成とPython・Rの基礎環境から始め、研究に使う分析パッケージを追加する。広い既定研究環境には [full](https://github.com/yoshimurahiroki/econ-project) を使う。
+Python・R・Quarto・LaTeXを使う経済学研究のテンプレートである。miniは文書作成とPython・Rの基礎環境から始め、研究に使う分析パッケージを追加する。分析パッケージを含む既定環境には [full](https://github.com/yoshimurahiroki/econ-project) を使う。
 
 ## 研究を始める
 
@@ -52,6 +52,6 @@ HTML・Reveal.jsの `QMD` を省略するとプロジェクト全体をrenderす
 python scripts/export_project.py --profile bridge --output /tmp/econ-bridge
 ```
 
-exportは選択した指示とsource revisionを新しい外部folderへ保存する。全文contextが必要な作業では `bash scripts/pack_context.sh /tmp/econ-context.txt` を使う。導入済みRepomixがGitのignoreと既存configに従って出力する。出力先を省略すると一時folderへ新しいファイルを作り、次回の入力への自己混入を避ける。
+exportは選択した指示とsource revisionを新しい外部folderへ保存する。全文contextが必要な作業では `bash scripts/pack_context.sh /tmp/econ-context.txt` を使う。導入済みRepomixがGitのignoreと既存configに従って出力する。出力先を省略すると一時folderへ新しいファイルを作る。
 
-MCPは必要なserverの実行ファイルと環境変数を用意してから `bash scripts/setup_ide_mcp.sh --write` で設定する。[IDEを同じ環境から起動する](https://prod.cursor.com/help/customization/mcp)。接続資格情報は設定へ書き込まず、server起動時に環境から渡す。Codexには [変数名のallowlist](https://learn.chatgpt.com/docs/config-file/config-reference) を生成する。
+MCPは必要なserverの実行ファイルと環境変数を用意してから `bash scripts/setup_ide_mcp.sh --write` で設定する。[IDEを同じ環境から起動する](https://prod.cursor.com/help/customization/mcp)。接続資格情報はserver起動時に環境から渡す。Codexには [変数名のallowlist](https://learn.chatgpt.com/docs/config-file/config-reference) を生成する。

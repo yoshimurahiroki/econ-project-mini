@@ -1,11 +1,11 @@
-# Minimal economics research stack for Pixi, rv, TinyTeX, Quarto, and cloud IDE agents.
+# Economics research stack for Pixi, rv, TinyTeX, Quarto, and cloud IDE agents.
 FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 SHELL ["/bin/bash", "-eo", "pipefail", "-c"]
 
 # ========= 1) OS Base =========
-# Keep only infrastructure needed for:
+# Infrastructure for:
 # - Git/GitHub CLI
 # - Python/R package managers and compiled infrastructure packages
 # - Jupyter/Quarto runtime support
@@ -63,8 +63,7 @@ RUN curl -fsSL https://yihui.org/tinytex/install-unx.sh -o /tmp/install-tinytex.
     chmod -R a+rX "${TINYTEX_HOME}"
 
 # ========= 1.2) Global NPM Packages =========
-# Keep the default image lean. Optional MCP servers are added only when a task
-# actually needs them; setup_ide_mcp.sh detects what is installed.
+# Repomix is installed globally; setup_ide_mcp.sh discovers installed MCP servers.
 RUN npm install -g repomix
 
 # ========= 2) User Setup =========
@@ -82,7 +81,7 @@ USER $USERNAME
 WORKDIR /workspaces/econ-project
 ENV PATH="/home/$USERNAME/.cargo/bin:/home/$USERNAME/.local/bin:/home/$USERNAME/go/bin:${PATH}"
 
-# Rust is kept because it is useful for modern Python/R tooling and rv itself.
+# Rust supports Python/R tooling and rv.
 RUN curl --proto '=https' --tlsv1.2 -fsSL https://sh.rustup.rs | \
     sh -s -- -y --profile minimal --default-toolchain stable
 
@@ -98,8 +97,7 @@ RUN curl -fsSL https://pixi.sh/install.sh | bash
 ENV PATH="/home/$USERNAME/.pixi/bin:$PATH"
 
 # ========= 4) Runtime Dependency Setup =========
-# The workspace .pixi directory is mounted as a devcontainer volume, so any
-# Pixi environment created during image build would be hidden at runtime.
+# The workspace .pixi volume supplies the runtime environment.
 # setup-environment.sh installs project dependencies after the container starts.
 RUN mkdir -p /tmp/package-lists
 WORKDIR /workspaces/econ-project
@@ -109,13 +107,11 @@ RUN curl -sSL https://raw.githubusercontent.com/A2-ai/rv/refs/heads/main/scripts
 ENV PATH="/home/$USERNAME/.local/bin:/home/$USERNAME/go/bin:$PATH"
 
 # ========= 6) Runtime Kernel Registration =========
-# Kernelspecs are registered from the workspace environment by the
-# devcontainer setup script. Registering them here would point at /tmp/pixi,
-# which is hidden by the runtime workspace and .pixi volume.
+# The devcontainer setup script registers kernels from the workspace environment.
 WORKDIR /workspaces/econ-project
 
 # ========= 7) On-demand AI References =========
-# Optional reference files are read only for a specific task.
+# Store task reference files in .resources.
 RUN sudo mkdir -p /workspaces/econ-project/.resources && \
     sudo chown -R $USERNAME:$USERNAME /workspaces/econ-project/.resources
 
