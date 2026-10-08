@@ -6,12 +6,10 @@ Repository skills run in the coding environment. Project attachments are snapsho
 
 [econ-project-mini](https://github.com/yoshimurahiroki/econ-project-mini) is the editing source for the common policy, skills, references, host pointers, indexes, Project templates and exporter. The explicit `COMMON_PATHS` allowlist in [sync_common_core.py](../../scripts/sync_common_core.py) defines the same relative paths copied to econ-project and Ruan. Project context, integration prose, source history, study records, environments and execution recipes remain project-owned.
 
-Compare and apply when preparing publication of a common-core change. Use the actual destination HEADs for `--expect-head`. Capture them before comparison and reuse those captured values when applying; if a destination changes, compare again before applying.
+Compare and apply when preparing publication of a common-core change. Read the current destination HEADs for `--expect-head` immediately before applying.
 
 ```sh
 cd /tmp/econ-project-mini-instructions-20261008
-econ_project_head="$(git -C /tmp/econ-project-instructions-20261008 rev-parse HEAD)" || exit
-ruan_head="$(git -C /tmp/ruan-literature-20261005 rev-parse HEAD)" || exit
 python scripts/sync_common_core.py --source . \
   --target /tmp/econ-project-instructions-20261008 \
   --target /tmp/ruan-literature-20261005
@@ -19,8 +17,8 @@ python scripts/sync_common_core.py --source . \
 python scripts/sync_common_core.py --source . \
   --target /tmp/econ-project-instructions-20261008 \
   --target /tmp/ruan-literature-20261005 --apply \
-  --expect-head econ-project="$econ_project_head" \
-  --expect-head Ruan="$ruan_head"
+  --expect-head econ-project="$(git -C /tmp/econ-project-instructions-20261008 rev-parse HEAD)" \
+  --expect-head Ruan="$(git -C /tmp/ruan-literature-20261005 rev-parse HEAD)"
 ```
 
 Comparison is read-only. The script records copied source bytes in the destinations' managed common-core receipt; the receipt is the only synchronized part of this document. Exit codes are 0 for equality or successful application, 1 for comparison differences and 2 for a refused or invalid operation. Ordinary task startup and environment setup run neither synchronization nor export.
