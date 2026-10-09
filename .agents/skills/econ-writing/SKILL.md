@@ -23,9 +23,11 @@ Choose the amount of explanation for the use. A research plan links its proposed
 
 For each central claim adapted to another reader or medium, align its canonical source, comparison, causal status and defining conditions before rendering. Verify each condensed version against that claim, including conditions needed to move from an actor's choice to group quantity changes.
 
-For bilingual deliverables, use one substantive outline and compose natural syntax in each language. Keep economic terms aligned across translations. Verify that quantities, comparisons, attribution, notation and causal relations survive the translation.
+For bilingual versions of the same artifact, use one substantive outline and compose natural syntax in each language. Distinct artifacts select their own information even when they use different languages. Keep economic terms aligned across translations. Verify that quantities, comparisons, attribution, notation and causal relations survive the translation.
 
 ## Whole artifacts
+
+When one request contains different artifacts, select information separately for each artifact's reader, question and role. Share scientific definitions and claim status across artifacts, and apply each artifact's completion requirements to that artifact. A site opening establishes the economic question, comparison and established evidence needed for the first reading. Place execution plans, review detail and adoption agendas in their relevant deeper records. Keep a pending choice beside a claim when it defines that claim's meaning.
 
 For a complete paper, identify the question and supported answer at the current research stage. Give each section a distinct job in establishing that answer. Order sections by what the reader needs to understand the next comparison or conclusion. Place the central evidence near its interpretation. Keep definitions and scientific conditions needed to read that claim in the main argument; place technical construction, secondary comparisons and replication detail in their existing appendix or linked-record roles. An introduction promises the argument the body actually establishes. End with the established answer and its economic meaning, without repeating a section inventory.
 
