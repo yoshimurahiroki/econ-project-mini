@@ -9,7 +9,9 @@ Use the requested object, audience, depth and format. Use econ-edit as primary f
 
 ## Economics prose
 
-Identify the central question, answer or result and the information the reader needs to understand it. Group sourced claims by the argument they establish, rather than the source file or study stage that supplies them. Give sections and paragraphs distinct roles, then order them by concept dependencies. Select only the functions required by the requested text from the profile chosen under [econ-assertive](../econ-assertive/SKILL.md). Available functions are not a checklist for each draft.
+Compose each requested artifact from its own reader question. Before drafting, settle the artifact's main question or supported answer, the evidence establishing it, and the definitions that make its selected claims intelligible. Give the opening that question or answer and introduce its necessary concepts before technical labels. Draft directly from this selection of canonical content. After composing the separate artifacts, reconcile the facts, definitions, comparisons and claim strength they share.
+
+Group the selected claims by the argument they establish and give sections and paragraphs distinct roles. Order them by concept dependencies. Select only the functions required by the requested text from the profile chosen under [econ-assertive](../econ-assertive/SKILL.md). Available functions are not a checklist for each draft.
 
 For an introduction, connect the concrete question, economic importance, comparison or measurement, actual findings and additional knowledge. Choose the descriptive facts that establish that argument. Explain the decision each selected pattern informs instead of listing the study's diagnostics.
 
@@ -26,8 +28,6 @@ For each central claim adapted to another reader or medium, align its canonical 
 For bilingual versions of the same artifact, use one substantive outline and compose natural syntax in each language. Distinct artifacts select their own information even when they use different languages. Keep economic terms aligned across translations. Verify that quantities, comparisons, attribution, notation and causal relations survive the translation.
 
 ## Whole artifacts
-
-When one request contains different artifacts, select information separately for each artifact's reader, question and role. Share scientific definitions and claim status across artifacts, and apply each artifact's completion requirements to that artifact. A site opening establishes the economic question, comparison and established evidence needed for the first reading. Place execution plans, review detail and adoption agendas in their relevant deeper records. Keep a pending choice beside a claim when it defines that claim's meaning.
 
 For a complete paper, identify the question and supported answer at the current research stage. Give each section a distinct job in establishing that answer. Order sections by what the reader needs to understand the next comparison or conclusion. Place the central evidence near its interpretation. Keep definitions and scientific conditions needed to read that claim in the main argument; place technical construction, secondary comparisons and replication detail in their existing appendix or linked-record roles. An introduction promises the argument the body actually establishes. End with the established answer and its economic meaning, without repeating a section inventory.
 
