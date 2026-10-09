@@ -124,3 +124,8 @@ repomix.txt
 
 /.quarto/
 **/*.quarto_ipynb
+
+# Generated local MCP runtime configurations
+.agents/mcp.json
+.mcp.json
+mcp.json

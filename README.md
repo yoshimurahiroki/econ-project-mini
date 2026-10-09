@@ -44,6 +44,12 @@ HTML・Reveal.jsの `QMD` を省略するとプロジェクト全体をrenderす
 
 具体的な変更リスクを確認する入口は `make test TEST=path::node`、`make lint FILE=path`、`make format FILE=path` である。対象は明示したファイル・testに限る。commit hookはprivate key検出を行う。
 
+## Gitと共通機能の管理
+
+Gitの作者名・メールは利用者自身のGit設定を使う。コンテナの実行ユーザー `vscode` はcommit作者とは別の設定である。
+
+共通ファイルを複数の研究へ配布する場合は [汎用同期の手順](docs/ai/integration.md#common-core) を使う。同期元・同期先・管理path・期待HEADを指定し、差分を確認してから `--apply` を実行する。各研究の独自変更は前回採用版との比較で保護する。通常の起動時には同期しない。
+
 ## ProjectとIDEの接続
 
 [Project連携](docs/ai/integration.md) に既存Projectのbridge、全方式・選択方式のstandalone、task別exportと共通指示の同期入口がある。[econ-project-mini](https://github.com/yoshimurahiroki/econ-project-mini)を共通指示の編集正本とし、研究固有の選択は[project context](docs/ai/repo_context.md)に置く。
@@ -58,4 +64,4 @@ python scripts/export_project.py --profile standalone --task econ-paper \
 
 exportは選択した指示とsource revisionを新しい外部folderへ保存する。全文contextが必要な作業では `bash scripts/pack_context.sh /tmp/econ-context.txt` を使う。導入済みRepomixがGitのignoreと既存configに従って出力する。出力先を省略すると一時folderへ新しいファイルを作る。
 
-MCPは必要なserverの実行ファイルと環境変数を用意してから `bash scripts/setup_ide_mcp.sh --write` で設定する。[IDEを同じ環境から起動する](https://prod.cursor.com/help/customization/mcp)。API keyとdatabase接続情報はserver起動時に環境から渡す。Google Driveの資格情報は `secrets/credentials.json` に置く。Codexには [変数名のallowlist](https://learn.chatgpt.com/docs/config-file/config-reference) を生成する。
+配布用の設定定義は [config templates](docs/ai/config-templates/README.md) にある。認証済みのruntime設定はローカルに生成し、Git管理から分離する。MCPは必要なserverの実行ファイルと環境変数を用意してから `bash scripts/setup_ide_mcp.sh --write` で設定する。[IDEを同じ環境から起動する](https://prod.cursor.com/help/customization/mcp)。API keyとdatabase接続情報はserver起動時に環境から渡す。Google Driveの資格情報は `secrets/credentials.json` に置く。Codexには環境変数名のallowlistを生成する。生成器は管理対象のMCP blockを更新し、モデル、役割、許可設定、手管理のMCP接続を保持する。JSON設定はMCP欄以外の利用者設定を保持する。
