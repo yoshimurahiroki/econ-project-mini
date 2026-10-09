@@ -70,6 +70,23 @@ class TaskStateTests(unittest.TestCase):
         self.assertEqual(tasks['unassigned']['status'], 'queued')
         self.assertEqual(tasks['unassigned']['attempts'], 0)
 
+    def test_show_selected_task_preserves_full_view_and_store_bytes(self):
+        self.add('a')
+        self.add('b')
+        path = self.root / '.agents/state/team.json'
+        before = path.read_bytes()
+        full = self.run_cli('show')
+        self.assertEqual(self.run_cli('show', 'a'), full['tasks']['a'])
+        self.assertEqual(self.run_cli('show'), full)
+        self.assertEqual(path.read_bytes(), before)
+
+    def test_show_unknown_task_refuses_without_writing(self):
+        self.add('a')
+        path = self.root / '.agents/state/team.json'
+        before = path.read_bytes()
+        self.run_cli('show', 'unknown-task', fail=True)
+        self.assertEqual(path.read_bytes(), before)
+
     def test_success_records_current_evidence(self):
         self.add('a', '--independent-review')
         self.complete()
