@@ -210,3 +210,19 @@ The current revision keeps concise task boundaries and source-based examples, wi
 All four dated sources fall within 2026-09-09–2026-10-09. The OpenAI pages are referenced and paraphrased without claiming a reuse license or copying text/code. The two arXiv v1 licenses were checked on their HTML headers. Their ideas are attributed in original wording; no paper text, code or annotation scheme is vendored, and repository licensing is unchanged. Source performance percentages are not adopted as local results.
 
 The default profile's original ten source records remain intact. Its new short adaptations use the actual Egger, Bessone and Kline passages, and Japanese syntax was informed by the three IER original articles recorded once in [default-micro](../../.agents/skills/econ-assertive/references/default-micro.md). The evidence for the new candidate remains the next fresh generation and independent reading.
+
+## Research judgment and harness simplification — sources read 2026-10-09
+
+The revision concentrates on useful outcomes, consequential dependencies and reader needs. Detailed source methods were not imported as a new workflow. Current, minimal and revised instructions were compared through fresh same-input outputs and independent qualitative reading; this source record does not establish model performance.
+
+| Primary source | Passage read and use |
+| --- | --- |
+| Richard Rumelt, [Good Strategy/Bad Strategy](https://www.richardrumelt.com/good-strategy-bad-strategy) and [The Crux](https://www.richardrumelt.com/the-crux) | Author book overviews and key messages; focus changes on the important tractable obstacle. Whole books were not read. |
+| Barbara Minto, [Course](https://www.barbaraminto.com/course) | Course topics and work-sample application; integrate findings into an answer to the reader's question. |
+| David Maister, [The Consultant's Role](https://davidmaister.com/articles/2/4/), 2004 | Opening, trusted-advisor discussion and Focus on the Other Person; select advice for the recipient's situation. |
+| McKinsey, [Consulting roles](https://www.mckinsey.com/careers/our-roles/consulting-roles) | Client service and Associate/Engagement Manager descriptions; outcome responsibility, without replicating positions as agents. |
+| Bain, [Results Delivery](https://www.bain.com/contentassets/8180a9e22db04502a49a92986c714055/bain_brief_results_delivery.pdf) | Printed pp.1–4; distinguish installed arrangements from useful delivered outcomes. |
+| Nancy Duarte, [Visual storytelling](https://www.duarte.com/training/visual-storytelling-training/) | Failure discussion and teaching sequence; select and integrate content for the audience. |
+| UK Cabinet Office, [The Consultancy Playbook](https://www.gov.uk/government/publications/the-consultancy-playbook), v1.1, September 2022 | Printed p.10 and pp.20–23; reuse existing knowledge, address a specific capability gap and compare outcomes without prescribing every input. |
+
+Author and corporate sources were paraphrased without importing text, branded templates, numerical performance claims or a reuse license. The UK PDF states Crown copyright and OGL v3.0 except third-party material. Repository licensing is unchanged. The September 11 Astra and October 2 GPT-6 source records above were reused.
