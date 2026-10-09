@@ -274,6 +274,8 @@ def main():
             if args.command == 'start':
                 if task['status'] != 'queued':
                     raise ValueError('Start requires queued state')
+                if not task['scope']:
+                    raise ValueError('Start requires an assigned output scope; preserve this record and create a new scoped assignment')
                 if task['attempts'] >= state['limits']['max_attempts']:
                     raise ValueError('Attempt limit: revise the assignment before another run')
                 if changed(root, task['inputs']):
