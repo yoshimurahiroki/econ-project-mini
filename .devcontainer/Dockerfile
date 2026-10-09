@@ -85,12 +85,7 @@ ENV PATH="/home/$USERNAME/.cargo/bin:/home/$USERNAME/.local/bin:/home/$USERNAME/
 RUN curl --proto '=https' --tlsv1.2 -fsSL https://sh.rustup.rs | \
     sh -s -- -y --profile minimal --default-toolchain stable
 
-# ========= Git Identity =========
-ARG GIT_USER_NAME=yoshimurahiroki
-ARG GIT_USER_EMAIL=yoshimurahiroki@akane.waseda.jp
-RUN command -v git >/dev/null 2>&1 && \
-    git config --global user.name "$GIT_USER_NAME" && \
-    git config --global user.email "$GIT_USER_EMAIL"
+# Commit identity comes from the user's Git configuration or credential sharing.
 
 # ========= 3) Pixi =========
 RUN curl -fsSL https://pixi.sh/install.sh | bash
