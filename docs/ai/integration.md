@@ -81,7 +81,7 @@ A requested handoff uses the existing task record for the revision, evidence, au
 
 ## Coordinated research execution
 
-A broad research assignment uses econ-workflow as coordinator and the existing specialist for each deliverable. Read its team-execution reference only for delegation, operational state, tool selection or team evaluation. Econ-review's oversight reference provides separate Inspector, Adjudicator, scientific-referee and editorial entry points. Use actual independent workers for independent review.
+Econ-workflow coordinates interdependent research work and owns its integrated result. Bounded tasks use their relevant specialist directly. Read team-execution for concurrent write ownership, state resumption or requested usage accounting. Econ-review assesses the requested claim or artifact; its oversight notes support an independent assessment or a contested execution finding. Independent review uses a different worker or session.
 
 Existing research task records remain the canonical assignment and scientific-decision source. If no operational store exists, the portable stdlib helper at `.agents/skills/econ-workflow/scripts/team_state.py` saves task state in the already ignored `.agents/state/` directory. Its `--help` lists creation, transitions, usage import and active inspection. It neither launches inference nor modifies platform permissions. Keep the store and Codex JSONL transcripts local. Record output and passed-verification evidence before completion, and inspect saved input/output hashes before resumption.
 
