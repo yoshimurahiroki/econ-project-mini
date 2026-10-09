@@ -3,8 +3,10 @@ set -euo pipefail
 
 cd /workspaces/econ-project
 
-# Trust the bind-mounted workspace at its configured path.
-git config --global --replace-all safe.directory /workspaces/econ-project
+# Trust the workspace while preserving the user's existing trust entries.
+if ! git config --global --get-all safe.directory | grep -Fx -- /workspaces/econ-project >/dev/null; then
+  git config --global --add safe.directory /workspaces/econ-project
+fi
 
 sudo mkdir -p .pixi data /home/vscode/.cache/rattler /home/vscode/.cache/rv
 sudo chown vscode:vscode .pixi data /home/vscode/.cache/rattler /home/vscode/.cache/rv
@@ -56,12 +58,12 @@ exec /workspaces/econ-project/.pixi/envs/default/bin/quarto "$@"
 EOF
 sudo chmod 0755 /usr/local/bin/quarto
 
-# Register workspace kernels after Pixi installation.
-bash .devcontainer/register-kernels.sh
-
 if [ "${INSTALL_R_PACKAGES:-1}" = "1" ]; then
   make r-install
 fi
+
+# Register kernels after the requested R dependency installation succeeds.
+bash .devcontainer/register-kernels.sh
 
 if [ "${INSTALL_PLAYWRIGHT_BROWSERS:-0}" = "1" ]; then
   pixi run playwright install --with-deps chromium

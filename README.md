@@ -52,7 +52,7 @@ Gitの作者名・メールは利用者自身のGit設定を使う。コンテ�
 
 ## ProjectとIDEの接続
 
-[Project連携](docs/ai/integration.md) に既存Projectのbridge、全方式・選択方式のstandalone、task別exportと共通指示の同期入口がある。[econ-project-mini](https://github.com/yoshimurahiroki/econ-project-mini)を共通指示の編集正本とし、研究固有の選択は[project context](docs/ai/repo_context.md)に置く。
+[Project連携](docs/ai/integration.md) に既存Projectのbridge、全方式・選択方式のstandalone、task別exportと共通指示の同期入口がある。研究固有の選択は[project context](docs/ai/repo_context.md)に置く。同期元と同期先は利用者が指定する。上流テンプレートの保守では、[econ-project-mini](https://github.com/yoshimurahiroki/econ-project-mini)で共通指示を編集する。
 
 ```sh
 python scripts/export_project.py --profile bridge --output /tmp/econ-bridge
