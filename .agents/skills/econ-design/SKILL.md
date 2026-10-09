@@ -7,7 +7,7 @@ description: Develop or assess a requested economics question, model, identifica
 
 Resolve the specified question, plan, derivation or design assessment. For question or contribution judgments, assess the relevant behavior, incentives, information, allocation, externalities or equilibrium. Compare novelty with the closest papers needed for that judgment. Match generation, ranking, derivation or reassessment to the requested operation.
 
-For the comparison being designed or assessed, define the relevant unit, treatment or exposure, population, period and aggregation. Explain assignment, timing, risk set and counterfactual. State the assumptions that support the parameter. Map controls and fixed effects to the variation they absorb. Predetermined measurement establishes timing; exogeneity requires assignment evidence.
+For the comparison being designed or assessed, define the relevant unit, treatment or exposure, population, period and aggregation. Explain assignment, timing, risk set and counterfactual. State the assumptions that support the parameter. Map controls and fixed effects to the variation they absorb. Predetermined measurement establishes timing; exogeneity requires assignment evidence. Keep source observation or analysis units distinct from policy-assignment and independent inference units. Name each from the actual design and retain the source label when the others are unspecified.
 
 Read the relevant section of [design-specific decisions](references/designs.md). Select estimation and inference for the requested parameter, treatment path, heterogeneity, dependence and assignment units. Interpret a requested diagnostic through its null, precision and sampling design.
 
