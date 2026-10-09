@@ -27,7 +27,7 @@ class TaskStateTests(unittest.TestCase):
         return result.stderr if fail else json.loads(result.stdout)
 
     def add(self, key='a', *extra):
-        self.run_cli('add', key, '--owner', key, '--record', 'request.md', '--scope', 'outputs/' + key, '--next', 'Generate the saved comparison', *extra)
+        self.run_cli('add', key, '--owner', key, '--record', 'request.md', '--input', 'request.md', '--scope', 'outputs/' + key, '--next', 'Generate the saved comparison', *extra)
 
     def complete(self, key='a', reviewer='independent-session'):
         self.run_cli('start', key)
@@ -148,6 +148,52 @@ class TaskStateTests(unittest.TestCase):
         events.write_text(json.dumps({'type': 'turn.failed'}) + '\n')
         self.run_cli('usage', 'a', '--jsonl', str(events))
         self.assertIsNone(self.run_cli('summary')['totals']['total_tokens'])
+
+    def test_append_only_record_does_not_invalidate_scientific_outputs(self):
+        (self.root / 'ledger.md').write_text('Task a requested comparison\n')
+        (self.root / 'data-definition.md').write_text('Fixed population and denominator\n')
+        self.run_cli('add', 'a', '--owner', 'a', '--record', 'ledger.md', '--input', 'data-definition.md', '--scope', 'outputs/a', '--next', 'Compare')
+        self.complete()
+        self.run_cli('add', 'child', '--owner', 'child', '--record', 'ledger.md', '--after', 'a', '--scope', 'outputs/child', '--next', 'Communicate')
+        self.complete('child')
+        saved = self.run_cli('show')['tasks']['a']['record_version']['sha256']
+        with (self.root / 'ledger.md').open('a') as stream:
+            stream.write('Task b progress and quantities checked\n')
+        self.assertEqual(self.run_cli('inspect')['affected_tasks'], [])
+        self.assertEqual(self.run_cli('show')['tasks']['a']['record_version']['sha256'], saved)
+        self.assertEqual(self.run_cli('show')['tasks']['child']['status'], 'completed')
+        (self.root / 'data-definition.md').write_text('Changed scientific denominator\n')
+        self.assertEqual(self.run_cli('inspect', '--invalidate')['affected_tasks'], ['a', 'child'])
+
+    def test_record_explicitly_named_as_input_remains_dependency(self):
+        self.add()
+        self.complete()
+        self.add('child', '--after', 'a')
+        self.complete('child')
+        with (self.root / 'request.md').open('a') as stream:
+            stream.write('Changed adopted definition\n')
+        self.assertEqual(self.run_cli('inspect', '--invalidate')['affected_tasks'], ['a', 'child'])
+
+    def test_legacy_dependencies_need_explicit_requeue_without_silent_migration(self):
+        self.add()
+        self.run_cli('start', 'a')
+        self.run_cli('transition', 'a', 'interrupted', '--next', 'Adopt explicit input list')
+        path = self.root / '.agents/state/team.json'
+        state = json.loads(path.read_text())
+        task = state['tasks']['a']
+        task.pop('input_contract')
+        task.pop('input_paths')
+        task.pop('record_version')
+        path.write_text(json.dumps(state))
+        before = path.read_bytes()
+        self.run_cli('inspect')
+        self.assertEqual(path.read_bytes(), before)
+        self.run_cli('requeue', 'a', fail=True)
+        self.assertEqual(path.read_bytes(), before)
+        self.run_cli('requeue', 'a', '--input', 'request.md')
+        self.assertEqual(self.run_cli('show')['tasks']['a']['input_paths'], ['request.md'])
+        (self.root / 'request.md').write_text('Changed explicit record input\n')
+        self.assertEqual(self.run_cli('inspect')['affected_tasks'], ['a'])
 
 if __name__ == '__main__':
     unittest.main()
