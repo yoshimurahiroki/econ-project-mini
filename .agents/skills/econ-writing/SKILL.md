@@ -21,6 +21,8 @@ For results, develop an interpretable quantity into the economic interpretation 
 
 Choose the amount of explanation for the use. A research plan links its proposed comparison to necessary inputs and pending decisions. A review links each judgment to the claim and evidence under review. A slide builds one point from readable evidence. A normal answer follows the requested decision and depth. A paper gives the argument the space its reasoning needs. Use these roles when they advance understanding; do not impose a fixed sequence or paragraph template.
 
+For each central claim adapted to another reader or medium, align its canonical source, comparison, causal status and defining conditions before rendering. Verify each condensed version against that claim, including conditions needed to move from an actor's choice to group quantity changes.
+
 For bilingual deliverables, use one substantive outline and compose natural syntax in each language. Keep economic terms aligned across translations. Verify that quantities, comparisons, attribution, notation and causal relations survive the translation.
 
 ## Whole artifacts
