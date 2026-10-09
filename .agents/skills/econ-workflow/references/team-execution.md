@@ -22,6 +22,8 @@ Assign an output write range before starting a task. An empty-scope record can r
 
 On resumption, inspect outputs and run `inspect` before continuing. Changed input or output hashes invalidate only the tasks depending on them and their downstream tasks. Use `requeue` to capture the new inputs and preserve the preceding attempt in history. Legacy tasks that mixed the record into dependencies require an explicit `requeue --input PATH` list or `--no-inputs`; keep a record explicitly declared as input in that list. The helper does not silently migrate those tasks. Keep the next authorized operation with an interrupted or failed task. Resume the saved CLI session by its exact verified session ID when it is useful; do not infer a session from a stale log or use `--last` across unrelated jobs.
 
+Use `show TASK_ID` to read the saved record for one assignment. `show` without an ID retains the whole-store view.
+
 ```sh
 python .agents/skills/econ-workflow/scripts/team_state.py --root . init --max-active 3 --max-depth 2 --max-attempts 3
 python .agents/skills/econ-workflow/scripts/team_state.py --root . add evidence --owner measurement --record docs/issue/task.md --input docs/issue/task.md --scope outputs/evidence --next 'Generate the requested saved comparison'
