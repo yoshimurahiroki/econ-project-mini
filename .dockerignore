@@ -103,3 +103,8 @@ secrets/
 *.sqlite
 *.sqlite3
 *.db
+
+# Root MCP runtime settings remain local
+.agents/mcp.json
+.mcp.json
+mcp.json
