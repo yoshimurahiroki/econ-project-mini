@@ -79,7 +79,9 @@ def save(path, state):
 def transition(task, status, next_action=None):
     task['history'].append({'status': task['status'], 'at': task['updated'],
                             'inputs': task['inputs'], 'outputs': task['outputs'],
-                            'verification': task['verification'], 'next': task['next']})
+                            'verification': task['verification'], 'next': task['next'],
+                            'record_version': task.get('record_version'),
+                            'input_contract': task.get('input_contract', 1)})
     task['status'], task['updated'] = status, now()
     if next_action is not None:
         task['next'] = next_action
@@ -155,6 +157,10 @@ def main():
         cli.add_argument('id')
         if command == 'output':
             cli.add_argument('path')
+        elif command == 'requeue':
+            inputs = cli.add_mutually_exclusive_group()
+            inputs.add_argument('--input', action='append')
+            inputs.add_argument('--no-inputs', action='store_true')
         elif command == 'verify':
             cli.add_argument('--evidence', required=True)
             cli.add_argument('--result', choices=['passed', 'failed'], required=True)
@@ -207,7 +213,9 @@ def main():
             scopes = [relative(root, p, exists=False) for p in args.scope]
             tasks[args.id] = {'owner': args.owner, 'record': record, 'revision': revision(root),
                 'parent': args.parent, 'after': args.after, 'scope': scopes,
-                'inputs': snapshot(root, [record, *args.input]), 'outputs': {},
+                'record_version': {'revision': revision(root), 'sha256': digest(root / record)},
+                'input_contract': 2, 'input_paths': list(dict.fromkeys(args.input)),
+                'inputs': snapshot(root, args.input), 'outputs': {},
                 'status': 'queued', 'updated': now(), 'next': args.next,
                 'attempts': 0, 'verification': None, 'history': [], 'usage': [],
                 'independent_review': args.independent_review, 'human_corrections': 0}
@@ -233,10 +241,21 @@ def main():
             elif args.command == 'requeue':
                 if task['status'] not in {'interrupted', 'failed'}:
                     raise ValueError('Requeue requires interrupted or failed state')
+                if args.no_inputs:
+                    input_paths = []
+                elif args.input is not None:
+                    input_paths = list(dict.fromkeys(args.input))
+                elif task.get('input_contract') == 2:
+                    input_paths = task['input_paths']
+                else:
+                    raise ValueError('Legacy inputs mixed record provenance with dependencies; requeue requires explicit --input paths or --no-inputs. Include the record with --input when it defines an actual dependency.')
+                new_inputs = snapshot(root, input_paths)
                 transition(task, 'queued')
-                task['inputs'] = snapshot(root, task['inputs'])
+                task['input_paths'], task['input_contract'] = input_paths, 2
+                task['inputs'] = new_inputs
                 task['outputs'], task['verification'] = {}, None
                 task['revision'] = revision(root)
+                task['record_version'] = {'revision': task['revision'], 'sha256': digest(root / task['record'])}
             elif args.command == 'output':
                 if task['status'] not in {'running', 'evaluating'}:
                     raise ValueError('Output requires running or evaluating state')
