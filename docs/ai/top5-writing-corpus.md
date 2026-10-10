@@ -1,6 +1,6 @@
 # Top5 writing corpus — 2026-10-10
 
-Status: bibliography and 30/10/10 split frozen before learning; training reading underway. No development or final writing evaluation has run, and no skill change has been adopted from this corpus yet.
+Status: bibliography and 30/10/10 split frozen before learning. All 30 learning openings have been read and checked against their bodies. The first development comparison is complete; no corpus-derived skill change is adopted. Final evaluation has not begun.
 
 Baseline: mini `7a933fdf8917b4446ac8239e737e691bca8eb8da`; Ruan `790d821a87f6b9672e3cc892d506b9a31dc5087f`.
 
@@ -12,10 +12,20 @@ Dates use verified first formal online publication where available, otherwise th
 
 Tie decisions fixed before reading: Bornstein/Peter enters final evaluation rather than Bayer or Barr/Castleman (November 2025); Finkelstein enters development rather than Adukia at the August 2025 boundary; Mello enters the corpus rather than Higgins or Narasimhan/Weaver at the November 2024 boundary. Original AEA article/issue date metadata and publisher PDF date bands support the retained precision.
 
-Ranks 1–10: final evaluation, held out from improvement. Ranks 11–20: development. Ranks 21–50: learning. The final candidate will be evaluated once on the final set. Raw articles, full original openings and private generated/evaluation texts stay in the private work area.
+Ranks 1–10: final evaluation, held out from improvement. A historical-use audit found prior literature-note revision and an Introduction-page source check for Schnell. Schnell remains in the date-ranked final cohort and is held out from this round, but is not counted as a globally unused paper. No prior use was found for the other nine in the inspected project history. Ranks 11–20: development. Ranks 21–50: learning. The final candidate will be evaluated once on the final set. Raw articles, full original openings and private generated/evaluation texts stay in the private work area.
 
 Ash and Gruber were opening exemplars in prior work. Ash is a development task with prior project exposure, not a globally unseen paper; target-specific examples and source descriptions must be removed symmetrically from both generation packets. Bibliographic selectors and document redactors are isolated from generators and evaluators; incidental opening exposure is logged privately.
 
+
+## Development checkpoint — 2026-10-10
+
+The first candidate adds two original bilingual examples to the existing default profile: insurance value versus cost and a measured news-language pattern followed by a randomized response experiment. General rules and the paper workflow are unchanged. Both conditions used the same complete body-only inputs, with plans saved before drafts and separate independent revisions. All ten development papers have both frozen drafts and revisions.
+
+Initial anonymous readings found small advantages in argument continuity and economic connections, with offsetting strengths in the baseline. Nine of ten revised comparisons preferred the second label, despite balanced assignment of writing conditions. Fresh reversed-presentation readings of the first four chronological tasks judged both initial and revised pairs essentially equivalent overall. The first-pass preferences therefore do not establish a substantial improvement from the added examples. The candidate is not adopted on that evidence.
+
+The candidate's initial opioid-migration text incorrectly described a change in the place-specific addiction-entry component as a change in the entire entry probability. Its independent revision corrected the object. This correction is evidence about the revision step, not reliable first-draft reproduction. An evaluator also initially treated omitted uncertainty and robustness details as losses; a saved necessity rereading withdrew those claims where the central economic interpretation was already intact.
+
+The next experiment replaces fragmentary examples with a complete original training-paper argument rather than adding synonymous rules. It remains a private proposal until generated outputs show an advantage. An additional outside-corpus completed study, Narasimhan and Weaver (2024), DOI [10.1257/aer.20221712](https://doi.org/10.1257/aer.20221712), supplies a separate whole-paper-plan transfer input. Ruan's pre-estimation transfer remains pending. The fixed final ten have not been used for improvement or final generation.
 
 ## Bibliography and roles
 
