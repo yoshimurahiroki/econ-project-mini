@@ -1,6 +1,6 @@
 # Top5 writing corpus — 2026-10-10
 
-Status: the fixed corpus, all 30 learning readings, paired development evaluation, and one-time final evaluation are complete. The minimal complete-example replacement in default-micro is retained. Synchronization, project transfer and saved-commit export verification are being completed.
+Status: the fixed corpus, all 30 learning readings, paired development evaluation, and one-time final evaluation are complete. The minimal complete-example replacement in default-micro is retained. Synchronization, completed-study and pre-estimation project transfer, and saved-commit export verification are complete.
 
 Baseline: mini `7a933fdf8917b4446ac8239e737e691bca8eb8da`; Ruan `790d821a87f6b9672e3cc892d506b9a31dc5087f`.
 
@@ -12,7 +12,7 @@ Dates use verified first formal online publication where available, otherwise th
 
 Tie decisions fixed before reading: Bornstein/Peter enters final evaluation rather than Bayer or Barr/Castleman (November 2025); Finkelstein enters development rather than Adukia at the August 2025 boundary; Mello enters the corpus rather than Higgins or Narasimhan/Weaver at the November 2024 boundary. Original AEA article/issue date metadata and publisher PDF date bands support the retained precision.
 
-Ranks 1–10: final evaluation, held out from improvement. A historical-use audit found prior literature-note revision and an Introduction-page source check for Schnell. Schnell remains in the date-ranked final cohort and is held out from this round, but is not counted as a globally unused paper. No prior use was found for the other nine in the inspected project history. Ranks 11–20: development. Ranks 21–50: learning. The final candidate will be evaluated once on the final set. Raw articles, full original openings and private generated/evaluation texts stay in the private work area.
+Ranks 1–10: final evaluation, held out from improvement. A historical-use audit found prior literature-note revision and an Introduction-page source check for Schnell. Schnell remains in the date-ranked final cohort and is held out from this round, but is not counted as a globally unused paper. No prior use was found for the other nine in the inspected project history. Ranks 11–20: development. Ranks 21–50: learning. The final candidate was evaluated once on the final set. Raw articles, full original openings and private generated/evaluation texts stay in the private work area.
 
 Ash and Gruber were opening exemplars in prior work. Ash is a development task with prior project exposure, not a globally unseen paper; target-specific examples and source descriptions must be removed symmetrically from both generation packets. Bibliographic selectors and document redactors are isolated from generators and evaluators; incidental opening exposure is logged privately.
 
@@ -37,7 +37,7 @@ All ten development papers now have frozen candidate drafts and independent revi
 
 The unchanged second candidate is retained for the one-time final evaluation. The final protocol was fixed before generation: use the same body-only task and independent revision; let evaluators read original openings only after freezing; assess initial quality separately; withdraw a seriously deficient candidate without tuning it to these ten. This is a transfer test of the settled candidate, not another paired estimate against the baseline. Generic balance, pretrend and robustness detail receives no automatic credit. At that checkpoint, canonical adoption remained pending the final results reported below.
 
-The outside-corpus completed study Narasimhan and Weaver (2024), DOI [10.1257/aer.20221712](https://doi.org/10.1257/aer.20221712), has complete baseline and first-candidate whole-paper plans, Introductions and independent revisions. An anonymous comparison finds essential equivalence, with different local strengths. It supplies no additional adoption evidence for the first candidate. Ruan's pre-estimation transfer remains pending. The fixed final ten have not been used for improvement; their one-time generation began after this development decision.
+The outside-corpus completed study Narasimhan and Weaver (2024), DOI [10.1257/aer.20221712](https://doi.org/10.1257/aer.20221712), has complete baseline and first-candidate whole-paper plans, Introductions and independent revisions. An anonymous comparison finds essential equivalence, with different local strengths. It supplies no additional adoption evidence for the first candidate. Ruan's completed pre-estimation transfer is reported below. The fixed final ten have not been used for improvement; their one-time generation began after this development decision.
 
 ## Final evaluation and retained change
 
@@ -56,6 +56,16 @@ These are short extracts from independently generated research explanations, not
 - Electoral violence: the candidate's opening, “An election can threaten an entrenched political elite without removing it from office,” establishes why a narrowly lost local presidential vote can matter despite leaving local officeholders unchanged. This directs the subsequent press and violence evidence toward an informational mechanism.
 
 For the separate whole-paper-plan task on Narasimhan and Weaver, an anonymous comparison modestly prefers the second candidate after revision and the baseline initially. The revised candidate better joins boundary design to fiscal consequences. Its initial continuity is weaker, and independent revision corrects overextended mechanism interpretations. This supports the revised workflow's usefulness while retaining the first-draft result as a separate finding.
+
+## Saved implementation and Ruan application
+
+The common example is saved at mini `46cff796344ff9295718240349dbff4eaf259852` and synchronized to Ruan `f0dce432fc51575096351a18da47258134154a8b`. The existing synchronizer reports zero remaining changes and conflicts. Standalone writing, paper and bridge exports from those exact saved commits have matching input/output hashes, selected-profile metadata, local links and immutable repository links. The existing 21 synchronization tests pass.
+
+Using the unchanged selected Ruan profile and the same fixed pre-estimation research input, fresh generation produced a whole-paper plan and complete English and Japanese Introductions. Independent revision improved the rule-to-regional-comparison sequence and Japanese legal sentence structure, without inventing effects or altering adopted quantities. The initial text already contained the central economic argument. This application verifies the selected project workflow; it does not estimate the effect of replacing the common default example.
+
+The independent reading identifies modest editorial gains and some losses of specialist plan detail. A post-evaluation copy clarifies that the ADHD alternative-quantity comparison concerns proportional growth. Frozen initial and revised texts remain unchanged; the correction is not counted as blind generation success. The paper plan can explain measurement and sample-selection evidence more concretely in its specialist sections. General introductions do not need an inventory of identifying assumptions, contemporaneous policies or diagnostic tests. Canonical manuscripts, slides, data and scientific decisions remain unchanged by this application.
+
+The 50-paper task is complete as an evaluated minimal implementation. Repeated first-draft stability and reliable preservation of every important finding during revision remain open quality questions. The final ten are now used evaluation tasks and will not be reused to tune this candidate.
 
 ## Bibliography and roles
 
