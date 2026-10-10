@@ -19,6 +19,7 @@ RECEIPT_MARKER = "<!-- common-core-receipt:v2 -->"
 LEGACY_RECEIPT_MARKER = "<!-- common-core-receipt:v1 -->"
 GENERATED = {"ECON_INDEX.md", "SOURCE.md"}
 NATIVE_PROSE_METHODS = {"econ-paper", "econ-writing", "econ-edit", "econ-style"}
+BRIDGE_NATIVE_METHODS = NATIVE_PROSE_METHODS | {"econ-review"}
 
 
 def canonical(value):
@@ -416,9 +417,9 @@ def export(
     if task is not None:
         selected = {task, "econ-assertive", *supports}
         if profile == "bridge":
-            selected.update(NATIVE_PROSE_METHODS)
+            selected.update(BRIDGE_NATIVE_METHODS)
     elif profile == "bridge":
-        selected = {"econ-assertive", *NATIVE_PROSE_METHODS, *config["bridge_skills"]}
+        selected = {"econ-assertive", *BRIDGE_NATIVE_METHODS, *config["bridge_skills"]}
     else:
         selected = set(skills if skills is not None else available)
         selected.add("econ-assertive")
@@ -500,11 +501,13 @@ def export(
         start, end = config_span
         context_text = context_text[:start] + json.dumps(exported_config, ensure_ascii=False, sort_keys=True, indent=2) + context_text[end:]
     native_primary = task in NATIVE_PROSE_METHODS or task == "econ-workflow"
+    bridge_review = profile == "bridge" and task == "econ-review"
     method_provider = (
-        task.upper().replace("-", "_") if native_primary
+        "native ECON_REVIEW for editorial review; supplied R07 for requested scientific assessment" if bridge_review
+        else task.upper().replace("-", "_") if native_primary
         else "native ECON methods" if profile == "standalone"
         else "supplied R02–R05/R07 research methods" if task is not None
-        else "native prose methods and supplied R02–R05/R07 research methods"
+        else "native prose/editorial methods and supplied R02–R05/R07 research methods"
     )
     study_line = (
         "Use [STUDY_ENTRY_POINT.txt](STUDY_ENTRY_POINT.txt) for requested study implementation."
@@ -533,9 +536,10 @@ def export(
     ]
     if profile == "bridge":
         lines.extend([
-            "Paper explanation, writing, wording revision and profile work use native econ-paper, econ-writing, econ-edit and econ-style respectively.",
+            "Paper explanation, writing, wording revision, profile work and editorial review use native econ-paper, econ-writing, econ-edit, econ-style and econ-review respectively.",
             "Scientific research uses supplied R00_ROUTER.md to select one existing R02–R05 or R07 primary. Read the original module to establish its exact filename.",
-            "References to R01, R06 and R08 resolve to the corresponding native paper, writing and edit methods; their original prose instructions are superseded.",
+            "References to R01, R06 and R08 resolve to the corresponding native paper, writing and edit methods; their original prose instructions and the content rules in PAPER_NOTE.md and STYLE_EDIT_PROMPT.txt are superseded.",
+            "For editorial review, R07 resolves to native econ-review. Requested scientific assessment continues to use supplied R07.",
             "An explicit native-provider request activates the included native fallback for a research deliverable.", "",
         ])
     if profile == "bridge" and task == "econ-workflow":
@@ -562,6 +566,8 @@ def export(
             role = "prose guidance"
         elif name in supports:
             role = "support"
+        elif profile == "bridge" and name == "econ-review":
+            role = "editorial primary; native scientific fallback" if task == name else "available editorial primary; native scientific fallback"
         elif task == name:
             role = "native fallback" if profile == "bridge" and not native_primary else "primary"
         else:
@@ -624,7 +630,8 @@ def export(
         "files": files,
         "omitted": [snapshot.omitted[path] for path in sorted(snapshot.omitted)],
         "external_provider": (
-            {"resolver": "R00_ROUTER.md", "methods": "existing R02–R05/R07 attachments",
+            {"resolver": "R00_ROUTER.md",
+             "methods": "existing R07 attachment for requested scientific assessment" if bridge_review else "existing R02–R05/R07 attachments",
              "input_identity": "Supplied original attachments are outside this export's input hashes."}
             if profile == "bridge" and not native_primary else None
         ),
