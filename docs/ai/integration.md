@@ -55,6 +55,17 @@ Paste PROJECT_INSTRUCTIONS.txt into the field and attach the other exported file
 
 ## Task snapshots
 
+For bounded writing or translation, use the ordinary writing snapshot. For a complete research paper, whole-paper argument plan or substantive whole-paper composition from research materials, explicitly select econ-paper support:
+
+```sh
+python scripts/export_project.py --profile standalone --task econ-writing \
+  --output /tmp/bounded-writing-new
+python scripts/export_project.py --profile standalone --task econ-writing \
+  --support econ-paper --output /tmp/whole-paper-writing-new
+```
+
+Both recipes retain the project's selected writing profile. Select support for a bounded task only when its own source-understanding dependency warrants it. These commands document package selection; they do not automatically route requests or change a live Project's settings.
+
 ```sh
 python scripts/export_project.py --profile standalone --task econ-paper \
   --references .agents/skills/econ-workflow/references/descriptive-model.md \
