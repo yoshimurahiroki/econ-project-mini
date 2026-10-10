@@ -1,6 +1,6 @@
 # Top5 writing corpus — 2026-10-10
 
-Status: bibliography and 30/10/10 split frozen before learning. All 30 learning openings have been read and checked against their bodies. The first development comparison is complete; no corpus-derived skill change is adopted. The unchanged second candidate has entered final evaluation; no corpus-derived skill change is adopted yet.
+Status: the fixed corpus, all 30 learning readings, paired development evaluation, and one-time final evaluation are complete. The minimal complete-example replacement in default-micro is retained. Synchronization, project transfer and saved-commit export verification are being completed.
 
 Baseline: mini `7a933fdf8917b4446ac8239e737e691bca8eb8da`; Ruan `790d821a87f6b9672e3cc892d506b9a31dc5087f`.
 
@@ -35,9 +35,27 @@ The second candidate replaces fragmentary adaptations with a complete original E
 
 All ten development papers now have frozen candidate drafts and independent revisions. Two independent assessment panels compare the same texts in opposite presentation orders. Recurring, modest gains concern economic distinctions and the evidence connecting them: college choice versus continuing advising; credit acting alone versus amplifying other shocks; electoral information without an office transfer; household resistance versus the ability to work; and immediate drug availability versus accumulated addiction. Some comparisons remain equivalent or split, and revisions sometimes remove useful economic evidence. The complete exemplar has not made first drafts or revisions uniformly superior.
 
-The unchanged second candidate is retained for the one-time final evaluation. The final protocol was fixed before generation: use the same body-only task and independent revision; let evaluators read original openings only after freezing; assess initial quality separately; withdraw a seriously deficient candidate without tuning it to these ten. This is a transfer test of the settled candidate, not another paired estimate against the baseline. Generic balance, pretrend and robustness detail receives no automatic credit. Canonical adoption remains pending.
+The unchanged second candidate is retained for the one-time final evaluation. The final protocol was fixed before generation: use the same body-only task and independent revision; let evaluators read original openings only after freezing; assess initial quality separately; withdraw a seriously deficient candidate without tuning it to these ten. This is a transfer test of the settled candidate, not another paired estimate against the baseline. Generic balance, pretrend and robustness detail receives no automatic credit. At that checkpoint, canonical adoption remained pending the final results reported below.
 
 The outside-corpus completed study Narasimhan and Weaver (2024), DOI [10.1257/aer.20221712](https://doi.org/10.1257/aer.20221712), has complete baseline and first-candidate whole-paper plans, Introductions and independent revisions. An anonymous comparison finds essential equivalence, with different local strengths. It supplies no additional adoption evidence for the first candidate. Ruan's pre-estimation transfer remains pending. The fixed final ten have not been used for improvement; their one-time generation began after this development decision.
+
+## Final evaluation and retained change
+
+The settled candidate was used once on the ten final papers, with the same full body-only generation task and a fresh independent revision. Only evaluators then read the full original openings. All ten revised texts communicate their central economic argument; the readings identify no consequential factual or numerical error that defeats it. This candidate-only exercise establishes transfer performance on these texts, not superiority over an ungenerated final-set baseline. Schnell retains its historical-use annotation.
+
+The retained change is one reference-file replacement: complete original English and Japanese Introductions based on Shepard and Wagner replace disconnected short adaptations. The general rules, skill responsibilities and writing workflow do not change. A blank line in the source table is repaired for rendering; the evaluated prose is unchanged. This choice uses the recurring development gains and the final texts' substantive adequacy. The first candidate remains unadopted.
+
+The final reading also exposes a persistent editing defect. Revisions sometimes delete useful economic conclusions: the efficiency/equity implication of overtime aversion, the climate-risk application of housing yields, employment reallocation under nonlinear pricing, and national labor-market implications of proximity. These are recorded as losses, not successful compression. Other outputs leave contribution or mechanism links underdeveloped. No final output was used to rewrite the candidate or retest these ten. Reliable improvement from every revision and repeat-generation first-draft stability remain unestablished.
+
+### Representative development comparisons
+
+These are short extracts from independently generated research explanations, not quotations from the source authors. They illustrate the observed difference; the complete private comparison also records offsetting strengths.
+
+- College advising: the baseline connects application help to later degree completion. The candidate explicitly supplies the resource-allocation reason for separating initial choice from continuing support: “Distinguishing these channels matters for how long advising must continue and where resources are most useful.” Both contain the principal result; the gain is the reason the mechanism distinction matters.
+- Mortgage credit: the baseline explains that credit generates housing demand and amplifies other forces. The candidate makes the two experiments interpretable in its opening, assigning 32 percent to credit standards operating alone and 53 percent to their interaction with other boom forces. The baseline preserves the distinction later; the gain is explanatory placement, not recovery of a missing estimate.
+- Electoral violence: the candidate's opening, “An election can threaten an entrenched political elite without removing it from office,” establishes why a narrowly lost local presidential vote can matter despite leaving local officeholders unchanged. This directs the subsequent press and violence evidence toward an informational mechanism.
+
+For the separate whole-paper-plan task on Narasimhan and Weaver, an anonymous comparison modestly prefers the second candidate after revision and the baseline initially. The revised candidate better joins boundary design to fiscal consequences. Its initial continuity is weaker, and independent revision corrects overextended mechanism interpretations. This supports the revised workflow's usefulness while retaining the first-draft result as a separate finding.
 
 ## Bibliography and roles
 
