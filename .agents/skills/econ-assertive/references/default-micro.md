@@ -2,7 +2,7 @@
 
 Profile: default-micro. Languages: English and Japanese.
 
-For general writing, the exemplars are the complete Abstracts and Introductions of the English-language Top5 papers below: AER, Econometrica, JPE, QJE, and ReStud, all published from 2020 onward. Read these sections as connected arguments, including their introduction subsections and relevant footnotes. They inform the amount and choice of content, reasoning, sentences, and vocabulary across writing tasks; they do not prescribe an Introduction format for every task. Full articles and appendices can verify facts and citations, but the conventions of identification, results, proofs, robustness, and other specialist sections are not general writing models. Japanese research papers retained below are historical references only.
+For general writing, the exemplars are the complete Abstracts and Introductions of the English-language Top5 papers below: AER, Econometrica, JPE, QJE, and ReStud, all published from 2020 onward. Read these sections as connected arguments, including their introduction subsections and relevant footnotes. They inform the amount and choice of content, reasoning, sentences, and vocabulary across writing tasks; they do not prescribe an Introduction format for every task. Full articles and appendices can verify facts and citations, but the conventions of identification, results, proofs, robustness, and other specialist sections are not general writing models. A selected project profile may add a major field-journal opening for a particularly relevant and well-developed economic argument. Corresponding specialist sections become prose models only during actual specialist-section writing through econ-writing. Japanese research papers retained below are historical references only.
 
 ## Principles
 
@@ -35,6 +35,22 @@ The following passages illustrate a few choices in context. Their facts belong t
 > Waiting can create better matching opportunities, but it also risks losing participants before they are matched. If a planner knows who is about to leave, a thicker market gives the planner more ways to match those urgent cases. Without that information, waiting brings much smaller gains. The value of delay therefore depends on the planner's ability to recognize imminent departures.
 
 > マッチングを遅らせれば組み合わせの候補は増えるが、待っている間に参加者が退出するおそれもある。退出が迫る人を把握できれば、候補が多い市場でその人を優先して組み合わせられる。その情報がなければ、待つことの効果は小さい。したがって、先送りの価値は、退出の時期を運営者がどれだけ把握できるかによって変わる。
+
+## Compression and developed reasoning from the same study
+
+The following original adaptations use Ash, Chen, and Naidu (2026). The compact version summarizes the study; the developed passage shows the corresponding opening argument, not an entire replacement Introduction. Their different functions determine the information retained, not a required length or paragraph count.
+
+**Abstract-level selection.**
+
+> Can economic ideas change the decisions of public officials? Ash, Chen, and Naidu study an economics training program attended by almost half of US federal judges. They compare changes in decisions across groups of judges attending at different times. After training, judges used more economics language in their opinions, ruled against regulatory agencies more often, and imposed more severe criminal penalties. These findings connect exposure to economic ideas with changes in policy decisions.
+
+**Developing the Introduction's opening argument.**
+
+> Public officials make policy partly by interpreting rules. Federal judges exercise this discretion when statutes and precedents leave a dispute unresolved, and their rulings can govern later cases. Economic training can affect policy by changing how judges evaluate the choices before them. The Manne program provided an intensive course in law and economics to almost half of federal judges. Attendance records link this exposure to the same judges' later opinions and criminal sentencing decisions. Differences in attendance timing provide a comparison of how their decisions changed. The analysis follows these changes from the language of judicial opinions to regulatory votes and criminal penalties, connecting exposure to ideas with the exercise of public authority.
+
+> 公的な意思決定では、規則をどう解釈するかが政策を左右する。連邦裁判官は、法律や先例だけでは解決しない争点について判断し、その判決は後の事件にも適用される。経済学の研修が判断の仕方を変えれば、その影響は具体的な政策に及ぶ。Manneプログラムは、連邦裁判官の半数近くに法と経済学の集中講義を提供した。参加記録を判決文や刑事事件の量刑と結び付け、参加時期が異なる裁判官の判断の変化を比較する。判決文で使う語彙から規制当局への判断、刑罰へと分析を進めることで、経済学的な考え方への接触が公権力の行使に及ぼす影響を調べている。
+
+The compact version retains the question, comparison and main outcomes. The developed passage spends additional space on discretion, precedent and the observable decisions because those links explain why ideas can change policy. Repeated subjects and objects carry the reasoning across sentences. Court counts, fixed-effect inventories, routine selection defenses and a literature catalogue are omitted. The study's recorded word measure is economics language, not a direct observation of judges' reasoning. The comparison uses groups attending at different times; the example does not redefine it as never-attendees or only not-yet-treated controls. These facts were checked in the body without adopting the body's exposition density.
 
 ## Active sources and complete reading scope
 
