@@ -13,8 +13,10 @@ from urllib.parse import quote, unquote, urlsplit
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_PROFILE = ".agents/skills/econ-assertive/references/default-micro.md"
 WORKFLOW_REFERENCE = ".agents/skills/econ-workflow/references/descriptive-model.md"
+PAPER_WORKFLOW_REFERENCE = ".agents/skills/econ-writing/references/paper-workflow.md"
 PROJECT_MARKER = "<!-- export-project:v1 -->"
-RECEIPT_MARKER = "<!-- common-core-receipt:v1 -->"
+RECEIPT_MARKER = "<!-- common-core-receipt:v2 -->"
+LEGACY_RECEIPT_MARKER = "<!-- common-core-receipt:v1 -->"
 GENERATED = {"ECON_INDEX.md", "SOURCE.md"}
 NATIVE_PROSE_METHODS = {"econ-paper", "econ-writing", "econ-edit", "econ-style"}
 
@@ -441,6 +443,8 @@ def export(
             ref_paths.update(path.resolve() for path in (available[name].parent / "references").glob("*.md"))
         if profile == "bridge":
             ref_paths.add((root / WORKFLOW_REFERENCE).resolve())
+    if task == "econ-writing" or "econ-writing" in supports:
+        ref_paths.add((root / PAPER_WORKFLOW_REFERENCE).resolve())
     for value in references:
         path = snapshot.inside(value)
         pieces = path.relative_to(root).parts
@@ -454,7 +458,7 @@ def export(
     for item in config["files"]:
         snapshot.add(snapshot.inside(item["path"]), item["output"])
     general = task is None and (profile == "bridge" or skills is None)
-    needs_profile = general or bool(set(selected) & {"econ-writing", "econ-edit"}) or style_profile is not None
+    needs_profile = general or bool(set(selected) & {"econ-paper", "econ-writing", "econ-edit"}) or style_profile is not None
     resolved_profile = None
     profile_path = None
     if needs_profile:
@@ -480,7 +484,12 @@ def export(
     receipt = None
     integration = root / "docs/ai/integration.md"
     if integration.is_file():
-        receipt, _ = marked_json(snapshot.text(integration), RECEIPT_MARKER)
+        integration_text = snapshot.text(integration)
+        receipts = [value for marker in (RECEIPT_MARKER, LEGACY_RECEIPT_MARKER)
+                    if (value := marked_json(integration_text, marker)[0]) is not None]
+        if len(receipts) > 1:
+            raise ValueError("Multiple common-core receipts")
+        receipt = receipts[0] if receipts else None
     if config_span and config["writing_profile"] != "default-micro":
         exported_config = dict(config)
         preference_path = snapshot.inside(config["writing_profile"])
