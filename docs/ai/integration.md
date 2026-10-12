@@ -35,14 +35,6 @@ Git `core.filemode=false` supports content updates and replay at the existing tr
 
 For these upstream templates, maintainers edit common functionality in econ-project-mini and explicitly synchronize tested changes to econ-project and selected research projects. This maintenance arrangement adds no default destination or owner restriction to a user's copy.
 
-## Existing R00-R08 Project
-
-```sh
-python scripts/export_project.py --profile bridge --output /tmp/econ-bridge-new
-```
-
-Keep the original R00-R08 attachments unchanged. For a complete instruction-field replacement, paste PROJECT_INSTRUCTIONS.txt. To update a separately maintained field, replace its bridge block with BRIDGE_INSTRUCTIONS.txt and remove conflicting inherited common-policy and writing instructions. Attach the exported files. ECON_INDEX.md gives native econ-paper, econ-writing, econ-edit, econ-style and econ-review priority for paper explanation, writing, wording revision, profile work and editorial review. Requested scientific assessment uses original R07; other scientific research uses original R02-R05 under the supplied R00 router. References to R01, R06 and R08 resolve to the corresponding native methods; the content rules in PAPER_NOTE.md and STYLE_EDIT_PROMPT.txt are superseded. An explicit native-provider request uses the exported native fallback for a research deliverable.
-
 ## Standalone Project
 
 ```sh
@@ -74,9 +66,9 @@ python scripts/export_project.py --profile standalone --task econ-edit \
   --style-profile default-micro --output /tmp/econ-edit-new
 ```
 
-`--task` selects the deliverable's method role; `--support` names a dependency method and `--references` names an exact repository-relative reference file. Both options are repeatable and require `--task`. `--task` and `--skills` are exclusive. Bridge task snapshots use the selected native primary for paper explanation, writing, wording revision or profile work. A bridge econ-review snapshot uses native econ-review for editorial review and supplied R07 for requested scientific assessment. A bridge workflow snapshot uses native econ-workflow as coordinator, with a separate supplied R00 primary for each substantive research deliverable. Other research snapshots retain the supplied R02-R05/R07 provider and include the selected native research body as its available fallback.
+`--task` selects the deliverable's method role; `--support` names a dependency method and `--references` names an exact repository-relative reference file. Both options are repeatable and require `--task`. `--task` and `--skills` are exclusive.
 
-Task snapshots include the selected bodies, explicit references and applicable writing-profile resources. Selecting econ-writing as the task or explicit support also includes its paper-workflow reference; bridge availability alone does not add it. Econ-writing owns whole-paper argument design and section drafting. Inclusion makes a resource available; the current task determines whether it is read. ECON_INDEX.md lists the selected roles and files. Project additions come from the `export-project:v1` block in [repo_context.md](repo_context.md).
+Task snapshots include the selected bodies, explicit references and applicable writing-profile resources. Selecting econ-writing as the task or explicit support also includes its paper-workflow reference. Econ-writing owns whole-paper argument design and section drafting. Inclusion makes a resource available; the current task determines whether it is read. ECON_INDEX.md lists the selected roles and files. Project additions come from the `export-project:v1` block in [repo_context.md](repo_context.md).
 
 Use a fresh output directory outside the repository. The exporter enforces the 8,000-character instruction-field limit. Included links use exported filenames; omitted repository files use their recorded immutable revision. SOURCE.md records source versions, original and generated hashes and snapshot identity, including working-file content. Regenerate the selected snapshot when its source instructions change.
 
