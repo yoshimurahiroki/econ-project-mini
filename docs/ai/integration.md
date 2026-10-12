@@ -23,7 +23,7 @@ The default is a read-only comparison of `COMMON_PATHS`. Repeat `--target` for m
 
 A first synchronization adopts absent files. Existing files require an explicit `--claim 'HOST/OWNER/REPO:PATH=SHA256:MODE'` using the destination fingerprint reported by comparison. This claim establishes ownership of that particular path at that particular version. The three-way comparison then checks the previous receipt, current destination and new source. Uncommitted, staged and committed custom changes are protected. Resolve only the reported paths and claim their reviewed current fingerprints when choosing to replace them. Synchronization never stages files or clears the index.
 
-Use `--migrate-receipt` to migrate a v1 receipt whose recorded source commit, blob, hash and mode can be verified. Source switching requires a separate reviewed ownership decision. Each v2 receipt records the source identity, input commit, selected hashes and modes, adoption state and destination identity. It contains no host paths or credential-bearing URLs. Project context, integration prose, source history, research records and environment dependencies remain project-owned.
+Use `--migrate-receipt` to migrate a v1 receipt whose recorded source commit, blob, hash and mode can be verified. Source switching requires a separate reviewed ownership decision. Each v2 receipt records the source identity, input commit, selected hashes and modes, adoption state and destination identity. It contains no host paths or credential-bearing URLs. Project context, integration prose, research records and environment dependencies remain project-owned.
 
 Use `--release PATH` to relinquish receipt ownership while retaining the local file and index. Released paths cannot be copied or deleted by subsequent synchronization. The explicit --release-local-configs option releases the nine LOCAL_CONFIG_PATHS; combine it with explicit --path entries when also copying common files. Remove public tracking separately with `git rm --cached -- PATH`; keep the runtime file locally and distribute its public example definition. The [configuration examples](config-templates/README.md) are managed common files; runtime MCP configurations and their generation state are local.
 
@@ -41,7 +41,7 @@ For these upstream templates, maintainers edit common functionality in econ-proj
 python scripts/export_project.py --profile bridge --output /tmp/econ-bridge-new
 ```
 
-Keep the original R00-R08 attachments unchanged. For a complete instruction-field replacement, paste PROJECT_INSTRUCTIONS.txt. To update a separately maintained field, replace its bridge block with BRIDGE_INSTRUCTIONS.txt and remove conflicting inherited common-policy and writing instructions. Attach the exported files. ECON_INDEX.md gives native econ-paper, econ-writing, econ-edit and econ-style priority for paper explanation, writing, wording revision and profile work. Scientific research uses the original R02-R05 or R07 under the supplied R00 router. References to R01, R06 and R08 resolve to the corresponding native methods. An explicit native-provider request uses the exported native fallback for a research deliverable.
+Keep the original R00-R08 attachments unchanged. For a complete instruction-field replacement, paste PROJECT_INSTRUCTIONS.txt. To update a separately maintained field, replace its bridge block with BRIDGE_INSTRUCTIONS.txt and remove conflicting inherited common-policy and writing instructions. Attach the exported files. ECON_INDEX.md gives native econ-paper, econ-writing, econ-edit, econ-style and econ-review priority for paper explanation, writing, wording revision, profile work and editorial review. Requested scientific assessment uses original R07; other scientific research uses original R02-R05 under the supplied R00 router. References to R01, R06 and R08 resolve to the corresponding native methods; the content rules in PAPER_NOTE.md and STYLE_EDIT_PROMPT.txt are superseded. An explicit native-provider request uses the exported native fallback for a research deliverable.
 
 ## Standalone Project
 
@@ -55,6 +55,17 @@ Paste PROJECT_INSTRUCTIONS.txt into the field and attach the other exported file
 
 ## Task snapshots
 
+For bounded writing or translation, use the ordinary writing snapshot. For a complete research paper, whole-paper argument plan or substantive whole-paper composition from research materials, explicitly select econ-paper support:
+
+```sh
+python scripts/export_project.py --profile standalone --task econ-writing \
+  --output /tmp/bounded-writing-new
+python scripts/export_project.py --profile standalone --task econ-writing \
+  --support econ-paper --output /tmp/whole-paper-writing-new
+```
+
+Both recipes retain the project's selected writing profile. Select support for a bounded task only when its own source-understanding dependency warrants it. These commands document package selection; they do not automatically route requests or change a live Project's settings.
+
 ```sh
 python scripts/export_project.py --profile standalone --task econ-paper \
   --references .agents/skills/econ-workflow/references/descriptive-model.md \
@@ -63,15 +74,15 @@ python scripts/export_project.py --profile standalone --task econ-edit \
   --style-profile default-micro --output /tmp/econ-edit-new
 ```
 
-`--task` selects the deliverable's method role; `--support` names a dependency method and `--references` names an exact repository-relative reference file. Both options are repeatable and require `--task`. `--task` and `--skills` are exclusive. Bridge task snapshots use the selected native primary for paper explanation, writing, wording revision or profile work. A bridge workflow snapshot uses native econ-workflow as coordinator, with a separate supplied R00 primary for each substantive research deliverable. Other research snapshots retain the supplied R02-R05/R07 provider and include the selected native research body as its available fallback.
+`--task` selects the deliverable's method role; `--support` names a dependency method and `--references` names an exact repository-relative reference file. Both options are repeatable and require `--task`. `--task` and `--skills` are exclusive. Bridge task snapshots use the selected native primary for paper explanation, writing, wording revision or profile work. A bridge econ-review snapshot uses native econ-review for editorial review and supplied R07 for requested scientific assessment. A bridge workflow snapshot uses native econ-workflow as coordinator, with a separate supplied R00 primary for each substantive research deliverable. Other research snapshots retain the supplied R02-R05/R07 provider and include the selected native research body as its available fallback.
 
-Task snapshots include the selected bodies, explicit references and applicable writing-profile resources. Inclusion makes a resource available; the current task determines whether it is read. ECON_INDEX.md lists the selected roles and files. Project additions come from the `export-project:v1` block in [repo_context.md](repo_context.md).
+Task snapshots include the selected bodies, explicit references and applicable writing-profile resources. Selecting econ-writing as the task or explicit support also includes its paper-workflow reference; bridge availability alone does not add it. Econ-writing owns whole-paper argument design and section drafting. Inclusion makes a resource available; the current task determines whether it is read. ECON_INDEX.md lists the selected roles and files. Project additions come from the `export-project:v1` block in [repo_context.md](repo_context.md).
 
 Use a fresh output directory outside the repository. The exporter enforces the 8,000-character instruction-field limit. Included links use exported filenames; omitted repository files use their recorded immutable revision. SOURCE.md records source versions, original and generated hashes and snapshot identity, including working-file content. Regenerate the selected snapshot when its source instructions change.
 
 ## Custom exemplars
 
-[econ-assertive](../../.agents/skills/econ-assertive/SKILL.md) selects source examples for writing. The `writing_profile` value in [project context](repo_context.md) records the persistent choice. `--style-profile` selects a snapshot's task profile without changing that value. Writing or wording tasks include the selected profile; default-micro remains available as a source of examples.
+[econ-assertive](../../.agents/skills/econ-assertive/SKILL.md) selects source examples for writing. The `writing_profile` value in [project context](repo_context.md) records the persistent choice. `--style-profile` selects a snapshot's task profile without changing that value. Paper-explanation, writing and wording tasks include the selected profile; default-micro remains available as a source of examples.
 
 To create or revise a profile, request econ-style with the source papers, language and target section. Name a destination to save it; a repository-save request without a path uses docs/ai/custom-style.md. Creation and saving preserve the persistent choice. Change the project-context value only for an explicit request to adopt or switch the profile.
 
