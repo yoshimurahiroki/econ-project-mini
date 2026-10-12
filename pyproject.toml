@@ -3,9 +3,6 @@ name = "econ-project"
 version = "0.1.0"
 description = "Infrastructure stack for Python, R, TinyTeX, Quarto, Jupyter, and R package build support"
 requires-python = ">=3.12"
-authors = [
-    { name = "yoshimurahiroki", email = "yoshimurahiroki@akane.waseda.jp" },
-]
 dependencies = []
 
 # ── Pixi configuration ──────────────────────────────────────────
