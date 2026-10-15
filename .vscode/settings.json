@@ -14,22 +14,23 @@
   "python.terminal.activateEnvInCurrentTerminal": false,
   "quarto.path": "/usr/local/bin/quarto",
   "jupyter.notebookFileRoot": "${workspaceFolder}",
-  "latex-workshop.latex.recipe.default": "lualatex (with build dir)",
+  "latex-workshop.latex.recipe.default": "lualatex (project build)",
   "latex-workshop.latex.recipes": [
     {
-      "name": "lualatex (with build dir)",
+      "name": "lualatex (project build)",
       "tools": [
-        "lualatex-with-build-dir"
+        "project-latex"
       ]
     }
   ],
   "latex-workshop.latex.tools": [
     {
-      "name": "lualatex-with-build-dir",
-      "command": "bash",
+      "name": "project-latex",
+      "command": "python3",
       "args": [
-        "-lc",
-        "cd %DIR% && mkdir -p .latex-build && lualatex -shell-escape -interaction=nonstopmode -file-line-error -output-directory=.latex-build %DOCFILE%.tex && cp .latex-build/%DOCFILE%.pdf %DOCFILE%.pdf && rm -f %DOCFILE%.aux %DOCFILE%.log %DOCFILE%.nav %DOCFILE%.out %DOCFILE%.snm %DOCFILE%.toc %DOCFILE%.bbl %DOCFILE%.blg %DOCFILE%.synctex.gz %DOCFILE%.fls %DOCFILE%.fdb_latexmk %DOCFILE%.bcf %DOCFILE%.run.xml || true"
+        "%WORKSPACE_FOLDER%/scripts/build_latex.py",
+        "--",
+        "%DOC_EXT%"
       ]
     }
   ],

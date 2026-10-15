@@ -13,6 +13,56 @@ sync = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(sync)
 
 
+class ReceiptTests(unittest.TestCase):
+    def test_lf_and_crlf_receipts_parse_without_changing_text_offsets(self):
+        for newline in ("\n", "\r\n"):
+            for version, start, end in (
+                (1, sync.LEGACY_START, sync.LEGACY_END),
+                (2, sync.RECEIPT_START, sync.RECEIPT_END),
+            ):
+                with self.subTest(newline=repr(newline), version=version):
+                    prefix, suffix = "利用者の記録\r\n\n", "\n\r\n利用者の末尾"
+                    block = newline.join((start, sync.FENCE + "json", '{"value": "記録"}', sync.FENCE, end))
+                    original = (prefix + block + suffix).encode("utf-8")
+                    actual_version, receipt, a, b = sync.read_receipt(original)
+                    self.assertEqual(actual_version, version)
+                    self.assertEqual(receipt, {"value": "記録"})
+                    self.assertEqual(original.decode("utf-8")[:a], prefix)
+                    self.assertEqual(original.decode("utf-8")[b:], suffix)
+
+    def test_malformed_receipt_fences_are_refused(self):
+        bodies = (
+            sync.FENCE + '\n{}\n' + sync.FENCE,
+            sync.FENCE + 'json {}\n' + sync.FENCE,
+            sync.FENCE + 'json\n{}' + sync.FENCE,
+            sync.FENCE + 'json\n{}\n' + sync.FENCE + 'extra',
+            sync.FENCE + 'json\n{}\n',
+        )
+        for newline in ("\n", "\r\n"):
+            for body in bodies:
+                with self.subTest(newline=repr(newline), body=body):
+                    original = (sync.RECEIPT_START + "\n" + body + "\n" + sync.RECEIPT_END).replace("\n", newline)
+                    with self.assertRaisesRegex(ValueError, "Malformed receipt JSON block"):
+                        sync.read_receipt(original.encode("utf-8"))
+
+    def test_appending_receipt_retains_document_newlines_and_bytes(self):
+        for newline in (b"\n", b"\r\n"):
+            for trailing_lines in (0, 1, 2):
+                with self.subTest(newline=newline, trailing_lines=trailing_lines):
+                    original = "# 利用者の記録".encode() + newline + b"Notes" + newline * trailing_lines
+                    updated = sync.receipt_bytes(original, {"value": "記録"})
+                    prefix = updated[:updated.index(sync.RECEIPT_START.encode())]
+                    self.assertEqual(prefix, original + newline * max(0, 2 - trailing_lines))
+                    block = updated[len(prefix):]
+                    self.assertNotIn(b"\r", block.replace(b"\r\n", b""))
+                    if newline == b"\r\n":
+                        self.assertNotIn(b"\n", block.replace(b"\r\n", b""))
+                    else:
+                        self.assertNotIn(b"\r", block)
+                    self.assertTrue(updated.endswith(newline))
+                    self.assertEqual(sync.read_receipt(updated)[1], {"value": "記録"})
+
+
 class SynchronizationTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory(prefix="econ-common-test-")
@@ -142,6 +192,40 @@ class SynchronizationTests(unittest.TestCase):
         self.assertFalse(report["different"])
         self.assertEqual(receipt, (self.one / sync.RECEIPT_PATH).read_bytes())
         self.assertTrue((self.one / "rules.md").stat().st_mode & 0o111)
+
+    def test_receipt_update_and_replay_preserve_newlines_and_surrounding_bytes(self):
+        self.apply([self.one, self.two])
+        prefix = "# 利用者の記録\r\n\n".encode()
+        suffix = "\n\r\n利用者の末尾".encode()
+        for target, newline in ((self.one, b"\n"), (self.two, b"\r\n")):
+            path = target / sync.RECEIPT_PATH
+            block = path.read_bytes().rstrip(b"\n").replace(b"\n", newline)
+            path.write_bytes(prefix + block + suffix)
+        report, status = sync.synchronize(self.source, [self.one, self.two], paths=["rules.md"])
+        self.assertEqual(status, 0)
+        self.assertFalse(report["different"])
+
+        self.put(self.source, "rules.md", "next source\n", commit=True)
+        self.apply([self.one, self.two])
+        for target, newline in ((self.one, b"\n"), (self.two, b"\r\n")):
+            with self.subTest(newline=newline):
+                path = target / sync.RECEIPT_PATH
+                updated = path.read_bytes()
+                a = updated.index(sync.RECEIPT_START.encode())
+                b = updated.index(sync.RECEIPT_END.encode()) + len(sync.RECEIPT_END)
+                self.assertEqual(updated[:a], prefix)
+                self.assertEqual(updated[b:], suffix)
+                block = updated[a:b]
+                if newline == b"\r\n":
+                    self.assertNotIn(b"\n", block.replace(b"\r\n", b""))
+                else:
+                    self.assertNotIn(b"\r", block)
+                self.assertEqual(sync.read_receipt(updated)[1]["source_base_commit"], self.command(self.source, "rev-parse", "HEAD"))
+                self.assertEqual((target / "rules.md").read_bytes(), b"next source\n")
+                report, status = self.apply([target])
+                self.assertEqual(status, 0)
+                self.assertFalse(report["different"])
+                self.assertEqual(path.read_bytes(), updated)
 
     def test_explicit_delete_and_move_preserve_unrelated_file(self):
         self.apply()
@@ -285,15 +369,24 @@ class SynchronizationTests(unittest.TestCase):
         legacy = {"source_repository": "alice/shared", "source_base_commit": self.command(self.source, "rev-parse", "HEAD"),
                   "paths": [{"path": "rules.md", "git_blob": state["git_blob"], "sha256": state["sha256"]}]}
         data = sync.receipt_bytes(b"# Project\n", legacy).replace(sync.RECEIPT_START.encode(), sync.LEGACY_START.encode()).replace(sync.RECEIPT_END.encode(), sync.LEGACY_END.encode())
-        self.put(self.one, "rules.md", "original\n")
-        (self.one / "docs/ai").mkdir(parents=True)
-        (self.one / sync.RECEIPT_PATH).write_bytes(data)
-        with self.assertRaisesRegex(ValueError, "migrate-receipt"):
-            self.apply()
+        for target, newline in ((self.one, b"\n"), (self.two, b"\r\n")):
+            self.put(target, "rules.md", "original\n")
+            (target / "docs/ai").mkdir(parents=True)
+            (target / sync.RECEIPT_PATH).write_bytes(data.replace(b"\n", newline))
+            with self.assertRaisesRegex(ValueError, "migrate-receipt"):
+                self.apply([target])
         self.put(self.source, "rules.md", "next source\n", commit=True)
-        self.apply(migrate=True)
-        self.assertIn(sync.RECEIPT_START, (self.one / sync.RECEIPT_PATH).read_text())
-        self.assertEqual((self.one / "rules.md").read_text(), "next source\n")
+        self.apply([self.one, self.two], migrate=True)
+        for target, newline in ((self.one, b"\n"), (self.two, b"\r\n")):
+            with self.subTest(newline=newline):
+                updated = (target / sync.RECEIPT_PATH).read_bytes()
+                self.assertEqual(sync.read_receipt(updated)[0], 2)
+                self.assertTrue(updated.startswith(b"# Project" + newline * 2))
+                if newline == b"\r\n":
+                    self.assertNotIn(b"\n", updated.replace(b"\r\n", b""))
+                else:
+                    self.assertNotIn(b"\r", updated)
+                self.assertEqual((target / "rules.md").read_text(), "next source\n")
 
 
 if __name__ == "__main__":

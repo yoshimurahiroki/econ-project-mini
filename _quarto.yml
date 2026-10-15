@@ -32,6 +32,6 @@ format:
         \providecommand{\maketitle}{}
 
 execute:
-  error: true
+  error: false
   warning: true
   freeze: false
