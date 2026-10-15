@@ -35,7 +35,7 @@ jobs:
           base=$(git merge-base "$PR_BASE" HEAD)
           make quality-changed BASE="$base"
           changed=$(git diff --name-only "$base" HEAD)
-          if printf '%s\n' "$changed" | grep -Eq '^(pyproject\.toml|\.pre-commit-config\.yaml|\.github/workflows/quality\.yml)$'; then
+          if printf '%s\n' "$changed" | grep -Eq '^(Makefile|pyproject\.toml|\.pre-commit-config\.yaml|\.github/workflows/quality\.yml)$'; then
             pixi run -e quality pre-commit run --files scripts/build_latex.py scripts/pack_context.sh
           fi
           if printf '%s\n' "$changed" | grep -Eq '^(Makefile|scripts/(build_latex|test_build_latex)\.py)$'; then
