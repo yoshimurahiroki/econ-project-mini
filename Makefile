@@ -69,17 +69,9 @@ r-install r-plan:
 	'
 
 build-paper:
-	cd "$(dir $(PAPER))" && \
-	lualatex -shell-escape -interaction=nonstopmode -halt-on-error "$(notdir $(PAPER))" && \
-	if grep -Fq '\bibdata{' "$(basename $(notdir $(PAPER))).aux"; then pbibtex "$(basename $(notdir $(PAPER)))"; fi && \
-	lualatex -shell-escape -interaction=nonstopmode -halt-on-error "$(notdir $(PAPER))" && \
-	lualatex -shell-escape -interaction=nonstopmode -halt-on-error "$(notdir $(PAPER))"
+	python3 scripts/build_latex.py -- '$(subst ','"'"',$(PAPER))'
 build-slides:
-	cd "$(dir $(SLIDES))" && \
-	lualatex -shell-escape -interaction=nonstopmode -halt-on-error "$(notdir $(SLIDES))" && \
-	if grep -Fq '\bibdata{' "$(basename $(notdir $(SLIDES))).aux"; then pbibtex "$(basename $(notdir $(SLIDES)))"; fi && \
-	lualatex -shell-escape -interaction=nonstopmode -halt-on-error "$(notdir $(SLIDES))" && \
-	lualatex -shell-escape -interaction=nonstopmode -halt-on-error "$(notdir $(SLIDES))"
+	python3 scripts/build_latex.py -- '$(subst ','"'"',$(SLIDES))'
 quarto-html:
 	$(PIXI_RUN) quarto render "$(if $(strip $(QMD)),$(QMD),.)" --to html
 qmd-pdf:

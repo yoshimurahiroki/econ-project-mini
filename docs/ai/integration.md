@@ -25,6 +25,8 @@ A first synchronization adopts absent files. Existing files require an explicit 
 
 Use `--migrate-receipt` to migrate a v1 receipt whose recorded source commit, blob, hash and mode can be verified. Source switching requires a separate reviewed ownership decision. Each v2 receipt records the source identity, input commit, selected hashes and modes, adoption state and destination identity. It contains no host paths or credential-bearing URLs. Project context, integration prose, research records and environment dependencies remain project-owned.
 
+Receipts accept LF or CRLF. Updates retain the managed block's newline style and leave surrounding project text unchanged.
+
 Use `--release PATH` to relinquish receipt ownership while retaining the local file and index. Released paths cannot be copied or deleted by subsequent synchronization. The explicit --release-local-configs option releases the nine LOCAL_CONFIG_PATHS; combine it with explicit --path entries when also copying common files. Remove public tracking separately with `git rm --cached -- PATH`; keep the runtime file locally and distribute its public example definition. The [configuration examples](config-templates/README.md) are managed common files; runtime MCP configurations and their generation state are local.
 
 Deletions require `--delete PATH` with that source path absent. Moves require `--move OLD=NEW` with source OLD absent and NEW present. Existing destination paths still require their recorded baseline or a matching ownership claim. These operations stay within the explicitly selected paths.
@@ -87,5 +89,12 @@ A requested handoff uses the existing task record for the revision, evidence, au
 Read econ-workflow once for every new economics task, then use the requested specialist as executor. Support calls and reference reads continue the current task without repeating entry. Econ-workflow coordinates interdependent research work and owns its integrated result; bounded tasks remain bounded. Read team-execution for concurrent write ownership, state resumption or requested usage accounting. Econ-review assesses the requested claim or artifact; its oversight notes support an independent assessment or a contested execution finding. Independent review uses a different worker or session.
 
 Existing research task records remain the canonical assignment and scientific-decision source. If no operational store exists, the portable stdlib helper at `.agents/skills/econ-workflow/scripts/team_state.py` saves task state in the already ignored `.agents/state/` directory. Its `--help` lists creation, transitions, usage import and active inspection. It neither launches inference nor modifies platform permissions. Keep the store and Codex JSONL transcripts local. Record output and passed-verification evidence before completion, and inspect saved input/output hashes before resumption.
+
+In the repository's standard helper location, `--root` defaults to that repository. An exported `WORKFLOW_TEAM_STATE.py` requires `--root` for state operations, regardless of the export directory's depth or the current directory. `--help` works in either location without selecting or writing a state store:
+
+```sh
+python /tmp/econ-all-new/WORKFLOW_TEAM_STATE.py --help
+python /tmp/econ-all-new/WORKFLOW_TEAM_STATE.py --root /path/to/repository inspect
+```
 
 Codex execution uses the user's verified installed CLI and normal ChatGPT login. Confirm version, authentication and available tools at setup; keep user model and permission settings. Native delegation and existing execution records precede external orchestrator adoption. Free package licensing does not establish free inference. The templates do not enable local LLMs, paid API fallback or credit purchases.

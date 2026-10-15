@@ -55,6 +55,14 @@ def changed(root, hashes):
 def revision(root):
     return subprocess.check_output(['git', '-C', str(root), 'rev-parse', 'HEAD'], text=True).strip()
 
+def default_root():
+    root = Path(__file__).resolve()
+    for name in ['team_state.py', 'scripts', 'econ-workflow', 'skills', '.agents']:
+        if root.name != name:
+            return None
+        root = root.parent
+    return root
+
 @contextmanager
 def locked(path):
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -183,7 +191,8 @@ def report_usage(state):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--root', type=Path, default=Path(__file__).resolve().parents[4])
+    parser.add_argument('--root', type=Path,
+                        help='Repository root; required for exported or relocated helpers (default: repository containing the native helper)')
     parser.add_argument('--store', default='.agents/state/team.json')
     sub = parser.add_subparsers(dest='command', required=True)
     init = sub.add_parser('init')
@@ -229,7 +238,10 @@ def main():
     show.add_argument('task_id', nargs='?')
     sub.add_parser('summary')
     args = parser.parse_args()
-    root = args.root.resolve()
+    root = args.root if args.root is not None else default_root()
+    if root is None:
+        parser.error('Pass --root PATH when using an exported or relocated helper')
+    root = root.resolve()
     relative(root, args.store, exists=False)
     if Path(args.store).parts[:2] != ('.agents', 'state'):
         raise ValueError('Operational store must stay in the local .agents/state directory')

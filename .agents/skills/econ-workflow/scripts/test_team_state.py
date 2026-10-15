@@ -6,7 +6,88 @@ import sys
 import tempfile
 import unittest
 
-SCRIPT = Path(__file__).with_name('team_state.py')
+SCRIPT = Path(__file__).resolve().with_name('team_state.py')
+REPOSITORY = SCRIPT.parents[4]
+
+class RootSelectionTests(unittest.TestCase):
+    def setUp(self):
+        self.directory = tempfile.TemporaryDirectory()
+        self.base = Path(self.directory.name)
+        self.root = self.base / 'project root'
+        self.root.mkdir()
+        self.run_script(SCRIPT, '--root', str(self.root), 'init')
+
+    def tearDown(self):
+        self.directory.cleanup()
+
+    def run_script(self, script, *args, fail=False):
+        result = subprocess.run([sys.executable, str(script), *args], cwd=self.base,
+                                capture_output=True, text=True, check=False)
+        self.assertEqual(result.returncode, 2 if fail else 0, result.stderr)
+        return result
+
+    def export_helper(self, directory='flat'):
+        destination = self.base / directory
+        result = subprocess.run(
+            [sys.executable, str(REPOSITORY / 'scripts/export_project.py'),
+             '--profile', 'standalone', '--output', str(destination)],
+            cwd=self.base, capture_output=True, text=True, check=False,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        helper = destination / 'WORKFLOW_TEAM_STATE.py'
+        self.assertTrue(helper.is_file())
+        return helper
+
+    def native_helper(self):
+        helper = self.root / '.agents/skills/econ-workflow/scripts/team_state.py'
+        helper.parent.mkdir(parents=True)
+        helper.write_bytes(SCRIPT.read_bytes())
+        return helper
+
+    def test_native_helper_defaults_to_its_repository_outside_working_directory(self):
+        result = self.run_script(self.native_helper(), 'inspect')
+        self.assertEqual(json.loads(result.stdout)['findings'], [])
+        self.assertFalse((self.base / '.agents').exists())
+
+    def test_explicit_root_overrides_native_location(self):
+        helper = self.native_helper()
+        other = self.base / 'other project'
+        other.mkdir()
+        self.run_script(helper, '--root', str(other), 'init', '--max-active', '7')
+        result = self.run_script(helper, '--root', str(other), 'show')
+        self.assertEqual(json.loads(result.stdout)['limits']['max_active'], 7)
+        original = self.run_script(helper, 'show')
+        self.assertEqual(json.loads(original.stdout)['limits']['max_active'], 3)
+
+    def test_exported_help_and_explicit_root_work_at_shallow_and_deep_paths(self):
+        for directory in ['flat', 'nested/a/b/c/snapshot']:
+            with self.subTest(directory=directory):
+                helper = self.export_helper(directory)
+                result = self.run_script(helper, '--help')
+                self.assertIn('--root', result.stdout)
+                result = self.run_script(helper, 'inspect', '--help')
+                self.assertIn('--stale-seconds', result.stdout)
+                result = self.run_script(helper, '--root', 'project root', 'inspect')
+                self.assertEqual(json.loads(result.stdout)['findings'], [])
+                self.assertFalse((helper.parent / '.agents').exists())
+
+    def test_exported_helper_requires_root_without_creating_a_store(self):
+        before = sorted(self.base.rglob('team.json'))
+        for directory in ['flat', 'nested/a/b/c/snapshot']:
+            with self.subTest(directory=directory):
+                helper = self.export_helper(directory)
+                result = self.run_script(helper, 'init', fail=True)
+                self.assertIn('Pass --root PATH', result.stderr)
+                self.assertNotIn('Traceback', result.stderr)
+                self.assertEqual(sorted(self.base.rglob('team.json')), before)
+
+    def test_relocated_native_filename_requires_explicit_root(self):
+        helper = self.base / 'team_state.py'
+        helper.write_bytes(SCRIPT.read_bytes())
+        result = self.run_script(helper, 'init', fail=True)
+        self.assertIn('Pass --root PATH', result.stderr)
+        result = self.run_script(helper, '--root', str(self.root), 'inspect')
+        self.assertEqual(json.loads(result.stdout)['findings'], [])
 
 class TaskStateTests(unittest.TestCase):
     def setUp(self):

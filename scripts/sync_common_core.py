@@ -211,7 +211,8 @@ def read_receipt(original):
             a, b = text.index(start), text.index(end)
             if b < a:
                 raise ValueError("Malformed common-core receipt")
-            body = text[a + len(start):b].strip()
+            # Normalize only the parsed block; offsets still address the original text.
+            body = text[a + len(start):b].strip().replace("\r\n", "\n")
             if not body.startswith(FENCE + "json\n") or not body.endswith("\n" + FENCE):
                 raise ValueError("Malformed receipt JSON block")
             receipt = json.loads(body[len(FENCE + "json\n"):-len("\n" + FENCE)])
@@ -224,12 +225,16 @@ def read_receipt(original):
 def receipt_bytes(original, receipt):
     _, _, start, end = read_receipt(original)
     text = original.decode("utf-8")
+    # Use the managed block's style, or the document's style for a new receipt.
+    line_ending = re.search(r"\r?\n", text[start:end] if start is not None else text)
+    newline = line_ending.group() if line_ending else "\n"
     block = RECEIPT_START + "\n" + FENCE + "json\n" + json.dumps(receipt, ensure_ascii=False, indent=2) + "\n" + FENCE + "\n" + RECEIPT_END
+    block = block.replace("\n", newline)
     if start is not None:
         text = text[:start] + block + text[end:]
     else:
-        separator = "" if not text or text.endswith("\n\n") else "\n" if text.endswith("\n") else "\n\n"
-        text += separator + block + "\n"
+        separator = "" if not text or re.search(r"\r?\n\r?\n\Z", text) else newline if text.endswith("\n") else newline * 2
+        text += separator + block + newline
     return text.encode("utf-8")
 
 
