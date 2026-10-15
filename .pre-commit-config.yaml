@@ -3,20 +3,21 @@ repos:
     rev: v4.6.0
     hooks:
       - id: detect-private-key
+        args: [--]
   - repo: local
     hooks:
       - id: ruff-correctness
         name: Ruff correctness (changed Python)
-        entry: pixi run -e quality ruff check --select E9,F63,F7,F82 --force-exclude
+        entry: pixi run -e quality ruff check --select E9,F63,F7,F82 --force-exclude --
         language: system
         types: [python]
       - id: mypy-boundaries
         name: mypy (adopted typed boundaries)
-        entry: pixi run -e quality mypy
+        entry: pixi run -e quality mypy --
         language: system
         files: ^scripts/build_latex\.py$
       - id: shellcheck
         name: ShellCheck (changed shell)
-        entry: pixi run -e quality shellcheck --severity=warning
+        entry: pixi run -e quality shellcheck --severity=warning --
         language: system
         types: [shell]

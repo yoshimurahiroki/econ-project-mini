@@ -9,6 +9,13 @@ R_MAKEVARS_USER ?= $(CURDIR)/scripts/r-makevars
 FILE ?=
 BASE ?=
 TEST ?=
+# Keep user paths out of recipe text and prevent Make from expanding them again
+# while exporting its original command-line variables to child processes.
+export QUALITY_FILE := $(value FILE)
+export QUALITY_TEST := $(value TEST)
+export QUALITY_BASE := $(value BASE)
+unexport FILE TEST BASE
+CHECK_FILE = test -f "$$QUALITY_FILE" || { printf '%s\n' 'Specify FILE=path to an existing file' >&2; exit 2; }; case "$$QUALITY_FILE" in /*) ;; *) QUALITY_FILE="./$$QUALITY_FILE" ;; esac
 QMD ?=
 PAPER ?= tex/paper/ecta_template.tex
 SLIDES ?= tex/slides/main.tex
@@ -43,32 +50,26 @@ register-kernels:
 setup-r-kernel: register-kernels
 
 quality:
-	@test -n "$(FILE)" || { echo "Specify FILE=path" >&2; exit 2; }
-	$(QUALITY_RUN) pre-commit run --files "$(FILE)"
+	@$(CHECK_FILE); $(QUALITY_RUN) pre-commit run --files "$$QUALITY_FILE"
 quality-staged:
 	$(QUALITY_RUN) pre-commit run
 quality-changed:
-	@test -n "$(BASE)" || { echo "Specify BASE=ref (committed changes only)" >&2; exit 2; }
-	$(QUALITY_RUN) pre-commit run --from-ref "$(BASE)" --to-ref HEAD
+	@test -n "$$QUALITY_BASE" || { echo "Specify BASE=ref (committed changes only)" >&2; exit 2; }; \
+	$(QUALITY_RUN) pre-commit run --from-ref="$$QUALITY_BASE" --to-ref HEAD
 typecheck:
-	@test -n "$(FILE)" || { echo "Specify FILE=path" >&2; exit 2; }
-	$(QUALITY_RUN) mypy -- "$(FILE)"
+	@$(CHECK_FILE); $(QUALITY_RUN) mypy -- "$$QUALITY_FILE"
 format-check:
-	@test -n "$(FILE)" || { echo "Specify FILE=path" >&2; exit 2; }
-	$(QUALITY_RUN) ruff format --check -- "$(FILE)"
+	@$(CHECK_FILE); $(QUALITY_RUN) ruff format --check -- "$$QUALITY_FILE"
 r-parse:
-	@test -n "$(FILE)" || { echo "Specify FILE=path" >&2; exit 2; }
-	$(PIXI_RUN) Rscript --vanilla -e 'invisible(parse(file = commandArgs(TRUE)[1]))' "$(FILE)"
+	@$(CHECK_FILE); $(PIXI_RUN) Rscript --vanilla -e 'invisible(parse(file = commandArgs(TRUE)[1]))' "$$QUALITY_FILE"
 
 format:
-	@test -n "$(FILE)" || { echo "Specify FILE=path" >&2; exit 2; }
-	$(PIXI_RUN) ruff format -- "$(FILE)"
+	@$(CHECK_FILE); $(QUALITY_RUN) ruff format -- "$$QUALITY_FILE"
 lint:
-	@test -n "$(FILE)" || { echo "Specify FILE=path" >&2; exit 2; }
-	$(PIXI_RUN) ruff check -- "$(FILE)"
+	@$(CHECK_FILE); $(QUALITY_RUN) ruff check -- "$$QUALITY_FILE"
 test:
-	@test -n "$(TEST)" || { echo "Specify TEST=path::node" >&2; exit 2; }
-	$(THREAD_ENV) $(PIXI_RUN) pytest -q -p no:cacheprovider -- "$(TEST)"
+	@test -n "$$QUALITY_TEST" || { echo "Specify TEST=path::node" >&2; exit 2; }; \
+	$(THREAD_ENV) $(PIXI_RUN) pytest -q -p no:cacheprovider -- "$$QUALITY_TEST"
 
 r-install: RV_ACTION = sync
 r-plan: RV_ACTION = plan

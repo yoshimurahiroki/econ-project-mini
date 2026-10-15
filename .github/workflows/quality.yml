@@ -2,13 +2,6 @@ name: Changed code quality
 
 on:
   pull_request:
-    paths:
-      - '**.py'
-      - '**.sh'
-      - 'Makefile'
-      - 'pyproject.toml'
-      - '.pre-commit-config.yaml'
-      - '.github/workflows/quality.yml'
 
 permissions:
   contents: read
@@ -40,6 +33,9 @@ jobs:
           fi
           if printf '%s\n' "$changed" | grep -Eq '^(Makefile|scripts/(build_latex|test_build_latex)\.py)$'; then
             pixi run -e quality pytest -q -p no:cacheprovider scripts/test_build_latex.py::BuildTests
+          fi
+          if printf '%s\n' "$changed" | grep -Eq '^(Makefile|scripts/test_quality_commands\.py)$'; then
+            pixi run -e quality pytest -q -p no:cacheprovider scripts/test_quality_commands.py
           fi
           if printf '%s\n' "$changed" | grep -Eq '^scripts/(setup_ide_mcp\.sh|test_setup_ide_mcp\.py)$'; then
             pixi run -e quality pytest -q -p no:cacheprovider scripts/test_setup_ide_mcp.py

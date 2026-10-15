@@ -16,6 +16,8 @@ AI がコードを作成・変更したら、完了報告前に `git status --sh
 
 `make quality FILE=path` は作業中・新規ファイルを一つ指定できる。複数なら `pixi run -e quality pre-commit run --files path1 path2`。`make quality-staged` は staged ファイル、`make quality-changed BASE=ref` はその ref と HEAD の間の **commit 済み差分だけ** を検査する。未 commit・未追跡ファイルには `FILE` / `--files` を使う。pre-commit がファイル種別から checker を選ぶため、無関係な全ツリーを検査しない。
 
+`FILE` を受け取る品質検査・整形入口は、空指定・不存在・ディレクトリを拒否する。パスは環境変数で一つの引数として渡し、空白や引用符・先頭 `-` を保持する。shell から呼ぶ際は `make lint 'FILE=draft folder/example.py'` のように引数全体を引用する。`lint` / `format` / `format-check` / `typecheck` も `quality` 環境を使用するため、研究環境の導入を必要としない。
+
 hook の非ゼロ終了は必須失敗。ツール未導入も成功扱いにしない。通常 lint の未使用 import 等、ShellCheck info、formatter の差分は確認材料であり、内容を読んで必要性を判断する。例えば shell 内の sed 式にある literal `$PATH` は SC2016 が出ても意図通りであり、自動で引用を変えない。必須規則の除外や `type: ignore` で同じ診断をまとめて隠さない。正当な例外が必要なら、その行・理由・動作を確かめるテストを示す。mypy は全ファイル strict にせず、推移 import の一括無視もしない。
 
 修正は別操作である。Ruff / ShellCheck / mypy の hook は書き換えない。整形が必要なファイルだけ `make format FILE=path.py` を実行して差分を読む。lint の `--fix`、特に unsafe fix を自動で適用しない。IDE の保存時 lint・型検査・自動修正は従来どおり無効。EditorConfig は入力時の改行・字下げ規約を供給する。
@@ -30,6 +32,8 @@ pixi run -e quality pytest -q -p no:cacheprovider scripts/test_build_latex.py::B
 
 MCP 設定生成を変更した場合は `scripts/test_setup_ide_mcp.py`、共通ファイル同期を変更した場合は `scripts/test_sync_common_core.py` を指定する。CI も該当ファイルの変更時だけこれらの小さなテストを実行する。実 LuaLaTeX / Quarto の検証は文書変更に応じて既存環境で別途実行し、skip は未検証として報告する。重い分析を品質検査のために起動しない。
 
+Make の品質入口を変更した場合は `pixi run -e quality pytest -q -p no:cacheprovider scripts/test_quality_commands.py` で、無効な対象の拒否・特殊文字を含むパスの引渡し・失敗終了の伝播を確認する。
+
 ## 導入条件と版
 
 Python と shell はこの repo で実際に使うため、既存の `pyproject.toml` に専用の Pixi `quality` environment を定義した。`no-default-feature = true` で研究・文書環境の **インストール** を避ける。依存解決は Pixi が同じ manifest 全体を扱う。mini はもともと lock を追跡していないため、直接の checker 版を固定し、生成された lock はこの変更で配布しない。
@@ -39,7 +43,9 @@ make setup-quality  # pixi install -e quality と pre-commit install
 make quality FILE=scripts/build_latex.py
 ```
 
-`pixi` 自体が利用可能なら checker がない場合もこの正規経路で導入できる。`pixi run -e quality ...` も必要な環境を準備する。コード変更がなく文書だけなら checker の追加導入は不要。CI は PR の HEAD を checkout し、同じ pre-commit 設定で merge-base からの変更だけ検査する。private key 検出も維持する。
+`pixi` 自体が利用可能なら checker がない場合もこの正規経路で導入できる。`pixi run -e quality ...` も必要な環境を準備する。ローカルでコード変更がなく文書だけなら checker の追加導入は不要。CI は全 PR で起動し、HEAD を checkout して同じ pre-commit 設定で merge-base からの変更だけ検査する。拡張子のない executable の shebang も pre-commit が判別する。ファイル名の拡張子だけで workflow を除外せず、無関係な全ツリー検査はしない。private key 検出も維持する。
+
+CI の実行には repository の GitHub Actions が有効である必要がある。PR HEAD の run / check がない場合は成功とみなさず、ローカル検証結果と区別して報告する。
 
 | 道具 | 採用版・公式資料 | 判断 |
 | --- | --- | --- |
