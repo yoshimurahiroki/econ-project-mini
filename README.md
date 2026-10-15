@@ -46,7 +46,9 @@ VS Codeの既定LaTeX recipeと `make build-paper` / `make build-slides` は `sc
 
 Quartoは計算セルで例外が発生するとrenderを停止する。意図したエラー例を文書に掲載する場合だけ、そのセルの先頭に `#| error: true` を指定する。[実行オプション](https://quarto.org/docs/computations/execution-options.html)を参照。
 
-コードを確認するコマンドは `make test TEST=path::node`、`make lint FILE=path`、`make format FILE=path` である。対象は明示したファイル・testに限る。commit hookはprivate key検出を行う。文書入口の回帰確認は `make test TEST=scripts/test_build_latex.py` と `make test TEST=scripts/test_quarto_execution.py` を使う。実LaTeX検証にはLuaLaTeX・pbibtex・pdftotext、Quarto検証にはQuartoとPythonのJupyter関連パッケージが必要であり、未導入の検証はskipと表示される。
+AI が変更したコードは、完了前に [品質検査の手順](docs/quality-checks.md) に従って検査する。`make setup-quality` で軽量な checker 環境と hook を導入し、作業中は `make quality FILE=path`、commit 前は `make quality-staged`、commit 済み差分は `make quality-changed BASE=ref` を使う。pre-commit が対象に応じて Ruff・採用した境界の mypy・ShellCheck と private key 検出を実行し、PR の CI も同じ設定を使う。指摘を確認して修正・再検査する。
+
+対象を指定する `make test TEST=path::node`、`make lint FILE=path`、`make format FILE=path` も維持する。整形は別操作である。文書入口の回帰確認は `make test TEST=scripts/test_build_latex.py` と `make test TEST=scripts/test_quarto_execution.py` を使う。実LaTeX検証にはLuaLaTeX・pbibtex・pdftotext、Quarto検証にはQuartoとPythonのJupyter関連パッケージが必要であり、未導入の検証はskipと表示される。
 
 ## Gitと共通機能の管理
 

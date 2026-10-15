@@ -19,3 +19,5 @@ Preserve the user's scope, authorization, adopted study choices, original data a
 ## Operational delivery
 
 Keep operational state and authenticated settings local. Use the existing explicit synchronizer for common-core distribution and exporter for requested instruction snapshots. Stage task-owned paths and read back authorized remote writes. Use Japanese unless requested otherwise.
+
+For code changes, follow [the repository quality checks](docs/quality-checks.md). Before declaring completion, inspect changed and new files, run their applicable checks and affected small tests, assess each diagnostic, repair valid defects and rerun. The AI doing the edit owns this step; do not rely on the user to choose checkers. Preserve scientific definitions and review fixes before applying them.

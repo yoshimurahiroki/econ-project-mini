@@ -87,6 +87,21 @@ r-reticulate = "*"
 [tool.pixi.pypi-dependencies]
 # Add project-specific PyPI dependencies for the adopted analysis.
 
+# The small checker environment does not install the analysis/document stack.
+[tool.pixi.feature.quality]
+channels = ["https://conda.anaconda.org/conda-forge"]
+
+[tool.pixi.feature.quality.dependencies]
+python = "3.12.*"
+pre-commit = "==4.3.0"
+ruff = "==0.16.9"
+mypy = "==2.3.1"
+pytest = "==9.1.1"
+shellcheck = "==0.11.0"
+
+[tool.pixi.environments]
+quality = { features = ["quality"], no-default-feature = true }
+
 [tool.ruff]
 exclude = [
     ".pixi",
@@ -94,6 +109,11 @@ exclude = [
     "rv",
     "scripts/temporary",
 ]
+
+[tool.mypy]
+python_version = "3.12"
+check_untyped_defs = true
+warn_unused_ignores = true
 
 [tool.pixi.tasks]
 python-version = "python --version"

@@ -1,11 +1,13 @@
 # Explicit project operations.
-.PHONY: help prepare-pixi sync install setup-dev setup-extensions register-kernels setup-r-kernel format lint test clean r-install r-plan build-paper build-slides quarto-html qmd-pdf slides-pdf quarto-pdf quarto-reveal
+.PHONY: help prepare-pixi sync install setup-dev setup-quality setup-extensions register-kernels setup-r-kernel quality quality-staged quality-changed typecheck format-check format lint test r-parse clean r-install r-plan build-paper build-slides quarto-html qmd-pdf slides-pdf quarto-pdf quarto-reveal
 
 PIXI ?= pixi
 PIXI_RUN = $(PIXI) run
+QUALITY_RUN = $(PIXI) run -e quality
 THREAD_ENV = OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1
 R_MAKEVARS_USER ?= $(CURDIR)/scripts/r-makevars
 FILE ?=
+BASE ?=
 TEST ?=
 QMD ?=
 PAPER ?= tex/paper/ecta_template.tex
@@ -15,6 +17,8 @@ help:
 	@echo "sync / r-install / r-plan: dependencies"
 	@echo "build-paper PAPER=path / build-slides SLIDES=path / quarto-* QMD=path: documents"
 	@echo "test TEST=path::node / lint FILE=path / format FILE=path: explicit targets"
+	@echo "quality FILE=path / quality-staged / quality-changed BASE=ref: changed code checks"
+	@echo "setup-quality / typecheck FILE=path / format-check FILE=path / r-parse FILE=path"
 	@echo "Project export: python scripts/export_project.py --profile standalone --task econ-paper --references .agents/skills/econ-workflow/references/descriptive-model.md --output /tmp/econ-paper-new; profiles and all-method export: docs/ai/integration.md"
 
 prepare-pixi:
@@ -29,11 +33,32 @@ sync: prepare-pixi
 install: sync
 setup-dev: sync
 	$(PIXI_RUN) pre-commit install
+setup-quality:
+	$(PIXI) install -e quality
+	$(QUALITY_RUN) pre-commit install
 setup-extensions:
 	bash scripts/setup_extensions.sh
 register-kernels:
 	bash .devcontainer/register-kernels.sh
 setup-r-kernel: register-kernels
+
+quality:
+	@test -n "$(FILE)" || { echo "Specify FILE=path" >&2; exit 2; }
+	$(QUALITY_RUN) pre-commit run --files "$(FILE)"
+quality-staged:
+	$(QUALITY_RUN) pre-commit run
+quality-changed:
+	@test -n "$(BASE)" || { echo "Specify BASE=ref (committed changes only)" >&2; exit 2; }
+	$(QUALITY_RUN) pre-commit run --from-ref "$(BASE)" --to-ref HEAD
+typecheck:
+	@test -n "$(FILE)" || { echo "Specify FILE=path" >&2; exit 2; }
+	$(QUALITY_RUN) mypy -- "$(FILE)"
+format-check:
+	@test -n "$(FILE)" || { echo "Specify FILE=path" >&2; exit 2; }
+	$(QUALITY_RUN) ruff format --check -- "$(FILE)"
+r-parse:
+	@test -n "$(FILE)" || { echo "Specify FILE=path" >&2; exit 2; }
+	$(PIXI_RUN) Rscript --vanilla -e 'invisible(parse(file = commandArgs(TRUE)[1]))' "$(FILE)"
 
 format:
 	@test -n "$(FILE)" || { echo "Specify FILE=path" >&2; exit 2; }
