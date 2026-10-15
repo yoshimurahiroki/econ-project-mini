@@ -42,7 +42,7 @@ GitHubの「Use this template」で研究用のリポジトリを作り、VS Cod
 
 HTML・Reveal.jsの `QMD` を省略するとプロジェクト全体をrenderする。PDF入口には対象QMDを指定する。出力先と既定formatは文書・project設定に従う。LaTeXの既定文書には研究の文献ファイル `tex/bibliography.bib` を用意する。LaTeXのエラーはbuildを停止し、`.aux` に文献指定がある場合に実行するBibTeXの失敗も伝播する。
 
-VS Codeの既定LaTeX recipeと `make build-paper` / `make build-slides` は `scripts/build_latex.py` を共通で使う。従来のMake入口と同じく、ソースのあるディレクトリでLuaLaTeX、必要なBibTeX、LuaLaTeXをさらに2回実行する。PDFと補助ファイルはソースの隣に生成し、`\include` の補助ファイルも従来の相対パスを使う。前回成功したPDFを退避してからbuildし、失敗時は復元して非ゼロで終了する。退避コピーの失敗も伝播する。空白を含むパスは `make build-paper 'PAPER=draft folder/paper draft.tex'` のように指定する。テンプレートの `% !LW recipe` はVS Codeでこの共通recipeを選択する。
+VS Codeの既定LaTeX recipeと `make build-paper` / `make build-slides` は `scripts/build_latex.py` を共通で使う。従来のMake入口と同じく、ソースのあるディレクトリでLuaLaTeX、必要なBibTeX、LuaLaTeXをさらに2回実行する。逆参照ファイル `.brf` がある場合はもう1回実行し、paperテンプレートの参考文献に引用元ページを反映する。PDFと補助ファイルはソースの隣に生成し、`\include` の補助ファイルも従来の相対パスを使う。前回成功したPDFを退避してからbuildし、失敗時は復元して非ゼロで終了する。退避コピーの失敗も伝播する。空白を含むパスは `make build-paper 'PAPER=draft folder/paper draft.tex'` のように指定する。テンプレートの `% !LW recipe` はVS Codeでこの共通recipeを選択する。
 
 Quartoは計算セルで例外が発生するとrenderを停止する。意図したエラー例を文書に掲載する場合だけ、そのセルの先頭に `#| error: true` を指定する。[実行オプション](https://quarto.org/docs/computations/execution-options.html)を参照。
 

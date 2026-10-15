@@ -38,6 +38,8 @@ else:
     output = Path(".")
     aux = output / (source.stem + ".aux")
     aux.write_text(r"\bibdata{../references}" if "bibliography" in source.read_text() else "")
+    if os.environ.get("WITH_BACKREF"):
+        (output / (source.stem + ".brf")).write_text("backreference data")
     bbl = output / (source.stem + ".bbl")
     if not os.environ.get("OMIT_PDF"):
         (output / (source.stem + ".pdf")).write_text(bbl.read_text() if bbl.exists() else "plain document")
@@ -133,12 +135,26 @@ class BuildTests(unittest.TestCase):
                 self.assertEqual(result.returncode, 0, result.stdout)
                 self.assertEqual(self.engines(), ["lualatex"] * 3)
 
+    def test_backreferences_get_an_additional_latex_pass(self):
+        for entry in ENTRIES:
+            with self.subTest(entry=entry):
+                result = self.run_build(entry, WITH_BACKREF="1")
+                self.assertEqual(result.returncode, 0, result.stdout)
+                self.assertEqual(
+                    self.engines(),
+                    ["lualatex", "pbibtex", "lualatex", "lualatex", "lualatex"],
+                )
+
     def test_each_engine_failure_is_reported_and_preserves_published_pdf(self):
         failures = [
             ({"FAIL_LATEX_PASS": "1"}, ["lualatex"]),
             ({"FAIL_BIB": "1"}, ["lualatex", "pbibtex"]),
             ({"FAIL_LATEX_PASS": "2"}, ["lualatex", "pbibtex", "lualatex"]),
             ({"FAIL_LATEX_PASS": "3"}, ["lualatex", "pbibtex", "lualatex", "lualatex"]),
+            (
+                {"FAIL_LATEX_PASS": "4", "WITH_BACKREF": "1"},
+                ["lualatex", "pbibtex", "lualatex", "lualatex", "lualatex"],
+            ),
         ]
         for entry in ENTRIES:
             for environment, engines in failures:
@@ -253,6 +269,34 @@ class RealLatexTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stdout)
         self.assertTrue(self.source.with_suffix(".pdf").is_file())
         self.assertFalse(self.source.with_suffix(".aux").exists())
+
+    def test_clean_econsocart_build_resolves_page_backreferences(self):
+        for filename in (
+            "econsocart.cls",
+            "econsocart.cfg",
+            "fonts.latex",
+            "ecta-fullname.bst",
+        ):
+            shutil.copy(ROOT / "tex/paper" / filename, self.source.parent)
+        (self.workspace / "references.bib").write_text(
+            "@article{test,author={A. Author},title={Test title},"
+            "journal={Test},year={2026}}"
+        )
+        self.source.write_text(
+            r"\documentclass[ecta,nameyear,draft]{econsocart}"
+            r"\RequirePackage[colorlinks,pagebackref]{hyperref}"
+            r"\begin{document}\section{Test}\cite{test}"
+            r"\bibliographystyle{ecta-fullname}"
+            r"\bibliography{../references}\end{document}"
+        )
+        result = self.run_build("build-paper")
+        self.assertEqual(result.returncode, 0, result.stdout)
+        text = subprocess.check_output(
+            ["pdftotext", str(self.source.with_suffix(".pdf")), "-"], text=True
+        )
+        self.assertRegex(text, r"Test\.\s*\[1\]")
+        final_log = self.source.with_suffix(".log").read_text()
+        self.assertNotIn("Rerun to get bibliographical references right", final_log)
 
     def test_nested_include_keeps_auxiliary_paths(self):
         chapter = self.source.parent / "chapters" / "topic" / "one.tex"

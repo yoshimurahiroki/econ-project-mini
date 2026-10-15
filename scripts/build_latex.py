@@ -45,6 +45,10 @@ def build(source: Path) -> None:
                 )
             subprocess.run(latex, cwd=source.parent, check=True)
             subprocess.run(latex, cwd=source.parent, check=True)
+            # Page backreferences can first reach .brf on the third pass.
+            # Read them once more so a clean paper build includes their pages.
+            if source.with_suffix(".brf").is_file():
+                subprocess.run(latex, cwd=source.parent, check=True)
             if not pdf.is_file():
                 raise FileNotFoundError(f"LaTeX produced no PDF: {pdf}")
         except BaseException:
