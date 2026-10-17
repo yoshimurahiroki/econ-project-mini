@@ -1,0 +1,18 @@
+[project]
+name = "econ-project"
+r_version = "4.5"
+
+# rv resolves package versions from the configured repositories.
+# These packages provide Jupyter, Quarto/R Markdown, TinyTeX and editor support.
+repositories = [
+  { alias = "CRAN", url = "https://cran.r-project.org/" },
+]
+
+dependencies = [
+  "IRkernel",
+  "languageserver",
+  "rmarkdown",
+  "knitr",
+  "tinytex",
+  "yaml",
+]

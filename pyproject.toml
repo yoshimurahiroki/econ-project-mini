@@ -1,0 +1,127 @@
+[project]
+name = "econ-project"
+version = "0.1.0"
+description = "Infrastructure stack for Python, R, TinyTeX, Quarto, Jupyter, and R package build support"
+requires-python = ">=3.12"
+dependencies = []
+
+# ── Pixi configuration ──────────────────────────────────────────
+# Use wildcard specs so Pixi resolves the latest compatible versions available
+# from the configured channel.
+[tool.pixi.workspace]
+name = "econ-project"
+channels = ["https://prefix.dev/conda-forge"]
+platforms = ["linux-64"]
+
+[tool.pixi.dependencies]
+# Python runtime
+python = "*"
+pip = "*"
+setuptools = "*"
+wheel = "*"
+pre-commit = "*"
+ripgrep = "*"
+ruff = "*"
+mypy = "*"
+pytest = "*"
+
+# Jupyter Notebook / JupyterLab infrastructure
+jupyterlab = "*"
+notebook = "*"
+jupyter_server = "*"
+ipykernel = "*"
+ipywidgets = "*"
+nbclient = "*"
+nbformat = "*"
+pyzmq = "*"
+
+# R runtime and Jupyter kernel infrastructure
+r-base = "*"
+r-irkernel = "*"
+r-languageserver = "*"
+
+# R package build/link infrastructure for CRAN packages installed by rv
+# rv builds use the Pixi/conda-forge compilers, headers and libraries.
+compilers = "*"
+make = "*"
+pkg-config = "*"
+file = "*"
+automake = "*"
+autoconf = "*"
+m4 = "*"
+libtool = "*"
+zlib = "*"
+libcurl = "*"
+openssl = "*"
+libxml2 = "*"
+libxml2-devel = "*"
+zeromq = "*"
+librsvg = "*"
+expat = "*"
+fontconfig = "*"
+glpk = "*"
+xz = "*"
+xorg-xorgproto = "*"
+
+# Prebuilt R infrastructure dependencies that repeatedly trigger source builds
+# from rv/CRAN.
+r-curl = "*"
+r-xml2 = "*"
+r-pbdzmq = "*"
+"r-data.table" = "*"
+
+# Quarto / R Markdown / TeX integration infrastructure
+quarto = "*"
+pandoc = "*"
+deno = "*"
+typst = "*"
+esbuild = "*"
+dart-sass = "*"
+poppler = "*"
+r-rmarkdown = "*"
+r-knitr = "*"
+r-tinytex = "*"
+r-yaml = "*"
+r-reticulate = "*"
+
+[tool.pixi.pypi-dependencies]
+# Add project-specific PyPI dependencies for the adopted analysis.
+
+# The small checker environment does not install the analysis/document stack.
+[tool.pixi.feature.quality]
+channels = ["https://conda.anaconda.org/conda-forge"]
+
+[tool.pixi.feature.quality.dependencies]
+python = "3.12.*"
+pre-commit = "==4.3.0"
+ruff = "==0.16.9"
+mypy = "==2.3.1"
+pytest = "==9.1.1"
+shellcheck = "==0.11.0"
+
+[tool.pixi.environments]
+quality = { features = ["quality"], no-default-feature = true }
+
+[tool.ruff]
+exclude = [
+    ".pixi",
+    ".resources",
+    "rv",
+    "scripts/temporary",
+]
+
+[tool.mypy]
+python_version = "3.12"
+check_untyped_defs = true
+warn_unused_ignores = true
+
+[tool.pixi.tasks]
+python-version = "python --version"
+r-version = "R --version"
+jupyter-lab = "jupyter lab --ip=0.0.0.0 --no-browser"
+jupyter-notebook = "jupyter notebook --ip=0.0.0.0 --no-browser"
+quarto-check = "quarto check --no-strict"
+install-python-kernel = "python -m ipykernel install --user --name econ-project --display-name 'Python (econ-project)'"
+install-r-kernel = "R -q -e 'IRkernel::installspec(user = TRUE, name = \"ir\", displayname = \"R (econ-project)\")'"
+check-pkg-config = "pkg-config --cflags --libs libxml-2.0"
+check-r-build-infra = "R -q -e 'library(curl); library(xml2); library(pbdZMQ); library(data.table); sessionInfo()'"

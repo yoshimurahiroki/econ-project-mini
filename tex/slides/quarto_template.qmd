@@ -1,0 +1,30 @@
+---
+title: "TITLE"
+subtitle: "SUBTITLE"
+author: "Author"
+date: today
+format:
+  beamer:
+    pdf-engine: lualatex
+    fontsize: 12pt
+    classoption:
+      - unicode
+      - m
+      - unknownkeysallowed
+    slide-level: 1
+    include-in-header:
+      text: |
+        \usepackage{luatexja}
+        \usepackage[haranoaji,deluxe]{luatexja-preset}
+        \usepackage{appendixnumberbeamer}
+        \useinnertheme{metropolis}
+        \useoutertheme[numbering=fraction]{metropolis}
+        \usecolortheme{metropolis}
+        \usefonttheme[onlymath]{serif}
+        \renewcommand{\kanjifamilydefault}{\gtdefault}
+        \definecolor{Waseda}{HTML}{922E41}
+        \definecolor{Orange}{HTML}{CF4A30}
+        \setbeamercolor{alerted text}{fg=Orange}
+        \setbeamercolor{frametitle}{bg=Waseda}
+---
+
