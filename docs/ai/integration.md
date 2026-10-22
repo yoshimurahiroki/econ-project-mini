@@ -106,3 +106,793 @@ Use explicit capacity, depth or attempt limits only when the user or runtime sup
 
 
 An old evaluating state maps to running; interrupted maps to blocked with blocked_reason=interrupted. Schema-v4 migration preserves outputs, check receipts, authority, holds, attempt counts and usage. Where recorded consumed inputs identify one parent output unambiguously, migrate to that explicit consumes edge. Otherwise retain the legacy dependency set as a compatibility group until the next relevant operation establishes its input contract; never erase it or guess a narrower dependency. Migration alone does not invalidate numerical results or rerun completed stages.
+
+<!-- common-core-receipt:v2 -->
+```json
+{
+  "schema_version": 2,
+  "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+  "source_base_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19",
+  "source_state": "working",
+  "common_content_id": "b6fff6d2deb21affed561de43c72339343738f514ec1ae20f502944432fc4fa9",
+  "target_repository": "github.com/yoshimurahiroki/econ-project-mini",
+  "paths": [
+    {
+      "path": "docs/ai/compiled_ai_skills.md",
+      "state": "present",
+      "sha256": "3f5dc9d5167ada28729c6c8d87a4a4a985dca396ecfd35a4d4d414319ab691b2",
+      "git_blob": "537a090fc5ee12e84194d65bdd330c49b17bda86",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "docs/ai/config-templates/README.md",
+      "state": "present",
+      "sha256": "79d77ee0cffd70c04ef4884485ed124a21d83aba0786a7054c132d75950dfa87",
+      "git_blob": "97ec119bcae6bac54dc9b0f39a8208709100a410",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "docs/ai/config-templates/claude-mcp.example.json",
+      "state": "present",
+      "sha256": "7e098a33b20cda19ae9067ffc8252f2637bf0314963893df85110fe3120fee63",
+      "git_blob": "e29ee95ea2e7cdc213561f0a75252c43d28d51de",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "docs/ai/config-templates/codex.example.toml",
+      "state": "present",
+      "sha256": "c57023f63a938b1d62c9c66f5d6f6c0dbb001e496aa9813bbf3d6a5980e38b05",
+      "git_blob": "be298aabfb36b8954160f39686750a294dad8527",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "docs/ai/config-templates/mcp.example.json",
+      "state": "present",
+      "sha256": "d8e397af03b5b032f21d0aa967086f0c78b33c87b76f2e9898ae0a144df7de02",
+      "git_blob": "da39e4ffafe816be90259a3f68b763a3f71b93ed",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "docs/ai/plugin-integration.md",
+      "state": "present",
+      "sha256": "28ab3ae51de52e2ea6ef463a9329f9b8a908ca845dfce7d917e7c3012a452609",
+      "git_blob": "8d37f2d10408ebc21e815b1ca8e80ca07a27e9e6",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "docs/ai/project_instructions.txt",
+      "state": "present",
+      "sha256": "7a7a6b5a3741d093acf6d80a8e17190557112d0a1cb22f4949b88f0f19ae7f35",
+      "git_blob": "760a8006bf6e7183fd5bfee9de9f475d0551ac93",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "docs/ai/resources.md",
+      "state": "present",
+      "sha256": "50e49433980afbfa083917ba020e70f0274300aeb5bc753a807f2624fda77118",
+      "git_blob": "b0a1ddae6e948e1648b369ab688030338c577fbb",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "harness/argument.py",
+      "state": "present",
+      "sha256": "fbf3b34c3febd21208526e44b6494ea543b10e3d011c2e05950192226a655909",
+      "git_blob": "1829e3fee0a056fbf1fd95ee08017b112e0195bf",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "harness/argument.schema.json",
+      "state": "present",
+      "sha256": "3bde57438e6fe255e7cd3a525bfe0b9b4ade8f4c2eae2a41fe1850bf41e7a013",
+      "git_blob": "4397bb0feed6a22c198025f3789fad2f77b44503",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "harness/codex_hooks.py",
+      "state": "present",
+      "sha256": "af49379b64dbb776ab5e8c5b8ae12f8f51dbb2c774e26a19a57f644cfb8ea320",
+      "git_blob": "899761c5cbc028c091a5bf7ad07ccf37ee0dd967",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "harness/local_checks.md",
+      "state": "present",
+      "sha256": "c9df41b68d1aeeefe2ed6a0c2fa5fdd6ec44da1348303e63f78f284dc1501984",
+      "git_blob": "5d3e954c637ea95cd38cd47cb615708b02807d5a",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "harness/local_checks.py",
+      "state": "present",
+      "sha256": "3d5734bbfa4862fd25ee2f6233b3fdebc98ee7d9d2d981da5eff9ea4efde0385",
+      "git_blob": "85782f05746141be8aa3bc97c1dfed2f7123a3a1",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "harness/native_check.md",
+      "state": "present",
+      "sha256": "eacc3099f79b450310dbcf11e87ca747218097f80d3e1fc08caa1095ffe131ec",
+      "git_blob": "41982d375eef8611c0e61f3b7caf7e59901a7412",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "harness/native_check.py",
+      "state": "present",
+      "sha256": "efadb90fd74173bbe85452c18e7527dbe845dfeaa3b32c551860d0af039a5099",
+      "git_blob": "015aa93da026a9c1ad8b1276f2eacdfb4016038c",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "harness/native_run.md",
+      "state": "present",
+      "sha256": "6065017432682e614fd8e384ce513170222838ca9eed9a79a9ca43b27a4ec5bf",
+      "git_blob": "405e1340864933c1e98dc8b24de1d7400b47822c",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "harness/native_run.py",
+      "state": "present",
+      "sha256": "c7174f6b33260a22438fbb6dc7c2f7c278de0b9175611c522ba14782914bac35",
+      "git_blob": "611dd24e23637a021d21551883ca84df00d9db0d",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "harness/paragraph.py",
+      "state": "present",
+      "sha256": "9aaefb9fbfa4904f1682ad64a10689fc28deeb15de26a1baa9e6b748dd7a3764",
+      "git_blob": "0bf963a49903f192b1a5e86c86e232083be1ca33",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "harness/paragraph.schema.json",
+      "state": "present",
+      "sha256": "1bc8fd4382a7861bf0c8905b5c5b7b39ececcf25083cafba0fe81e9d83936df0",
+      "git_blob": "1765fb6ee780b4f3e9be04a3479aab3d92c82b75",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "harness/policy_assets.py",
+      "state": "present",
+      "sha256": "775de776170dbdacef9834d18252917a1019389ab4e9c4a3f9be5e8d2b48f4e8",
+      "git_blob": "12b8c6280107278e86dbf31bbe4eae632b6d766f",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "harness/publication.md",
+      "state": "present",
+      "sha256": "61c475a55fdd46c07d642a1b433efb3b49a1e90d8c5a7e1604cd6bff9dc97432",
+      "git_blob": "080cebc7d7cddee1379e1e295111c3997d8a6443",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "harness/requirements_check.md",
+      "state": "present",
+      "sha256": "73edc472d8c66deb1195d6300b9ee172da0690f743602ef2cc862e143c0a2961",
+      "git_blob": "33b40573042e0393440803cb31f7f76e8faaddb2",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "harness/requirements_check.py",
+      "state": "present",
+      "sha256": "3586e6170d23c77080647f88cd6c09026e11c45835b2e92e318ac91683bf8747",
+      "git_blob": "e29565611e61184c4bf5895da6ce1d6aa635a2f2",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "harness/state.md",
+      "state": "present",
+      "sha256": "d267567f881731aa82226b7d6995da0570eb6b08f3ee585b6ce7339129fc5e25",
+      "git_blob": "2e32586b8cea19bedc32933585e854557d8e15ca",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "harness/state.py",
+      "state": "present",
+      "sha256": "187ed869eb7e5642bf94662772e269e7dd4fd970505f31a8e2e140acabc6286c",
+      "git_blob": "77b450bed31bdba0b78f340ae0a422e181b28408",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "harness/test_argument.py",
+      "state": "present",
+      "sha256": "7420df6fa26d35053705b125f983729dbb65d4a7b83215b91a8e6dc3a9dcdf69",
+      "git_blob": "6dab28f613f2e0a492048e7bfa23294b66f30ce7",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "harness/test_argument_regressions.py",
+      "state": "present",
+      "sha256": "1c60176c741a5f4ef5fb8b71d95d27fe369fb9f5e02713fd26c0108f38b87494",
+      "git_blob": "d65bcef97ed3f1ea415134d65b6877e78e5bf4d5",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "harness/test_paragraph.py",
+      "state": "present",
+      "sha256": "ac8d59c80402903e982cdef2eb829a2f1a4211a16167fa13a956a66446be7a24",
+      "git_blob": "5df8feb0e1bc2e41b7f054fafabe074a76d15362",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "harness/test_paragraph_regressions.py",
+      "state": "present",
+      "sha256": "5ade200d1f981478571d52c8342a0b751b9a849dbaa0c94fb73bf5cf341b9b3a",
+      "git_blob": "cca894667cbc3a898abdb64583dbb0d9f5433982",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "harness/test_state.py",
+      "state": "present",
+      "sha256": "b0ff4178de611822856fad1dbebd2899d41fdab88a0c499d78edbdd6d9d381be",
+      "git_blob": "e396315580b1b34e303ccb88e8942729fc8d8a8d",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "harness/test_writing_integration.py",
+      "state": "present",
+      "sha256": "036f861d403aeecea968576cd38584a2ce9cf9ea69d96307375fedd98fb31a61",
+      "git_blob": "d51d181e823b454b74a86ba2c20edc781578c1a3",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "profiles/default-micro/PROFILE.md",
+      "state": "present",
+      "sha256": "6b4e475fb3786c6006b26893824a05f9c40aeccb174ba1ec811face85b8c22b0",
+      "git_blob": "809aceb9f90152bb37f6e813db612cc559bbd062",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "profiles/default-micro/extended-introduction-en.md",
+      "state": "present",
+      "sha256": "0b1d9f9511b5d32cc935c4d7c75b24bf01f94ef48f1ec7b330218d508e810b34",
+      "git_blob": "834688a8d352f80a6ac4cc0b96fbe4f831dfad74",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "profiles/default-micro/extended-introduction-ja.md",
+      "state": "present",
+      "sha256": "cb49bab9fbb949538056f82e7560d715a3a6c648f663ea14af2b77e833bec03b",
+      "git_blob": "84c9e720bfec8a585613ed516f91047c9c5f78bb",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "profiles/default-micro/short-examples-en.md",
+      "state": "present",
+      "sha256": "e395b60c46f6ba98e614bdab1b118ead92e7ca05560641d43ba5b75a8c83a08b",
+      "git_blob": "9fafab070f78b4299f8c8611f4c3083e6514497e",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "profiles/default-micro/short-examples-ja.md",
+      "state": "present",
+      "sha256": "4147294992356f95fb21d7484164ff56cf9adae9919d1fd1e989eb911ae05fa2",
+      "git_blob": "1953cb16b796b7001b9be33f7c3804fc3fc87a56",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "quality/policy_manifest.json",
+      "state": "present",
+      "sha256": "399c8f7b0e3ef8c3161b4c64afef121675c864363ed898795e9674c186adf950",
+      "git_blob": "084ec39e0d95b29e01a8d14c3375bfd653892fe9",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "quality/prose_rules.json",
+      "state": "present",
+      "sha256": "b8a4858b2cb185abec04f3d26772ce3c13c21e12beaaadb3700cd3112becfda5",
+      "git_blob": "80f833b3633013a5cc6604659af408bae98b5dc3",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "quality/prose_rules.md",
+      "state": "present",
+      "sha256": "c793dca71f7dba85c3d04faecc0b4ab25c5aa305a698a3274fe2169f0b8f7826",
+      "git_blob": "4dfc2afe09560fd06219f0feaebbafcb2baa5d31",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "references/repository-policy/.agents/AGENTS.md",
+      "state": "present",
+      "sha256": "cafc59de32d85efa1b2dd219936e00920bd17fb439cdd7a9b93401e1478f6267",
+      "git_blob": "0e328520b47fa076db49ecbf69b487c8e059f6d2",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "references/repository-policy/.antigravityrules",
+      "state": "present",
+      "sha256": "cdba8d7384055991db4fcf03ae4808090fa3d483322d7b471e448752c6def107",
+      "git_blob": "81ed24cb0684e0cfdf31cec462a455f22f861772",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "references/repository-policy/.claude/AGENTS.md",
+      "state": "present",
+      "sha256": "cafc59de32d85efa1b2dd219936e00920bd17fb439cdd7a9b93401e1478f6267",
+      "git_blob": "0e328520b47fa076db49ecbf69b487c8e059f6d2",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "references/repository-policy/.clinerules",
+      "state": "present",
+      "sha256": "cdba8d7384055991db4fcf03ae4808090fa3d483322d7b471e448752c6def107",
+      "git_blob": "81ed24cb0684e0cfdf31cec462a455f22f861772",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "references/repository-policy/.cursor/rules/01_project_policy.mdc",
+      "state": "present",
+      "sha256": "6d8d91e33b2190b2da8edba15dd46350ebc3a394334ea7e2f57c4c141fb06ec2",
+      "git_blob": "1f2bf852b6ba2c45f2edd1b5f8ac737be77aa6c0",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "references/repository-policy/.cursorrules",
+      "state": "present",
+      "sha256": "cdba8d7384055991db4fcf03ae4808090fa3d483322d7b471e448752c6def107",
+      "git_blob": "81ed24cb0684e0cfdf31cec462a455f22f861772",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "references/repository-policy/.gemini/GEMINI.md",
+      "state": "present",
+      "sha256": "cafc59de32d85efa1b2dd219936e00920bd17fb439cdd7a9b93401e1478f6267",
+      "git_blob": "0e328520b47fa076db49ecbf69b487c8e059f6d2",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "references/repository-policy/.github/copilot-instructions.md",
+      "state": "present",
+      "sha256": "cafc59de32d85efa1b2dd219936e00920bd17fb439cdd7a9b93401e1478f6267",
+      "git_blob": "0e328520b47fa076db49ecbf69b487c8e059f6d2",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "references/repository-policy/.windsurfrules",
+      "state": "present",
+      "sha256": "cdba8d7384055991db4fcf03ae4808090fa3d483322d7b471e448752c6def107",
+      "git_blob": "81ed24cb0684e0cfdf31cec462a455f22f861772",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "references/repository-policy/AGENTS.md",
+      "state": "present",
+      "sha256": "cdba8d7384055991db4fcf03ae4808090fa3d483322d7b471e448752c6def107",
+      "git_blob": "81ed24cb0684e0cfdf31cec462a455f22f861772",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "references/repository-policy/CLAUDE.md",
+      "state": "present",
+      "sha256": "cdba8d7384055991db4fcf03ae4808090fa3d483322d7b471e448752c6def107",
+      "git_blob": "81ed24cb0684e0cfdf31cec462a455f22f861772",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "references/repository-policy/CODEX.md",
+      "state": "present",
+      "sha256": "cdba8d7384055991db4fcf03ae4808090fa3d483322d7b471e448752c6def107",
+      "git_blob": "81ed24cb0684e0cfdf31cec462a455f22f861772",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "registry/operations.json",
+      "state": "present",
+      "sha256": "9b7ad8a88703e0fa4ec9a48394f4555f26da8d9664969ac95848e5f8762c622e",
+      "git_blob": "cb0b26142a96f74d0bdfec0989bd8b4e72b06622",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "registry/placements.json",
+      "state": "present",
+      "sha256": "f83f807390a24d4a9f7dfd9c47ced33754078912ef4fccc6ca33e38771b55153",
+      "git_blob": "cdcb7a2ad80bfd9ae89f31a3e89f195258e1f8cc",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "registry/resources.json",
+      "state": "present",
+      "sha256": "e65f10bc11dadedd8e77ad983c84f93f08cf470375eae2f522dac01347fe1bfc",
+      "git_blob": "b038326f82ffc8d266626bbd607dab77316f9e2b",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "runtime/CONTROL.md",
+      "state": "present",
+      "sha256": "5c9a1e1edb9b9c069334fcf5d771bad28fb21d298adf909c7ad8ebd22f421c1a",
+      "git_blob": "3a275f2ad3a81222a5fa08368226d6e3ca08be04",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "runtime/CORE.md",
+      "state": "present",
+      "sha256": "83bf3e68e669401f2c9ae8f76efca7e7a17a074a7250d197559ce61857e5d2a4",
+      "git_blob": "d80900bcd95f7f180dd8a253ea41072db33c2204",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "runtime/DECIDE.md",
+      "state": "present",
+      "sha256": "3c89d70facdd919f9c5c72e721c5d574834a129ac286fc4d694c524fbc280354",
+      "git_blob": "4631ce06121b68b78909e3592cfefb1d66037eba",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "runtime/EXECUTION.md",
+      "state": "present",
+      "sha256": "4157cad813f4d4c9b2bc0423181a9d93218a13b2fc678957f3827c2baa8fd73d",
+      "git_blob": "53bb56ab297f940e0bc19fd7644b669b9eccce22",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "runtime/PROSE.md",
+      "state": "present",
+      "sha256": "0096cf536702b001e0eb479185360822c98adfcd4b7feb45ff58be10d492c358",
+      "git_blob": "196f10ccc7143869f75464a3c311c4ba927c4317",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "runtime/TEAM.md",
+      "state": "present",
+      "sha256": "36ab34202dbf77f30a290f4235882631b26663b873a5021b0a6382b7fc7755f1",
+      "git_blob": "b524a07306b30d3cc29a7b92ec3bb4f91fe4f8f0",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "scripts/__init__.py",
+      "state": "present",
+      "sha256": "483ac5ccf6287140cba89cb9ea470f9bcce24b3e2efdaaa1de3e1251438034c3",
+      "git_blob": "1fc5a64100ae58e3ad92d02cc9ce7b4126f041ea",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "scripts/check_instruction_links.py",
+      "state": "present",
+      "sha256": "11caf4e468e6959c978b67c066b07f3a261e3fe71f4d5b634038aef156092fe7",
+      "git_blob": "351d248153744ebc165306de628da2f1f91dc4a9",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "scripts/export_project.py",
+      "state": "present",
+      "sha256": "0ee6af56bf2f75610e258292edf170c7bc85df4e44087eb75c15e3a060ef7c3f",
+      "git_blob": "5a5b0982cbd46938d2f7862c2a37e1d7908b104f",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "scripts/pack_context.sh",
+      "state": "present",
+      "sha256": "683360d226686020e02f939e1bfa6baf0cdaaabfcfe5981e7135dfe49b1386b9",
+      "git_blob": "5f14fe582e9f4ee842a24d07ae2f7a16d8d777d1",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "scripts/route_registry.py",
+      "state": "present",
+      "sha256": "a392856fd2d92c939242442a429798ad1633594c538caa671798c94e9b115603",
+      "git_blob": "39ead8d39be1836646cb9640114029313e041079",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "scripts/setup_extensions.sh",
+      "state": "present",
+      "sha256": "917c8bee2c31f08c9c2c86f60e1eaf4b5c685bd582afcce33fc0378996ed3cb1",
+      "git_blob": "f2aad4d755d38bdcf02c7010a99e1925c9951175",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "scripts/setup_ide_mcp.sh",
+      "state": "present",
+      "sha256": "b35800f79f1dc5e95d8d875d668aa5dc27738f929764c14072dccd0e34af3fc9",
+      "git_blob": "1b5abda4c59df9e91973c9e83f73469903bb59be",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "scripts/sync_common_core.py",
+      "state": "present",
+      "sha256": "ce79903cc76d6ff4545e340f9a09e0c165fd6b3e6bc9753b734560037b771411",
+      "git_blob": "61c654f174246b9dd333117b96a16e934183ebad",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "scripts/test_configuration_tools.py",
+      "state": "present",
+      "sha256": "bbff9ec63935445c1d74800a89b6510ace71af8d1c48a0db7772306d4b30e9c4",
+      "git_blob": "af3ccf0b42fea3213d6c028068a4cdf8fa30e90f",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "scripts/test_export_project.py",
+      "state": "present",
+      "sha256": "ed9f50483832920d56a1723b6268405f9909dce08b286168f15c3f83c4e66f5a",
+      "git_blob": "a98adb00f459a9ce432170653c687152052d908f",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "scripts/test_instruction_links.py",
+      "state": "present",
+      "sha256": "d1587c35b9e929a2b09fd62d4264a4e8a9ca153b4c6cdd56746a337bb5307e68",
+      "git_blob": "fa5b2317222fd5b09478b1f1323f394b2cba1e24",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "scripts/test_setup_ide_mcp.py",
+      "state": "present",
+      "sha256": "1a96b0a96ae68206b3c3072a87471f2d08aa592822d32d30856f9c4e4d5bf3cb",
+      "git_blob": "2b0222ecbcfb61a3d94ce9c05fec3522540ccce7",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "scripts/test_sync_common_core.py",
+      "state": "present",
+      "sha256": "47c76029474c503a4812415e1279aa4f3222a71ba161596f7e68405c7475ca24",
+      "git_blob": "2555fbc44b566b3b9b8df00a0c4519163652f187",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "skills/econ-data/SKILL.md",
+      "state": "present",
+      "sha256": "dd72e481256ff37dd79640a03f2a6f0570002caf63bc33e7acea429f09a30652",
+      "git_blob": "562404fcf14bd600aae0c136e35346dc875a0433",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "skills/econ-data/references/implementation.md",
+      "state": "present",
+      "sha256": "61e9a53d5206eff0cd7207e7f18887403e04ca28b7fd2f348bd6a1fd2d98a966",
+      "git_blob": "02caa6031f2c94c6f0759dffdf4e288f9bf535d9",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "skills/econ-data/references/reproducible-workflow.md",
+      "state": "present",
+      "sha256": "a97f56f433f5dd817dfb6a3861860634c34d72d1f6ce125ee56424ccee7d8cf1",
+      "git_blob": "404a6df27b74c3feee1645429dbf3f8765d38dcc",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "skills/econ-design/SKILL.md",
+      "state": "present",
+      "sha256": "61537e19fc2d4329ed029962979e46db2838c2197624513f11bba1006c21bc10",
+      "git_blob": "392b95e7d735403bff78b1ffe55a2f2f4bf5449c",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "skills/econ-design/references/designs.md",
+      "state": "present",
+      "sha256": "cc98ea05b73f992d9fde15fc809b658cf7d4e49aee131ac180f4de00d3981284",
+      "git_blob": "502456dd376c965bf512de4e987c503962c0c7fc",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "skills/econ-literature/SKILL.md",
+      "state": "present",
+      "sha256": "74c9e09aedc34b617ea5b64ad25e25147795507df865d6a0151de4aa1691f6fd",
+      "git_blob": "7b11083302871898e79ab6b6a41c5599fb991b4f",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "skills/econ-review/SKILL.md",
+      "state": "present",
+      "sha256": "acbf33b8181d037b9b91d60a37a2f014bfc5eaea4a9ddc2652d40d0f9ddf2279",
+      "git_blob": "389dbeb5a51006213ed5962db69d87a4ffc251ac",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "skills/econ-review/references/oversight.md",
+      "state": "present",
+      "sha256": "f8f55602e313f8bebd51cdf78a80b2e458fc90c55cf304f8f9953b03c36a169e",
+      "git_blob": "750c97d55a9b8edb09edfe768d571be76b4b4f7a",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "skills/econ-writing/SKILL.md",
+      "state": "present",
+      "sha256": "3d57189d41b90a671a69e776883250372ffe0a63cfa78a4f565355a7ef8670f8",
+      "git_blob": "b744b6b8491b9a254b5f6611007687c7ef123fbe",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "skills/econ-writing/agents/openai.yaml",
+      "state": "present",
+      "sha256": "0b240d8469d087232c9aaa617e3cf6e4db6d20b6a72c1df961175c3be557d01c",
+      "git_blob": "655b9d6ad34ec5c7e4c9c545aa5389c6f7ec5ab9",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "skills/econ-writing/references/paper-workflow.md",
+      "state": "present",
+      "sha256": "8643ea052054c2e6afad273020087e648e52c3cbab020e1e9907cfc578a5ec21",
+      "git_blob": "445df5c46807b461f36d42168e0bb813b2f412f5",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "skills/econ-writing/references/paragraph-workflow.md",
+      "state": "present",
+      "sha256": "ad65727cb5e368f7dc5cda6aa0e8de7769089cccbc7712c45c75dda937dcbb67",
+      "git_blob": "dd8f97eccb7c66b1a1afe10a5eb662b434423687",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    },
+    {
+      "path": "skills/economics-checked-instructions/SKILL.md",
+      "state": "present",
+      "sha256": "75d29b2cd750a4d22d75942b21d11edb487590fc5fffa9330b83e9ef24c85fa8",
+      "git_blob": "e7b2861cbbd4e565a6d7a69992fe61990ed770fb",
+      "mode": "100644",
+      "source_repository": "github.com/yoshimurahiroki/economics-research-private",
+      "source_commit": "ea82bdf9b2c8f0c60b5c54d64d2b59507ba50d19"
+    }
+  ],
+  "released_paths": []
+}
+```
+<!-- /common-core-receipt:v2 -->
