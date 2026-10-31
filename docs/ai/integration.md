@@ -89,6 +89,43 @@ Select files_calculation_external_or_resume for ordinary execution, resumption_a
 
 Select affected export and synchronization cases from `scripts/test_export_project.py` and `scripts/test_sync_common_core.py` using CORE. Actual generation and synchronization establish the selected package and destination behavior; reuse those results. The existing fixtures cover ownership, dirty-source, staged-index, rollback and execute-mode behavior.
 
+## 0.11.0 changes and measured evaluation
+
+Version 0.11.0 connects issue priority to the downstream work invalidated by a wrong premise. The existing decision, design, execution and delegation owners identify the determining population, mechanism, model or interface; obtain the discriminating observation or smallest real calculation; and carry the result into dependent work. Unaffected completed work remains reusable. Required instructions, deliverables and verification retain their authority and coverage. No separate agent, state system, checker, estimator, wrapper or runtime dependency was added.
+
+The comparison baseline is mini `3975116892cc443a71f7bc4c3244f52e294da45b` and full `43c8a466300df1e0519881aaec0afcf91f8d0f49`, both version 0.10.0. The following comparisons used the same inputs and actual entry points before and after the change.
+
+| Observed operation | 0.10.0 | 0.11.0 |
+| --- | --- | --- |
+| New data pipeline or code-change export | Omitted the existing execution entry/dependency and output/failure bodies | Includes both bodies in flat and deployed exports |
+| Compound mini CI change | Four pytest processes for four affected suites | One pytest process retains those suites and includes the existing configuration suite |
+| Corresponding full CI selection | Selected a mini-only test absent from the full repository; exit 1 | Selects the full repository's existing suites; exit 0 |
+| Two routine `make sync` calls | Ten privileged filesystem calls and two installer calls | Zero privileged calls and the same two installer calls |
+| Kernel registration in a relocated checkout | Failed at a fixed `/workspaces` path | Resolves the project from the script and reaches Python/R registration |
+
+The CI and environment comparisons executed their real shell entry points with controlled external executables that recorded operations and injected failures. Installer failure, missing R kernel and pytest exit 19 remain failures. Container-volume ownership is established in the existing initialization script; routine synchronization runs as the current user. Existing lockfiles, dependency declarations, cache volumes, pre-commit controls and instruction entrances are retained. The measurements establish operation selection and failure propagation; container builds, dependency downloads and hosted-CI elapsed time were outside this comparison.
+
+The prose integration changes content selection before word editing: retain the proposition, evidence, causal relationship, quantity and action needed for the reader's judgment, and remove content serving rhetorical self-protection. Eight existing semantic criteria had described the defect in imperative form, including instructions to add concessions or replace a concrete request with generalities. They now direct the removal or reconstruction of that defect. The 142 lexical records, all 22 semantic IDs and names, required actions, instruction precedence and prohibition on rhetorical exceptions are unchanged. Existing writing modes and integrated review own this work.
+
+Direct specialist-package calculations exercised consequential method choices using declared synthetic models:
+
+| Decision quantity | Incompatible calculation | Matching calculation and result |
+| --- | --- | --- |
+| Two-product merger, homogeneous logit, marginal costs 1, transaction cost 0.1 | Fixed-demand price approximation: incremental profit −0.4397878760; pricing-equation residual 0.2290854151 | PyBLP 1.3.0 equilibrium: incremental profit +0.0769388033; residual zero at returned precision |
+| Profit at the new equilibrium | New prices with default baseline shares: 1.7791524025 | Explicit new prices and recomputed shares: 1.3748225282 |
+| Expanding participation beyond the instrument's observed margin | Treat historical LATE 1 on (0.2, 0.4] as the new-margin effect | Two compatible response curves imply net policy values +0.2 and −1 on (0.4, 0.8]; the determining unknown is the new margin's mean effect, with boundary 0.5 |
+| Finite tax change 10 to 30, demand 100 minus tax and external damage 15 per unit | Extend the initial welfare derivative across the full change: +100 | Integrate the derivative along the path: −100, comprising external benefit 300 and extra deadweight loss 400; tax transfers cancel |
+
+The merger uses two separate firms at baseline, one owner in the counterfactual and market size one. These comparisons establish calculation behavior under the stated models. They do not estimate an empirical market effect or a model-level behavioral improvement rate. Design and data instructions now trace the economic quantity through identifying support, package arguments, returned arrays and the action threshold before extending dependent analysis.
+
+Separate fresh agents used the same synthetic board-decision task and saved their initial and updated Japanese memos. Both versions selected B at total incremental profits A = 12 and B = 21 million yen, retained the 120-million-yen capital budget and rejected the infeasible joint project. Both calculated the switching boundary at an existing-product contribution of −32 million yen. When the authorized input changed from −41 to −27, both updated the saved memo to select A at profit 26 versus 21, with an 80-million-yen initial investment and the responsible manager's next procurement-specification action. Existing population, horizon and cost definitions remained intact. This comparison confirms the observed decisions and completed artifacts in both versions; no general behavior-improvement rate is inferred.
+
+The two corpus indexes assigned a consulted paper to different partitions. The new rule and example additions depending on that paper were withdrawn. Existing adopted analysis instructions remain intact. No unseen-paper evaluation was run or used for this release.
+
+The existing state mechanism was also exercised on the same 33-call sequence in both versions. Both rejected all four proposed omissions of the original request, active instructions, adopted decisions and objective; rejected parent completion without the final requested file; resumed with original context; and completed both artifacts. Initial, middle, post-compaction-proposal, resumed and final observations retained parent and child context. Each version computed the analysis once and required zero unnecessary child reassessments. The analysis and recommendation hashes match the 0.10.0 comparison below. This run confirms preservation of the existing resumption behavior.
+
+Nine existing configuration cases passed with three added regression methods covering the changed entry points. Two existing exporter methods exercised the two changed conditions in both formats and all thirteen operations across five owners. Two existing equity cases executed demand recovery/ownership equilibrium and the steady-value/share-unit/holding-return bridge. Validation reuses these results and the actual generated packages. Public operational instructions contain generalized original procedures; development provenance remains in the root notices file.
+
 ## 0.10.0 changes and measured evaluation
 
 Version 0.10.0 connects evidence-derived parent claims, reader-dependent content selection, project decomposition, delegated results and resumption through the existing owners. The common writing path now distinguishes the premises needed for an inference, derives an informative parent proposition from its supporting relationships, and returns a missing comparison to its analysis owner. Proposals, research explanations, progress reviews, discussions and oral explanations select information by the recipient's actual judgment. Multi-stage work connects the current answer, supporting propositions, producing operations and accumulated outputs. Fixed requirements retain their original authority; delegated analytical choices can change on evidence within their adopted switching condition.
