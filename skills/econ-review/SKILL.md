@@ -11,6 +11,8 @@ description: Judge a requested economics claim or artifact by comparing its clai
 
 Input: Named claim or artifact, requested review scope, intended reader and cited sources or saved calculations.
 
+Recover the actual question, claim, target and fixed conditions from the original request and artifact; do not attribute an unexpressed position. Judge agreement and correction by the same evidence and reasoning regardless of insistence, authority or earlier answers, and update affected conclusions when decisive new evidence changes a premise. Identify a supported criticism through its evidence and an error through its cause and repair. Exclude invented objections, counterexamples that violate fixed conditions and unnecessary concerns. Under PROSE, remove decision-irrelevant defensive separation at paragraph level and state any determining comparison through its concrete content.
+
 ## Procedure
 
 ### Choose the review target

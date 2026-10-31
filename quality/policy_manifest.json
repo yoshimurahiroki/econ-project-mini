@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "policy_id": "economics-native-0.13.0",
+  "policy_id": "economics-native-0.14.0",
   "profile": {
     "id": "research-full",
     "preflight_role": "requirements-coverage"
@@ -20,15 +20,15 @@
     },
     "core": {
       "path": "runtime/CORE.md",
-      "sha256": "33feca8962c615cf7c31cad2e44a592a6713fe28ecc2ae1f0957937e017bfb5c"
+      "sha256": "6427e8f72808f59e0794e874c6fdb0c9976b0e177d2bde6571a9e67b55db09da"
     },
     "decide": {
       "path": "runtime/DECIDE.md",
-      "sha256": "6ede0ea053ce38f6d93003df6e9b267cd15457d185f87c027a3bb69a72a46008"
+      "sha256": "d0815fd925a628a8ee6dd4ca458c81d6173131fa83d0f3a9d8fe69e0f8cf7d6d"
     },
     "dictionary": {
       "path": "quality/prose_rules.json",
-      "sha256": "2c06436dbd009176a34a039566d28e01ae2de4aa989517e17faed51648b5e976"
+      "sha256": "25ba30c84b9fd13c54fb274d296eb9283eb57b8101c064a766ab2357c6b7e96a"
     },
     "execution": {
       "path": "runtime/EXECUTION.md",
@@ -52,15 +52,15 @@
     },
     "policy_assets": {
       "path": "harness/policy_assets.py",
-      "sha256": "516849e044f1bb6b616aff1b795ad4921e6d745bdbc8573917c2c88a15d1f95d"
+      "sha256": "ae48a39e963b3924c1d537856c238fb9331706f73a8d49089b56fb2801d7b5f1"
     },
     "prose": {
       "path": "runtime/PROSE.md",
-      "sha256": "75b00f636021fe247eafd8757de565269dcd0fe5bf27774546b1dabc73144ccf"
+      "sha256": "6ceb00a3fd44da4b31ac74679064449fb9f10febd35e7722b0ee0f3bf31ece29"
     },
     "prose_guide": {
       "path": "quality/prose_rules.md",
-      "sha256": "54fdf8a593eecfaa89f4e21dd92b460a3ff4edf61012fa8a7175b31ce2bdd78f"
+      "sha256": "2efc1549990301495ab9583eaca3d50a47c3bdc16095e3e7307cca3d3e90aeb7"
     },
     "registry_operations": {
       "path": "registry/operations.json",
@@ -72,7 +72,7 @@
     },
     "registry_resources": {
       "path": "registry/resources.json",
-      "sha256": "44d4af29c31d6808ef42a7bd0bd4b06bb5fe25fbb4f5d2468d43b2461ce10cca"
+      "sha256": "d3a6b5941092b719b21a5993f93cc453f1987c93c0d060a1be1f9bea7d7f137a"
     },
     "requirements_check": {
       "path": "harness/requirements_check.py",
@@ -132,11 +132,11 @@
     },
     "resource:econ-review": {
       "path": "skills/econ-review/SKILL.md",
-      "sha256": "135eeb6202776212af47201c9131ed05d680b14c2018abb5b9cb863addca7cc4"
+      "sha256": "d6083c687e21a6a87f1711df6e317187b965b0e35da0bb7da5e49b50f30b8900"
     },
     "resource:econ-writing": {
       "path": "skills/econ-writing/SKILL.md",
-      "sha256": "2caaf2701352e1352a15b605be70dc8c05bebfdced821ee67467b76b9f89225a"
+      "sha256": "1b8b45883a629bfbd298f8aa17c3a49519557bb5032e5ea3048834c67c002c69"
     },
     "resource:equity-airline-case": {
       "path": "skills/econ-data/scripts/equity_airline_case.py",
@@ -192,7 +192,7 @@
     },
     "resource:integration": {
       "path": "docs/ai/integration.md",
-      "sha256": "ca8dbd33134a1d1c3b3b0c8fe151175614c9e183c45d15c396210a3ba42dd267"
+      "sha256": "eb005a853c0160b80b921f89bc25cf0fe9cb0f3251dfab2e9e5b707e67b2a293"
     },
     "resource:local-checks-guide": {
       "path": "harness/local_checks.md",

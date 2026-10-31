@@ -11,6 +11,8 @@ Apply the primary expression rule in [CORE](../../runtime/CORE.md) through the w
 
 Read the applicable CORE and PROSE bodies, the requested text and the sources needed for the task. Complete substantive reasoning, the requested artifact and one integrated editorial review. The common process in [Compose for the medium and language](SKILL.md#compose-for-the-medium-and-language) applies to all seven modes. Additional checks follow CORE's three-condition rule.
 
+Recover the user's actual question, claim, target and fixed conditions from the original wording without inventing a position. Give agreement or correction its determining evidence; unchanged evidence receives the same judgment, and decisive new evidence updates the affected output. Select content before wording: remove unnecessary declarations of separate issues or axes and the defensive passage they serve. Where a comparison matters, state its concrete definitions, differences, quantities or mechanism directly under PROSE.
+
 # Write the requested economics artifact
 
 Preserve adopted research claims, numbers, comparison groups, citations, formatting and editing scope. Select the necessary content, complete its logical explanation, and then refine the language and length. Work in the requested text or existing artifact. Preserve the source's established content throughout rewriting and translation.

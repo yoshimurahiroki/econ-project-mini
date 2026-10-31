@@ -130,6 +130,47 @@ class WritingIntegrationTests(unittest.TestCase):
             self.assertTrue({'native-check', 'paragraph-engine', 'argument-engine'} <= formal['resource_sections'].keys())
         self.assertIn('paragraph-engine.all', routes['rules']['native-check.all']['requires'])
 
+    def test_native_entries_and_registry_carry_judgment_and_expression(self):
+        resolver = load('judgment_integration_routes', 'scripts/route_registry.py')
+        routes = resolver.load_routes(ROOT)
+        for operation in ('econ-writing:compose', 'econ-review:assess', 'econ-data:execute'):
+            active = resolver.resolve_operation(routes, operation)['active_rules']
+            self.assertTrue({'core.all', 'prose.all'} <= set(active), operation)
+        for skill in ('econ-writing', 'econ-review'):
+            entry = (ROOT / 'skills' / skill / 'SKILL.md').read_text()
+            self.assertIn('../../runtime/CORE.md', entry)
+            self.assertIn('../../runtime/PROSE.md', entry)
+            self.assertIn('actual question', entry)
+            self.assertIn('evidence', entry)
+        core = (ROOT / 'runtime/CORE.md').read_text()
+        self.assertIn('distinguish a question from an assertion', core)
+        self.assertIn('A decisive new observation or correction changes', core)
+        self.assertIn('counterexamples that violate fixed conditions', core)
+        prose = (ROOT / 'runtime/PROSE.md').read_text()
+        self.assertIn('affirmative paraphrase or footnote preserves', prose)
+        self.assertIn('concrete differences, quantities or causal path', prose)
+
+    def test_existing_distinction_rules_scan_candidates_and_keep_semantic_contract(self):
+        dictionary = json.loads((ROOT / 'quality/prose_rules.json').read_text())
+        lexical = next(x for x in dictionary['rules'] if x['id'] == 'ja-068')
+        semantic = next(x for x in dictionary['semantic_checks'] if x['id'] == 'B28')
+        function = next(x for x in dictionary['functional_checks'] if x['id'] == 'C04')
+        phrases = semantic['ja_candidates'][-23:]
+        for phrase in phrases:
+            with self.subTest(phrase=phrase):
+                hits = n.gate.scan({'candidate.txt': phrase.encode()}, dictionary)
+                self.assertTrue(any(hit['rule_id'] == lexical['id'] for hit in hits))
+        comparison = '事前係数は各年の群間差と2020年の群間差の差を測る。'
+        hits = n.gate.scan({'candidate.txt': comparison.encode()}, dictionary)
+        self.assertFalse(any(hit['rule_id'] == lexical['id'] for hit in hits))
+        self.assertEqual(lexical['action'], 'block')
+        self.assertEqual(semantic['action'], 'semantic_review')
+        for row in (semantic, function):
+            self.assertIn('paragraph', row['criterion'])
+            self.assertIn('quantities', row['criterion'])
+        self.assertIn('attribution', function['required_action'])
+        self.assertIn('affirmative rewording', function['required_action'])
+
     def test_github_action_checks_exact_call_target_and_guard(self):
         args = {'repository_full_name': 'owner/repo', 'branch_name': 'main', 'sha': 'a' * 40,
                 'expected_sha': 'b' * 40, 'force': False}

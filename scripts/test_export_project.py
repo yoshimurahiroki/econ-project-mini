@@ -515,6 +515,12 @@ class RealRegistryTests(unittest.TestCase):
         formal = exporter.resolve_operation(self.routes, 'econ-writing:revise', conditions=['formal_review_requested'])
         self.assertTrue({'native-run', 'native-check', 'prose-check-rules'} <= formal['resource_sections'].keys())
         for fmt in ('flat', 'deployed'):
+            out = self.output('formulation-' + fmt, task='econ-data', conditions=['formulation_or_choice_unresolved'], output_format=fmt)
+            resource = self.routes['resources']['research']
+            text = (out / resource['export_alias' if fmt == 'flat' else 'deployment_path']).read_text()
+            self.assertIn('## Turn the question into an operation', text)
+            self.assertIn("Formulate the decision from the user's actual question, asserted premises and fixed conditions", text)
+            self.assertIn('carry a determining new observation through the affected judgment and dependent work', text)
             out = self.output('resume-' + fmt, task='econ-data', conditions=['resumption_active'], output_format=fmt)
             resource = self.routes['resources']['state-contract']
             text = (out / resource['export_alias' if fmt == 'flat' else 'deployment_path']).read_text()
@@ -578,6 +584,14 @@ class RealRegistryTests(unittest.TestCase):
         self.assertEqual(run.returncode, 0, run.stdout + run.stderr)
         for owner in {op['owner_skill'] for op in self.routes['operations']}:
             self.assertTrue((root / 'skills' / owner / 'references/bundle/quality/policy_manifest.json').is_file())
+        for skill in ('econ-writing', 'econ-review'):
+            entry = (root / 'skills' / skill / 'SKILL.md').read_text()
+            self.assertIn('actual question', entry)
+            self.assertIn('references/bundle/runtime/CORE.md', entry)
+            self.assertIn('references/bundle/runtime/PROSE.md', entry)
+            bundle = root / 'skills' / skill / 'references/bundle/runtime'
+            self.assertIn('distinguish a question from an assertion', (bundle / 'CORE.md').read_text())
+            self.assertIn('affirmative paraphrase or footnote preserves', (bundle / 'PROSE.md').read_text())
 
     def test_distribution_retains_concurrent_input_when_creating_parent(self):
         root = self.distribution_source()

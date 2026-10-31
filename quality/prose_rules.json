@@ -1568,10 +1568,10 @@
       "id": "ja-068",
       "language": "ja",
       "category": "negation_contrast",
-      "pattern": "(?:(?:(?:だけではない|とは限らない|他方|一方)|(?:では|じゃ)(?:ありませんでした|ありません|なかった|ない|ございません|ないです)|(?:同義|同じ意味|同一|同じこと)(?:では|と(?:は|も))?(?:ありません|ない|なかった|ありませんでした)|(?:を|とは)?意味し(?:ません|ない|なかった|ていません|ていない|ませんでした)|区別(?:です|します|する必要|しなければ|しておく|して|すること|すべき|が重要|が必要)|(?:該当|適用|対応|一致|成立)(?:しません|しない|していません|していない|しなかった|し得ません)|(?:されません|されない|されていません|されていない|されませんでした|されなかった)|(?:足りません|足りない|達しません|達しない|届きません|届かない|不十分(?:です|である|だ))|(?:確認|観察|検出|実証|認定|検証|識別|支持)(?:できません|できない|されません|されない|されていません|されていない|できていません|できていない)|(?:有意(?:で|と)(?:は)?(?:ありません|ない)|一貫(?:し|してい)(?:ません|ない)|根拠(?:が|は)(?:ない|足りない|乏しい|不足))|(?:結論(?:には|に|は)達(?:しません|しない|していません|していない)|断定(?:できません|できない)|言い切(?:れません|れない)|意味(?:が|は)(?:ありません|ない)|分かりません|わかりません)|(?:一方で?|他方|しかし(?:ながら)?|それに対して|これに対して|ただし|但し|とはいえ|もっとも|それでも|とは限(?:らない|りません))|より(?:も)?|(?:単なる|だけ|のみ)(?:[^。\\n]{0,60})(?:ではない|ではありません|とどまらない|とどまりません)|(?:誤解のないように|誤解を恐れずに|念のため|あえて(?:言えば|言うと)|ご批判を承知で|断っておくと)|(?:厳密には|正確には|科学的には|理論上は|技術的には|一般的には|原則として|基本的には|通常は|必ずしも|あくまで|ある程度)|(?:重要なのは(?:[^。\\n]{0,30})区別|区別する必要が(?:あります|ある)|区別して考える)|(?:かもしれません|かもしれない|と思われます|と考えられます|示唆されます|可能性が(?:あります|ある))|(?:注意が必要です|留意すべきです|慎重に(?:考える|判断する)|無視できません|軽視できません)|(?:保証(?:できません|しません)|責任(?:を|は)(?:負いません|負わない)|結論を出す(?:ことは)?できません|すべての(?:状況|場合|ケース)に当てはまる(?:わけではない|ものではない))|(?:ここで重要なのは|特に注意すべきは|以下の点を押さえ|忘れてはならない|この点こそ|ここがポイント))|(?:わけ|訳)(?:では|じゃ|でも)(?:ありません(?:でした)?|ない(?:です)?|なかった|ございません(?:でした)?)|(?:区別|区分|切り分け)(?:が|は)(?:必要(?:です|だ|である)?|不可欠(?:です|だ)?|求められ(?:る|ます)|要る)|(?:区別|区分)(?:を)?(?:する必要(?:が(?:ある|あります))?|すべき|して(?:考える|扱う))|(?:切り分け|分け)(?:る必要(?:が(?:ある|あります))?|るべき)|(?:実施|実行|検証|推定|計算|分析|集計|処理|導入|採用)(?:は|が)?(?:されて(?:いません|いない|おりません)|されません|されない|して(?:いません|いない|おりません))|(?:行われて(?:いません|いない|おりません)|行って(?:いません|いない|おりません)))",
+      "pattern": "(?:(?:(?:(?:だけではない|とは限らない|他方|一方)|(?:では|じゃ)(?:ありませんでした|ありません|なかった|ない|ございません|ないです)|(?:同義|同じ意味|同一|同じこと)(?:では|と(?:は|も))?(?:ありません|ない|なかった|ありませんでした)|(?:を|とは)?意味し(?:ません|ない|なかった|ていません|ていない|ませんでした)|区別(?:です|します|する必要|しなければ|しておく|して|すること|すべき|が重要|が必要)|(?:該当|適用|対応|一致|成立)(?:しません|しない|していません|していない|しなかった|し得ません)|(?:されません|されない|されていません|されていない|されませんでした|されなかった)|(?:足りません|足りない|達しません|達しない|届きません|届かない|不十分(?:です|である|だ))|(?:確認|観察|検出|実証|認定|検証|識別|支持)(?:できません|できない|されません|されない|されていません|されていない|できていません|できていない)|(?:有意(?:で|と)(?:は)?(?:ありません|ない)|一貫(?:し|してい)(?:ません|ない)|根拠(?:が|は)(?:ない|足りない|乏しい|不足))|(?:結論(?:には|に|は)達(?:しません|しない|していません|していない)|断定(?:できません|できない)|言い切(?:れません|れない)|意味(?:が|は)(?:ありません|ない)|分かりません|わかりません)|(?:一方で?|他方|しかし(?:ながら)?|それに対して|これに対して|ただし|但し|とはいえ|もっとも|それでも|とは限(?:らない|りません))|より(?:も)?|(?:単なる|だけ|のみ)(?:[^。\\n]{0,60})(?:ではない|ではありません|とどまらない|とどまりません)|(?:誤解のないように|誤解を恐れずに|念のため|あえて(?:言えば|言うと)|ご批判を承知で|断っておくと)|(?:厳密には|正確には|科学的には|理論上は|技術的には|一般的には|原則として|基本的には|通常は|必ずしも|あくまで|ある程度)|(?:重要なのは(?:[^。\\n]{0,30})区別|区別する必要が(?:あります|ある)|区別して考える)|(?:かもしれません|かもしれない|と思われます|と考えられます|示唆されます|可能性が(?:あります|ある))|(?:注意が必要です|留意すべきです|慎重に(?:考える|判断する)|無視できません|軽視できません)|(?:保証(?:できません|しません)|責任(?:を|は)(?:負いません|負わない)|結論を出す(?:ことは)?できません|すべての(?:状況|場合|ケース)に当てはまる(?:わけではない|ものではない))|(?:ここで重要なのは|特に注意すべきは|以下の点を押さえ|忘れてはならない|この点こそ|ここがポイント))|(?:わけ|訳)(?:では|じゃ|でも)(?:ありません(?:でした)?|ない(?:です)?|なかった|ございません(?:でした)?)|(?:区別|区分|切り分け)(?:が|は)(?:必要(?:です|だ|である)?|不可欠(?:です|だ)?|求められ(?:る|ます)|要る)|(?:区別|区分)(?:を)?(?:する必要(?:が(?:ある|あります))?|すべき|して(?:考える|扱う))|(?:切り分け|分け)(?:る必要(?:が(?:ある|あります))?|るべき)|(?:実施|実行|検証|推定|計算|分析|集計|処理|導入|採用)(?:は|が)?(?:されて(?:いません|いない|おりません)|されません|されない|して(?:いません|いない|おりません))|(?:行われて(?:いません|いない|おりません)|行って(?:いません|いない|おりません))))|(?:(?:また|それは|それとは|話は|論点は)?別の?(?:問題|話|論点|観点|次元の問題|段階|課題)(?:です|になります|から考える必要があります)?|別次元の話です|(?:話|論点)は別です|それとは別に|それはそれとして|それは別として|[^。\\n]{1,40}(?:と|ことと)[^。\\n]{1,40}(?:は|ことは)別(?:のもの|々に考える必要があり)?(?:です|ます))",
       "action": "block",
-      "explanation": "Assess the whole proposition and paragraph for defensive denial, negative contrast, distinction announcements and action-status disclaimers, including semantic equivalents without a lexical match.",
-      "repair": "Rebuild the passage around the actual definition, target population, actor, operation or measured comparison. Preserve source truth conditions, values and attribution. State a zero only when the record establishes that zero; complete the explanation before removing redundant wording.",
+      "explanation": "Assess the whole proposition and paragraph for defensive denial, negative contrast, distinction announcements and action-status disclaimers, including semantic equivalents without a lexical match. Also assess unnecessary separation of issues, topics, perspectives, dimensions, stages or axes and equivalent paraphrases by the whole paragraph function.",
+      "repair": "Rebuild the passage around the actual definition, target population, actor, operation or measured comparison. Preserve source truth conditions, values and attribution. State a zero only when the record establishes that zero; complete the explanation before removing redundant wording. Remove decision-irrelevant partition, topic shifts and preemptive protection at content selection; express a determining comparison through its concrete definitions, differences, quantities or mechanism. Affirmative substitution or moving the function into a note does not repair it.",
       "positive_example": "事前係数の有意性は傾きの違いと同義ではありません。",
       "negative_example": "事前係数は各年の群間差と2020年の群間差の差を測る。"
     },
@@ -1910,7 +1910,30 @@
         "区別する必要があります",
         "実施されていません",
         "実行していません",
-        "行われていません"
+        "行われていません",
+        "別の問題です",
+        "また別の問題です",
+        "それは別の問題です",
+        "別の話です",
+        "話は別です",
+        "それとは別の話です",
+        "別の論点です",
+        "論点は別です",
+        "別の論点になります",
+        "別の観点です",
+        "別の観点から考える必要があります",
+        "別の次元の問題です",
+        "別次元の話です",
+        "別の段階です",
+        "別の課題です",
+        "別の話になります",
+        "それとは別に",
+        "それはそれとして",
+        "それは別として",
+        "AとBは別です",
+        "AとBは別のものです",
+        "AとBは別々に考える必要があります",
+        "AであることとBであることは別です"
       ],
       "en_candidates": [
         "not",
@@ -1920,7 +1943,7 @@
         "although",
         "but"
       ],
-      "criterion": "Assess the whole claim and its paragraph. Prohibit negative contrasts, concessions, defensive denials, distinction announcements and non-execution framing, including unmatched paraphrases of わけではありません, 意味しません, 区別が必要です and 実施されていません. Reconstruct the argument as direct definitions, target populations, actors, actual operations and measured comparisons. Preserve the source truth conditions, logical premises and values; state a zero only when an actual record establishes it. Word substitution, shifting the passage into a note and appeals to scientific precision preserve the prohibited function. Apply the primary expression rule across the entire candidate.",
+      "criterion": "Assess the whole claim and its paragraph. Prohibit negative contrasts, concessions, defensive denials, distinction announcements and non-execution framing, including unmatched paraphrases of わけではありません, 意味しません, 区別が必要です and 実施されていません. Reconstruct the argument as direct definitions, target populations, actors, actual operations and measured comparisons. Preserve the source truth conditions, logical premises and values; state a zero only when an actual record establishes it. Word substitution, shifting the passage into a note and appeals to scientific precision preserve the prohibited function. Apply the primary expression rule across the entire candidate. Remove decision-irrelevant partition of issues, topics, perspectives, dimensions, stages or axes, topic shifts, preemptive protection and delay by their paragraph function, including equivalent paraphrases. Retain necessary comparisons as direct definitions, differences, quantities or causal paths; an affirmative paraphrase preserves irrelevant content.",
       "rhetorical_example": "単なる数字ではなく未来への鍵です。",
       "substantive_example": "事前係数は各年の群間差と2020年の群間差の差を測る。",
       "action": "semantic_review"
@@ -2019,8 +2042,8 @@
     {
       "id": "C04",
       "function": "Unnecessary negative contrasts",
-      "criterion": "Rebuild negative contrasts and conceptual-distinction announcements as direct propositions. Cover not X but Y, AとBを区別する, 違いに注意する, わけではありません, 意味しません, 区別が必要です, 実施されていません and synonymous constructions. Identify the actual objects, definitions, population, operation and comparison, then organize the paragraph around that content. Remove empty contrasts and claims about what a method or result does not establish. Preserve actual source meaning and measured quantities; a measured zero requires its recorded observation. Apply this judgment to the argument and paragraph, not only matched words. Technical interpretation, research integrity and precision provide no exception.",
-      "required_action": "Rewrite the complete claim and its supporting paragraph into direct content. Preserve facts, quantities, premises and source attribution. Reject equivalent rhetoric in unmatched paraphrases, quotations, notes and summaries. Complete this meaning judgment during ordinary composition and the integrated editorial review; a formal review records it in the existing C04 field."
+      "criterion": "Rebuild negative contrasts and conceptual-distinction announcements as direct propositions. Cover not X but Y, AとBを区別する, 違いに注意する, わけではありません, 意味しません, 区別が必要です, 実施されていません and synonymous constructions. Identify the actual objects, definitions, population, operation and comparison, then organize the paragraph around that content. Remove empty contrasts and claims about what a method or result does not establish. Preserve actual source meaning and measured quantities; a measured zero requires its recorded observation. Apply this judgment to the argument and paragraph, not only matched words. Technical interpretation, research integrity and precision provide no exception. Include unnecessary separate-issue or axis declarations, topic shifts, preemptive protection and delay by their content and paragraph function. A comparison that determines the requested answer is expressed through its actual definitions, differences, quantities or causal path.",
+      "required_action": "Rewrite the complete claim and its supporting paragraph into direct content. Preserve facts, quantities, premises and source attribution. Reject equivalent rhetoric in unmatched paraphrases, quotations, notes and summaries. Complete this meaning judgment during ordinary composition and the integrated editorial review; a formal review records it in the existing C04 field. Remove a decision-irrelevant passage itself; affirmative rewording and relocation to a note preserve its function."
     },
     {
       "id": "C05",
