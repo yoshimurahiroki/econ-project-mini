@@ -2,31 +2,27 @@ name: Changed code quality
 
 on:
   pull_request:
-  workflow_dispatch:
-  push:
-    branches: [main]
-    paths: ['.github/workflows/quality.yml']
 
 permissions:
   contents: read
 
 jobs:
   source-snapshot:
-    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
       - name: Archive the exact public source revision
         run: git archive --format=tar.gz --output=public-source.tar.gz HEAD
       - uses: actions/upload-artifact@v4
         with:
-          name: public-source-${{ github.sha }}
+          name: public-source-${{ github.event.pull_request.head.sha }}
           path: public-source.tar.gz
           retention-days: 1
           if-no-files-found: error
   changed-code:
-    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
