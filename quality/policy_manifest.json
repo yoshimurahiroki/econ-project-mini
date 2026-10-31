@@ -192,7 +192,7 @@
     },
     "resource:integration": {
       "path": "docs/ai/integration.md",
-      "sha256": "eb005a853c0160b80b921f89bc25cf0fe9cb0f3251dfab2e9e5b707e67b2a293"
+      "sha256": "45fa3f9ac5c743038da37e409df85a5b21cc9393a6485aff6f64bf8283f4dd6a"
     },
     "resource:local-checks-guide": {
       "path": "harness/local_checks.md",
