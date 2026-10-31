@@ -1,0 +1,18 @@
+---
+title: "Title"
+author: "Author"
+---
+
+```{=latex}
+\let\title\econsocarttitle
+\let\author\econsocartauthor
+\begin{frontmatter}
+\title{Title}
+\runtitle{Title}
+\begin{aug}
+\author[id=au1,addressref={add1}]{\fnms{}~\snm{}}
+\address[id=add1]{}
+\end{aug}
+\end{frontmatter}
+```
+
