@@ -62,10 +62,6 @@ RUN curl -fsSL https://yihui.org/tinytex/install-unx.sh -o /tmp/install-tinytex.
       biber && \
     chmod -R a+rX "${TINYTEX_HOME}"
 
-# ========= 1.2) Global NPM Packages =========
-# Repomix is installed globally; setup_ide_mcp.sh discovers installed MCP servers.
-RUN npm install -g repomix
-
 # ========= 2) User Setup =========
 ARG USERNAME=vscode
 ARG USER_UID=1000
@@ -78,7 +74,7 @@ RUN groupadd --gid "$USER_GID" "$USERNAME" || true && \
     chown -R "$USERNAME:$USERNAME" "${TINYTEX_HOME}"
 
 USER $USERNAME
-WORKDIR /workspaces/econ-project
+WORKDIR /workspaces
 ENV PATH="/home/$USERNAME/.cargo/bin:/home/$USERNAME/.local/bin:/home/$USERNAME/go/bin:${PATH}"
 
 # Rust supports Python/R tooling and rv.
@@ -95,20 +91,10 @@ ENV PATH="/home/$USERNAME/.pixi/bin:$PATH"
 # The workspace .pixi volume supplies the runtime environment.
 # setup-environment.sh installs project dependencies after the container starts.
 RUN mkdir -p /tmp/package-lists
-WORKDIR /workspaces/econ-project
 
 # ========= 5.5) rv =========
 RUN curl -sSL https://raw.githubusercontent.com/A2-ai/rv/refs/heads/main/scripts/install.sh | bash
 ENV PATH="/home/$USERNAME/.local/bin:/home/$USERNAME/go/bin:$PATH"
-
-# ========= 6) Runtime Kernel Registration =========
-# The devcontainer setup script registers kernels from the workspace environment.
-WORKDIR /workspaces/econ-project
-
-# ========= 7) On-demand AI References =========
-# Store task reference files in .resources.
-RUN sudo mkdir -p /workspaces/econ-project/.resources && \
-    sudo chown -R $USERNAME:$USERNAME /workspaces/econ-project/.resources
 
 # ========= 8) Default Command =========
 USER root
