@@ -48,7 +48,7 @@ lint:
 	@$(CHECK_FILE); $(QUALITY_RUN) ruff check -- "$$QUALITY_FILE"
 test:
 	@test -n "$$QUALITY_TEST" || { echo "Specify TEST=path::node" >&2; exit 2; }; \
-	$(THREAD_ENV) $(PIXI_RUN) pytest -q -p no:cacheprovider -- "$$QUALITY_TEST"
+	$(THREAD_ENV) PYTHONPATH=".$${PYTHONPATH:+:$$PYTHONPATH}" $(PIXI_RUN) pytest -q -rs -p no:cacheprovider -p harness.local_checks -- "$$QUALITY_TEST"
 
 r-install: RV_ACTION = sync
 r-plan: RV_ACTION = plan
