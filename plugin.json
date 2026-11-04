@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "economics-research-skills",
-  "version": "0.52.0",
+  "version": "0.52.1",
   "description": "Economics research and executable long-horizon equity valuation from public data and the current user's own credentials.",
   "author": {
     "name": "Economics Research Skills contributors"
@@ -18,12 +18,12 @@
         "category": "Productivity",
         "displayName": "Economics Research Skills",
         "developerName": "Economics Research Skills contributors",
-        "shortDescription": "\u7d4c\u6e08\u5b66\u7814\u7a76\u30fb\u4e2d\u9577\u671f\u682a\u5f0f\u8a55\u4fa1",
-        "longDescription": "\u7d4c\u6e08\u5b66\u7814\u7a76\u3068\u65e5\u672c\u30fb\u7c73\u56fd\u30fb\u6d77\u5916\u682a\u306e\u8a55\u4fa1\u3002\u7121\u6599\u306e\u958b\u793a\u30fb\u7523\u696d\u30c7\u30fc\u30bf\u3001\u69cb\u9020\u63a8\u5b9a\u3001\u7af6\u4e89\u5747\u8861\u3001\u6301\u7d9a\u7684FCF\u3001\u30cd\u30c3\u30c8\u30ad\u30e3\u30c3\u30b7\u30e5\u3001\u9006DCF\u3001\u7a0e\u5f8c\u6295\u8cc7\u5224\u65ad\u3092\u8a08\u7b97\u3057\u307e\u3059\u3002\u516c\u958b\u30c7\u30fc\u30bf\u3068\u5229\u7528\u8005\u672c\u4eba\u306e\u8a8d\u8a3c\u60c5\u5831\u3092\u4f7f\u3046\u72ec\u7acb\u3057\u305f5\u5c02\u9580\u30b9\u30ad\u30eb\u3067\u3059\u3002",
+        "shortDescription": "経済学研究・中長期株式評価",
+        "longDescription": "経済学研究と日本・米国・海外株の評価。無料の開示・産業データ、構造推定、競争均衡、持続的FCF、ネットキャッシュ、逆DCF、税後投資判断を計算します。公開データと利用者本人の認証情報を使う独立した5専門スキルです。",
         "defaultPrompt": [
-          "\u3053\u306e\u7d4c\u6e08\u5b66\u8ad6\u6587\u3092\u554f\u3044\u30fb\u610f\u7fa9\u30fb\u65b9\u6cd5\u30fb\u7d50\u679c\u30fb\u8ca2\u732e\u306e5\u70b9\u3067\u89e3\u8aac\u3057\u3066\u3002",
-          "\u3053\u306e\u7814\u7a76\u306e\u8ad6\u6587\u3068\u767a\u8868\u30b9\u30e9\u30a4\u30c9\u3092\u3001\u5185\u5bb9\u9078\u629e\u30fb\u8ad6\u69cb\u6210\u30fb\u6587\u7ae0\u8868\u73fe\u3092\u91cd\u8996\u3057\u3066\u4f5c\u6210\u3057\u3066\u3002",
-          "\u3053\u306e\u7d4c\u6e08\u5b66\u306e\u6587\u7ae0\u30fb\u8cc7\u6599\u3092\u30ec\u30d3\u30e5\u30fc\u3057\u3001\u91cd\u8981\u306a\u554f\u984c\u3092\u4fee\u6b63\u3057\u3066\u3002"
+          "この経済学論文を問い・意義・方法・結果・貢献の5点で解説して。",
+          "この研究の論文と発表スライドを、内容選択・論構成・文章表現を重視して作成して。",
+          "この経済学の文章・資料をレビューし、重要な問題を修正して。"
         ]
       }
     }
