@@ -62,7 +62,7 @@ make slides-pdf QMD=tex/slides/quarto_template.qmd
 | `econ-writing` | 執筆、改稿、翻訳、論文の説明 |
 | `econ-review` | 主張・成果物の評価と指定範囲の修正 |
 | `econ-knowledge` | 主担当Skillが必要とする理論・モデル・手法・例題のID別参照 |
-| `project-work` | 案件への参加・担当業務と、運営・資源・変更・引継ぎを既存専門Skillへ接続 |
+| `project-work` | 要件・作業方針の整理、実行プロンプトの作成・改善、案件への参加・運営を既存専門Skillへ接続 |
 
 依頼には、対象資料、欲しい成果物、変更を許す範囲を添えます。Codex では `$econ-writing` などを指定し、改稿なら `revise`、翻訳なら `translate` のように[操作一覧](docs/ai/compiled_ai_skills.md)のモードを選びます。
 
@@ -82,7 +82,7 @@ ChatGPT では、自分用プラグインとして使う方法と、Project へ�
 
 ### 案件に参加・案件を運営する
 
-[project-work](skills/project-work/SKILL.md) の `contribute` は担当分析、相談文案、実成果物を、`manage` は案件の判断、分業、共有資源、変更、成果統合と引継ぎを扱います。経済モデル、根拠、計算、文章と評価は既存の5専門Skillが担当します。現在の命題と既存stateを結ぶ [project-bind/view/impact](harness/state.md#project-work) から、同じ元情報のsummary・story・workplan、資源制約下の予測、変更の影響範囲を取得できます。
+[project-work](skills/project-work/SKILL.md) の `clarify` は要件・作業方針の相談を、`prompt` は実行用プロンプトの作成・改善を扱います。確定済みの事項は再質問せず、通常の実行依頼は既存の担当Skillへ渡します。`contribute` は担当分析、相談文案、実成果物を、`manage` は案件の判断、分業、共有資源、変更、成果統合と引継ぎを扱います。経済モデル、根拠、計算、文章と評価は既存の5専門Skillが担当します。現在の命題と既存stateを結ぶ [project-bind/view/impact](harness/state.md#project-work) から、同じ元情報のsummary・story・workplan、資源制約下の予測、変更の影響範囲を取得できます。
 
 ### 中長期の株式評価
 
