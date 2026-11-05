@@ -328,6 +328,7 @@
         },
         "height": 540,
         "legend": true,
+        "legend_location": "upper left",
         "lower": "lower",
         "notes": [
           "Authored display values and endpoints; no data analysis or estimation."
@@ -361,9 +362,9 @@
         "4": "assets/exhibit-1-4.md"
       },
       "content_versions": {
-        "1": "6f4591eadef0697b146062d124c51d8c6e16d1027810a0cfd7cbcd98466b7837",
-        "2": "bf35f40564738367b9bd5c535e97aa2a88c6ec1b244779af99ce76d5ed6d2dde",
-        "3": "b94ff5809f4cb5e9405581c5c76e816ca6c95d33a9668aff407a10d1ce59bb49",
+        "1": "8137fe7cad53f920e26b252545a9d92084f02ba0fec25e43bf7c10fd9b8c9970",
+        "2": "d634057f2c3bc6bb301936d2b0ffddbea15db3853fce48cabdeb6245d08e93de",
+        "3": "36b64b4129acfd120bcc586faf06b77be1a968e3844c050c9db21e36166bfbb1",
         "4": "c714ce9ab76cf365acb278f40294aafffac0e3595505a7189b23b3fc3e03cb07"
       }
     },
@@ -473,8 +474,8 @@
         "4": "assets/exhibit-2-4.md"
       },
       "content_versions": {
-        "1": "b2e9672faa55e732ee33fd8d7ef2619eaf18821e1758f3bb492180ce0180de79",
-        "2": "643581492386edc1259db6702a065d44f62c392786b681bbb271627ae31596c0",
+        "1": "d4d8c646a9f4f752674d18030fdc6d670578720ed34677bcc6a049faa72b0335",
+        "2": "5f8474df3b7c716f071a15f6610ee4fce1e3b20217d88bbc2e236bdfbff7efac",
         "3": "47a925214df3fbf7dff005473ae67062be18a190d818cd4a2ba88495f459551a",
         "4": "739875e503ea914870f129e9c34ba9c2bd3d8c03f21f1e2c1d82ff9999ee8e5c"
       }

@@ -84,6 +84,9 @@ r-yaml = "*"
 r-reticulate = "*"
 
 [tool.pixi.pypi-dependencies]
+# Saved-result viewing and figure editing.
+marimo = ">=0.23.4,<1"
+matplotlib = ">=3.10,<4"
 # Add project-specific PyPI dependencies for the adopted analysis.
 
 [tool.ruff]
@@ -104,6 +107,7 @@ python-version = "python --version"
 r-version = "R --version"
 jupyter-lab = "jupyter lab --ip=0.0.0.0 --no-browser"
 jupyter-notebook = "jupyter notebook --ip=0.0.0.0 --no-browser"
+research-ui = "python -m marimo run harness/research_gallery.py"
 quarto-check = "quarto check --no-strict"
 install-python-kernel = "bash .devcontainer/register-kernels.sh --python"
 install-r-kernel = "bash .devcontainer/register-kernels.sh --r"
