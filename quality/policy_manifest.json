@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "policy_id": "economics-native-0.53.0",
+  "policy_id": "economics-native-0.53.1",
   "profile": {
     "id": "research-full"
   },
@@ -43,7 +43,7 @@
     },
     "policy_assets": {
       "path": "harness/policy_assets.py",
-      "sha256": "904171d4d6e692b1d22113cd790bf2a5301c77721a4781919263f928cfa8a405"
+      "sha256": "760bdacffcbae9fe0e2bafa43bee90932a9c483e8fa9d3a377a4796187f4bc4a"
     },
     "prose": {
       "path": "runtime/PROSE.md",
@@ -527,7 +527,7 @@
     },
     "resource:research-runner": {
       "path": "harness/research.py",
-      "sha256": "22ad5e7d6bcf7dca6d6f664d50501c85ad272ec5679b9fe27568a8473573ac7d"
+      "sha256": "93b6fabfefac9f9a42ff180f6a609e8aa35b2cbc62793e620ea90336a14b50b4"
     },
     "resource:research-search": {
       "path": "skills/econ-literature/scripts/research_search.py",
@@ -575,7 +575,7 @@
     },
     "state": {
       "path": "harness/state.py",
-      "sha256": "e23013bfd15a3652fa828da57aecac97a48b51b0e9a577adb943f38b7b3fb81f"
+      "sha256": "62b909c7ce7c5600c1f5314eb3745d3463dca1aac035b6bf3dbebebe6ff27699"
     },
     "team": {
       "path": "runtime/TEAM.md",

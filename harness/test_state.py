@@ -117,8 +117,9 @@ class TeamStateTests(unittest.TestCase):
         self.write_json('github.json', data)
         store = self.root / '.agents/state/team.json'
         original = store.read_bytes()
-        summary = self.cli('project-view', 'CASE', '--role', 'manage', '--view', 'summary', '--owner', 'scientist',
-                           '--github', 'github.json', '--save', 'summary.json')
+        with patch.object(h, 'refresh_constraints', side_effect=AssertionError('Project reads do not refresh unrelated task constraints')):
+            summary = self.cli('project-view', 'CASE', '--role', 'manage', '--view', 'summary', '--owner', 'scientist',
+                               '--github', 'github.json', '--save', 'summary.json')
         self.assertEqual(original, store.read_bytes())
         self.assertEqual(summary, json.loads((self.root / 'summary.json').read_text()))
         self.assertEqual([11], [row['number'] for row in summary['completed']])
