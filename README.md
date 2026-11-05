@@ -34,6 +34,18 @@ Notebook では、セットアップで登録された Python／R カーネル�
 
 手動の lint・整形は `make lint FILE=...`、`make format FILE=...` を使います。通常作業ではテストを自動実行せず、変更した実装に対応する残存テストだけを実行します。数値変更は独立計算との照合、配布変更は実際の生成・保存結果で確認します。[変更箇所の確認](docs/quality-checks.md)に実行範囲を記載しています。
 
+## 保存済みの結果・研究計画・会議資料を編集する
+
+```sh
+pixi run research-ui -- --root . --registry analysis/gallery.json
+```
+
+marimo のローカル画面で記述統計表・図表を検索、比較、編集します。[結果ギャラリー](skills/econ-writing/references/result-artifacts.md)は分析時に保存した表示用の行データと定義を読み、表示変更だけで推定を呼び出しません。原データと分析は従来の Docker 環境に置きます。
+
+研究計画、採用仕様、発見・解釈・判断は既存 ERS の記録を編集します。担当、期限、依存、優先順位、進捗は [GitHub Issues / Projects と接続したプロジェクト表示](harness/state.md#project-work)から管理します。
+
+[ミーティング資料](harness/meetings.md)は選択した保存済み図表、前回の決定・To Do、今回の進捗から作成します。GitHub のブラウザで Markdown と構成を編集すると、Actions が保存済み資料だけを HTML に描画します。Google Slides は独立したネイティブ編集版を作成します。[公開用の合成表示例](examples/research-workspace/README.md)を同梱しています。
+
 ## 論文とスライドを作る
 
 [LaTeX 論文](tex/paper/ecta_template.tex)と [Beamer スライド](tex/slides/main.tex)を編集し、次のコマンドで PDF を作ります。
@@ -101,7 +113,7 @@ SEC・企業IR・公的統計は公開データから取得できます。EDINET
 
 文献の五つの比較軸とデータの単位・期間・変数・キーから研究候補を選びます。採用した目的と評価条件を既存の状態管理に保持し、計算結果から次の候補を生成して、最終候補を独立した評価標本で測定します。
 
-因果推論、需要・供給、動学選択・ゲーム、オークション、市場設計、一般均衡、異質主体、数値計算の入口は [研究実行ガイド](harness/research.md#select-the-specialized-model) から選択します。数式・識別条件・入力・推定器・合成データ例を同じ専門資料にまとめています。保存した結果から表・図・本文・スライドを連動させ、HTML・LaTeX・Quarto・PDF・Word・PowerPoint と再現パッケージを生成します。
+因果推論、需要・供給、動学選択・ゲーム、オークション、市場設計、一般均衡、異質主体、数値計算の入口は [研究実行ガイド](harness/research.md#select-the-specialized-model) から選択します。数式・識別条件・入力・推定器・合成データ例を同じ専門資料にまとめています。保存した結果から表・図・本文・スライドを連動させ、HTML・LaTeX・Quarto・PDF と再現パッケージを生成します。
 
 ### 研究課題から成果物まで実行する
 

@@ -31,6 +31,7 @@ format:
         .reveal .slides section .fragment { opacity: 1; }
         </style>
   beamer:
+    latex-auto-install: false
     pdf-engine: lualatex
     aspectratio: 169
     theme: metropolis

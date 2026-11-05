@@ -102,6 +102,8 @@ def template_path(root, name):
     candidates = [root / "tex/slides" / name, root / ".agents/tex/slides" / name,
                   Path(__file__).resolve().parent.parent / "tex/slides" / name,
                   Path(__file__).resolve().parent / name]
+    if name == "pandoc_template.latex":
+        candidates.append(Path(__file__).resolve().parent / "slides_pandoc_template.latex")
     return next((path for path in candidates if path.is_file()), None)
 
 
@@ -159,8 +161,8 @@ def create_bundle(root, output, entries, *, title, kind="meeting", project_view=
     sections = copy.deepcopy(formats[kind]["sections"])
     bodies = {section["id"]: "" for section in sections}
     bodies.update({
-        "previous": summary_lines(prior.get("decisions") or prior_bodies.get("decisions", "")),
-        "previous-todos": task_lines(prior.get("next_actions", [])),
+        "previous": summary_lines(prior_bodies.get("decisions") or prior.get("decisions", [])),
+        "previous-todos": prior_bodies.get("next") or task_lines(prior.get("next_actions", [])),
         "completed": task_lines(completed),
         "active": task_lines(view.get("active", view.get("in_progress", []))),
         "findings": summary_lines(view.get("findings", [])),
@@ -304,21 +306,26 @@ def table_markdown(entry):
     columns = [item["key"] for item in definitions]
     if not columns:
         return ""
-    def cell(value):
+    display = entry.get("display", {})
+    def cell(value, key=None):
+        if type(value) in (int, float) and key in display.get("formats", {}):
+            value = format(value, display["formats"][key])
         return str(value if value is not None else "").replace("|", "\\|").replace("\n", " ")
-    labels = {item["key"]: item.get("label", item["key"]) +
+    labels = {item["key"]: display.get("column_labels", {}).get(item["key"], item.get("label", item["key"])) +
               (" (" + item["unit"] + ")" if item.get("unit") else "") for item in definitions}
-    labels.update(entry.get("display", {}).get("labels", {}))
     lines = ["| " + " | ".join(cell(labels.get(key, key)) for key in columns) + " |",
              "| " + " | ".join("---" for _ in columns) + " |"]
-    lines.extend("| " + " | ".join(cell(row.get(key, "")) for key in columns) + " |" for row in rows)
+    lines.extend("| " + " | ".join(cell(row.get(key, ""), key) for key in columns) + " |" for row in rows)
     return "\n".join(lines)
 
 
 def exhibit_markdown(entry):
     files = entry.get("files", {})
-    image = next((value for value in files.values() if Path(value).suffix.lower() in {".svg", ".png", ".jpg", ".jpeg"}), None)
-    if entry.get("kind") in {"table", "descriptive", "descriptive_table", "sample_composition"} and entry.get("rows"):
+    image = next((value for suffix in (".png", ".jpg", ".jpeg", ".svg")
+                  for value in files.values() if Path(value).suffix.lower() == suffix), None)
+    table = entry.get("display", {}).get("plot_type", "table" if entry.get("kind") in
+        {"table", "descriptive", "descriptive_table", "sample_composition"} else "figure") == "table"
+    if table and entry.get("rows"):
         content = table_markdown(entry)
     elif image:
         content = "![" + entry.get("title", "").replace("]", "\\]") + "](" + image + "){fig-alt=" + json.dumps(entry.get("title", ""), ensure_ascii=False) + "}"
@@ -339,11 +346,16 @@ def document_source(root, meeting, bodies):
         body = bodies[section["id"]]
         if "{{<" in body:
             raise ValueError("Meeting Markdown uses saved bundle assets; expand Quarto shortcodes before export")
-        exhibits = "\n\n".join(exhibit_markdown(meeting["artifacts"][key]) for key in section.get("artifacts", []))
+        selected = [exhibit_markdown(meeting["artifacts"][key]) for key in section.get("artifacts", [])]
+        exhibits = "\n\n".join(selected)
         layout = section.get("layout", "stack")
         if layout in {"figure-left", "figure-right"} and exhibits:
             first, second = (exhibits, body) if layout == "figure-left" else (body, exhibits)
             content = ":::: {.columns}\n::: {.column width=\"52%\"}\n" + first + "\n:::\n::: {.column width=\"48%\"}\n" + second + "\n:::\n::::"
+        elif layout == "figures" and selected:
+            width = str(100 / len(selected)) + "%"
+            content = body + "\n\n:::: {.columns}\n" + "\n".join(
+                "::: {.column width=\"" + width + "\"}\n" + exhibit + "\n:::" for exhibit in selected) + "\n::::"
         else:
             content = "\n\n".join(part for part in (body, exhibits) if part)
         if section.get("caption"):
@@ -369,7 +381,9 @@ def preview_markdown(bundle, *, asset_base_url=""):
             entry = meeting["artifacts"][key]
             picture = next((path for path in entry.get("files", {}).values()
                             if Path(path).suffix.lower() in {".png", ".jpg", ".jpeg", ".svg"}), None)
-            if entry.get("kind") in {"table", "descriptive", "descriptive_table", "sample_composition"} or not picture:
+            table = entry.get("display", {}).get("plot_type", "table" if entry.get("kind") in
+                {"table", "descriptive", "descriptive_table", "sample_composition"} else "figure") == "table"
+            if table or not picture:
                 output.append(table_markdown(entry))
             else:
                 url = asset_base_url.rstrip("/") + "/" + quote(picture, safe="/") if asset_base_url else picture
@@ -452,10 +466,25 @@ def register_edition(bundle, url, *, kind, expected_revision, source_revision=No
 
 def native_slides_requests(bundle, *, asset_base_url=None):
     """Return native Google Slides operations for a newly created independent deck."""
+    import math
+    import unicodedata
+
     meeting, bodies, revision = load_meeting(bundle)
     requests, notes, images = [], {}, []
     prefix = "ers_" + revision[:12] + "_"
+
+    def text_height(text, width, size):
+        if not text:
+            return 0
+        lines = 0
+        for line in text.splitlines():
+            units = sum(1 if unicodedata.east_asian_width(char) in {"W", "F"} else 0.55 for char in line)
+            lines += max(1, math.ceil(units * size / (width - 16)))
+        return lines * size * 1.25 + 10
+
     def box(page, name, text, x, y, width, height, size, color=None):
+        if not text:
+            return None
         identity = prefix + name
         requests.append({"createShape": {"objectId": identity, "shapeType": "TEXT_BOX", "elementProperties": {
             "pageObjectId": page, "size": {"width": {"magnitude": width, "unit": "PT"}, "height": {"magnitude": height, "unit": "PT"}},
@@ -466,17 +495,22 @@ def native_slides_requests(bundle, *, asset_base_url=None):
             if color:
                 style["foregroundColor"] = {"opaqueColor": {"rgbColor": color}}
             requests.append({"updateTextStyle": {"objectId": identity, "textRange": {"type": "ALL"}, "style": style, "fields": ",".join(style)}})
+            requests.append({"updateParagraphStyle": {"objectId": identity, "textRange": {"type": "ALL"},
+                "style": {"lineSpacing": 110, "spaceAbove": {"magnitude": 0, "unit": "PT"}, "spaceBelow": {"magnitude": 5, "unit": "PT"}},
+                "fields": "lineSpacing,spaceAbove,spaceBelow"}})
         return identity
     cover = prefix + "cover"
     requests.append({"createSlide": {"objectId": cover, "slideLayoutReference": {"predefinedLayout": "BLANK"}}})
     box(cover, "cover_title", meeting["title"], 40, 120, 640, 110, 34,
         {"red": 146 / 255, "green": 46 / 255, "blue": 65 / 255})
     box(cover, "cover_date", meeting.get("date", ""), 40, 260, 640, 35, 18)
-    notes[cover] = meeting.get("issue_url", "")
+    notes[cover] = "\n".join(value for value in [meeting.get("issue_url", ""), meeting.get("github_source", ""),
+                                                "Source revision: " + revision] if value)
     for index, section in enumerate(row for row in meeting["sections"] if row.get("visible", True)):
         page = prefix + "slide_" + str(index)
         requests.append({"createSlide": {"objectId": page, "slideLayoutReference": {"predefinedLayout": "BLANK"}}})
-        box(page, "title_" + str(index), section["title"], 28, 18, 664, 50, 28,
+        title_height = text_height(section["title"], 664, 28)
+        box(page, "title_" + str(index), section["title"], 28, 18, 664, title_height, 28,
             {"red": 146 / 255, "green": 46 / 255, "blue": 65 / 255})
         entries = [meeting["artifacts"][key] for key in section.get("artifacts", [])]
         lines, bullet_ranges, position = [], [], 0
@@ -492,31 +526,35 @@ def native_slides_requests(bundle, *, asset_base_url=None):
             position += length + 1
         body = "\n".join(lines)
         layout = section.get("layout", "stack")
+        content_y = 18 + title_height + 10
+        caption = section.get("caption", "")
+        caption_height = text_height(caption, 650, 10)
+        exhibit_bottom = 390 - caption_height
         if entries and layout in {"figure-left", "figure-right"}:
             body_x, image_x = (388, 30) if layout == "figure-left" else (30, 350)
-            body_width, body_height, image_y, image_width, image_height = 302, 260, 80, 340, 265
+            body_width, image_width = 302, 340
+            body_height = exhibit_bottom - content_y
+            image_y, image_height = content_y, body_height
         else:
             body_x, image_x = 30, 30
-            body_width, body_height = 650, 65 if entries and body else 265
-            image_y, image_width, image_height = (148, 650, 198) if body else (80, 650, 266)
-        body_id = box(page, "body_" + str(index), body, body_x, 80, body_width, body_height, 18)
+            body_width, image_width = 650, 650
+            body_height = text_height(body, body_width, 18) if entries else exhibit_bottom - content_y
+            image_y = content_y + body_height + (8 if body else 0)
+            image_height = exhibit_bottom - image_y
+        if entries and image_height < 80:
+            raise ValueError("Section text fills its exhibit area; shorten the body or select a side layout: " + section["id"])
+        body_id = box(page, "body_" + str(index), body, body_x, content_y, body_width, body_height, 18)
         for text_range in bullet_ranges:
             requests.append({"createParagraphBullets": {"objectId": body_id, "textRange": text_range, "bulletPreset": "BULLET_DISC_CIRCLE_SQUARE"}})
         for number, entry in enumerate(entries):
             tile_width = image_width / max(1, len(entries))
             tile_x = image_x + number * tile_width
             files = entry.get("files", {})
-            picture = next((value for value in files.values() if Path(value).suffix.lower() in {".png", ".jpg", ".jpeg"}), None)
-            if picture:
-                local = str(bundled_path(bundle, picture))
-                url = asset_base_url.rstrip("/") + "/" + quote(picture, safe="/") if asset_base_url else local
-                identity = prefix + "image_" + str(index) + "_" + str(number)
-                requests.append({"createImage": {"objectId": identity, "url": url, "elementProperties": {
-                    "pageObjectId": page, "size": {"width": {"magnitude": tile_width - 12, "unit": "PT"}, "height": {"magnitude": image_height, "unit": "PT"}},
-                    "transform": {"scaleX": 1, "scaleY": 1, "translateX": tile_x, "translateY": image_y, "unit": "PT"}}}})
-                if not asset_base_url:
-                    images.append({"object_id": identity, "path": local})
-            elif entry.get("rows"):
+            paths = files.values() if isinstance(files, dict) else files
+            picture = next((value for value in paths if Path(value).suffix.lower() in {".png", ".jpg", ".jpeg"}), None)
+            plot_type = entry.get("display", {}).get("plot_type")
+            saved_table = plot_type == "table" if plot_type else entry.get("kind") == "table"
+            if entry.get("rows") and (saved_table or not picture):
                 rows = entry["rows"]
                 definitions = entry.get("columns") or [{"key": key, "label": key} for key in rows[0]]
                 columns = [column["key"] for column in definitions]
@@ -524,19 +562,41 @@ def native_slides_requests(bundle, *, asset_base_url=None):
                 requests.append({"createTable": {"objectId": identity, "rows": len(rows) + 1, "columns": len(columns), "elementProperties": {
                     "pageObjectId": page, "size": {"width": {"magnitude": tile_width - 12, "unit": "PT"}, "height": {"magnitude": image_height, "unit": "PT"}},
                     "transform": {"scaleX": 1, "scaleY": 1, "translateX": tile_x, "translateY": image_y, "unit": "PT"}}}})
-                labels = [column.get("label", column["key"]) + (" (" + column["unit"] + ")" if column.get("unit") else "") for column in definitions]
+                requests.append({"updateTableCellProperties": {"objectId": identity,
+                    "tableRange": {"location": {"rowIndex": 0, "columnIndex": 0}, "rowSpan": 1, "columnSpan": len(columns)},
+                    "tableCellProperties": {"tableCellBackgroundFill": {"solidFill": {"color": {"rgbColor": {"red": 0.91, "green": 0.94, "blue": 0.97}}}}},
+                    "fields": "tableCellBackgroundFill"}})
+                labels = [column.get("label", column["key"]) + ("\n" + column["unit"] if column.get("unit") else "") for column in definitions]
                 values = [labels] + [[row.get(key, "") for key in columns] for row in rows]
+                formats = entry.get("display", {}).get("formats", {})
                 for row_index, values_row in enumerate(values):
                     for column_index, value in enumerate(values_row):
                         location = {"rowIndex": row_index, "columnIndex": column_index}
-                        requests.append({"insertText": {"objectId": identity, "cellLocation": location, "text": str(value if value is not None else "")}})
+                        if row_index and isinstance(value, (int, float)) and columns[column_index] in formats:
+                            value = format(value, formats[columns[column_index]])
+                        cell = "—" if value is None else str(value)
+                        if cell:
+                            requests.append({"insertText": {"objectId": identity, "cellLocation": location, "text": cell}})
                         requests.append({"updateTextStyle": {"objectId": identity, "cellLocation": location, "textRange": {"type": "ALL"},
-                            "style": {"fontFamily": "Noto Sans JP", "fontSize": {"magnitude": 12, "unit": "PT"}, "bold": row_index == 0}, "fields": "fontFamily,fontSize,bold"}})
+                            "style": {"fontFamily": "Noto Sans JP", "fontSize": {"magnitude": 14 if row_index == 0 else 16, "unit": "PT"}, "bold": row_index == 0}, "fields": "fontFamily,fontSize,bold"}})
+            elif picture:
+                local = str(bundled_path(bundle, picture))
+                url = asset_base_url.rstrip("/") + "/" + quote(picture, safe="/") if asset_base_url else local
+                identity = prefix + "image_" + str(index) + "_" + str(number)
+                # Slides fits the image inside this frame while preserving its intrinsic aspect ratio.
+                requests.append({"createImage": {"objectId": identity, "url": url, "elementProperties": {
+                    "pageObjectId": page, "size": {"width": {"magnitude": tile_width - 12, "unit": "PT"}, "height": {"magnitude": image_height, "unit": "PT"}},
+                    "transform": {"scaleX": 1, "scaleY": 1, "translateX": tile_x, "translateY": image_y, "unit": "PT"}}}})
+                if not asset_base_url:
+                    images.append({"object_id": identity, "path": local})
             else:
                 raise ValueError("Native Slides requires a saved PNG/JPEG or saved table rows: " + entry["id"])
-        caption = "\n".join([section.get("caption", ""), *[artifact_notes(entry) for entry in entries]]).strip()
-        box(page, "caption_" + str(index), caption, 30, 356, 650, 40, 9)
-        notes[page] = section.get("speaker_notes", "")
+        box(page, "caption_" + str(index), caption, 30, exhibit_bottom, 650, caption_height, 10)
+        note_parts = [section.get("speaker_notes", "")]
+        for entry in entries:
+            note_parts.extend([entry["title"], artifact_notes(entry), *entry.get("display", {}).get("notes", [])])
+            note_parts.append(json.dumps(entry.get("metadata", {}), ensure_ascii=False, indent=2))
+        notes[page] = "\n\n".join(part for part in note_parts if part)
     return {"title": meeting["title"] + (" — " + meeting["date"] if meeting.get("date") else ""),
             "mime_type": "application/vnd.google-apps.presentation", "source_revision": revision,
             "requests": requests, "speaker_notes": notes, "images": images,
