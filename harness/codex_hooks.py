@@ -349,7 +349,7 @@ def bind_state(context_path, state_file, state_root, task_id):
     return binding
 
 
-def _bound_state(directory, root):
+def _bound_state(directory, root, *, check_sources=True):
     context = _read(directory / 'context.json', {})
     binding = context.get('state_binding')
     if binding is None:
@@ -375,31 +375,31 @@ def _bound_state(directory, root):
                          and message.get('hold_id') == release.get('hold_id')
                          and (message.get('message_id'), message.get('text')) in actual
                          and isinstance(release.get('evidence'), dict) and release['evidence']
-                         and not module.changed(state_root, release['evidence']),
+                         and (not check_sources or not module.changed(state_root, release['evidence'])),
                          'hold release does not match a saved actual user message and evidence')
     request_sha = binding['effective_request_sha256']
     gate.require(any(row.get('content_sha256') == request_sha and row.get('path')
-                     and module.digest(state_root / module.relative(state_root, row['path'])) == request_sha
+                     and (not check_sources or module.digest(state_root / module.relative(state_root, row['path'])) == request_sha)
                      for row in (task.get('task_context') or {}).get('request_refs', [])),
                  'state no longer binds the effective request source')
-    gate.require(task.get('authority') and not module.context_changes(state_root, task)
+    gate.require(task.get('authority') and (not check_sources or not module.context_changes(state_root, task))
                  and not module.effective_constraints(data['tasks'], task, state_root)['scope_errors'],
                  'state authority, instructions or scope require reconciliation')
     refs = (task.get('task_context') or {}).get('active_instruction_refs', [])
-    gate.require(refs and all(row.get('path') and module.digest(state_root / module.relative(state_root, row['path']))
-                              == row.get('content_sha256') for row in refs),
+    gate.require(refs and (not check_sources or all(row.get('path') and module.digest(state_root / module.relative(state_root, row['path']))
+                              == row.get('content_sha256') for row in refs)),
                  'bound instruction sources or versions require reconciliation')
     return module, data, task, state_root
 
 
-def _completion_task(directory, root):
+def _completion_task(directory, root, *, check_sources=True):
     """Use the existing hook context, without creating a local state store."""
     context = _read(directory / 'context.json', {})
     contract = context.get('completion_contract')
     if contract is None:
         return None
     module = sibling('hook_completion_state', root / 'harness/state.py')
-    gate.require(isinstance(contract, dict) and module.contract_current(Path(context['cwd']), contract)
+    gate.require(isinstance(contract, dict) and (not check_sources or module.contract_current(Path(context['cwd']), contract))
                  and contract.get('request_sha256') == gate.sha(_effective_request(directory)),
                  'completion requirements or original request need reconciliation')
     outputs, actions = module.contract(Path(context['cwd']),
@@ -2201,16 +2201,28 @@ def _scoped_instructions(event, directory, context, *, restore=False, available=
     previous = _read(record_path, {'root': str(root), 'observations': [], 'instructions': [], 'pending': []})
     gate.require(previous.get('root') == str(root), 'scoped instruction root changed')
     observations = list(previous['observations'])
+    additions = []
+    observed = [] if restore else _observed_read_paths(event, root)
     if not restore:
-        for lexical, actual in _observed_read_paths(event, root):
+        for lexical, actual in observed:
             item = {'path': str(lexical), 'resolved_path': str(actual), 'tool_name': event['tool_name'],
                     'tool_use_id': event['tool_use_id']}
             if not any(row['path'] == item['path'] and row['resolved_path'] == item['resolved_path']
                        for row in observations):
                 observations.append(item)
+                additions.append(item)
+            elif lexical.name == 'AGENTS.md':
+                additions.append(item)
     if not observations:
         return ''
-    instructions = _instruction_closure(root, observations)
+    if restore:
+        instructions = _instruction_closure(root, observations)
+    else:
+        instructions_by_path = {row['path']: row for row in previous['instructions']}
+        if additions:
+            instructions_by_path.update({row['path']: row for row in _instruction_closure(root, additions)})
+        instructions = sorted(instructions_by_path.values(), key=lambda row: (
+            len(Path(row['directory']).relative_to(root).parts), row['directory']))
     current = {(row['path'], row['sha256']) for row in instructions}
     old = {(row['path'], row['sha256']) for row in previous['instructions']}
     restore = restore or previous.get('turn_id') != event.get('turn_id')
@@ -2222,7 +2234,7 @@ def _scoped_instructions(event, directory, context, *, restore=False, available=
         content = response if isinstance(response, str) else (response.get('content', response.get('output')) if isinstance(response, dict) else None)
         if isinstance(content, str):
             digest = gate.sha(content.encode('utf-8'))
-            for _, actual in _observed_read_paths(event, root):
+            for _, actual in observed:
                 for row in instructions:
                     if row['resolved_path'] == str(actual) and row['sha256'] == digest:
                         verified.add(row['path'] + ':' + digest)
@@ -2294,17 +2306,8 @@ def _pending_scoped_writes(directory, effect, targets):
             raise ValueError('read the pending scoped AGENTS.md instructions before a dependent write')
 
 
-def _pre_tool(event, root, directory, state, bound_result=None):
-    """Hook-side preflight only; it cannot install execution-owner enforcement.
-
-    In particular the host does not rerun this hook for write_stdin, and callback
-    errors/timeouts can bypass a hook. Its output is not a reusable execution permit.
-    """
-    if event.get('hook_event_name') == 'PostToolUse':
-        observed_sha = gate.sha(gate.canonical(event))
-        previous = _read(directory / 'preflight' / (observed_sha + '.json'))
-        if previous is not None and previous.get('callback_sha256') == observed_sha:
-            return {}  # The exact immutable returned event is not a new execution request.
+def _tool_effect(event, root, directory, *, enforce_authority=True):
+    """Classify the actual tool call; authority belongs to its preflight."""
     tool, arguments = event.get('tool_name'), event.get('tool_input')
     gate.require(isinstance(tool, str) and tool and isinstance(arguments, dict), 'missing actual tool name/input')
     name = tool.rsplit('__', 1)[-1].split('.')[-1].lower()
@@ -2313,14 +2316,14 @@ def _pre_tool(event, root, directory, state, bound_result=None):
     command_action = None
     opaque_action = None
     input_bound = None
-    read_operation = None
     if name == 'write_stdin':
         gate.require(isinstance(arguments.get('session_id'), (str, int)), 'missing interactive session identity')
         record = _read(directory / 'sessions' / (gate.sha(str(arguments['session_id']).encode()) + '.json'))
-        gate.require(record is not None and not record.get('closed'),
-                     'interactive session is unknown or already terminal')
-        if arguments.get('chars'):
-            input_bound = _bound_state(directory, root) or _completion_task(directory, root)
+        if enforce_authority:
+            gate.require(record is not None and not record.get('closed'),
+                         'interactive session is unknown or already terminal')
+        if arguments.get('chars') and enforce_authority:
+            input_bound = _bound_state(directory, root, check_sources=False) or _completion_task(directory, root, check_sources=False)
             gate.require(input_bound is not None and record.get('command'),
                          'interactive input requires its initiating operation and current task authority')
             module, data, task, state_root = input_bound
@@ -2339,12 +2342,10 @@ def _pre_tool(event, root, directory, state, bound_result=None):
                    if isinstance(arguments.get(key), str) and arguments[key]]
         if tool in {'Read', 'read_file', 'read_text_file', 'list_directory', 'search_files', 'view_image'}:
             operation, effect = 'read', 'read'
-            read_operation = 'read_document'
         elif (tool.startswith(('web__', 'mcp__')) and
               tool in ((native := sibling('hook_acquisition_tools', root / 'harness/native_check.py')).WEB_READ_TOOLS |
                        native.LIBRARY_READ_TOOLS | native.CONNECTOR_READ_TOOLS)):
             operation, effect = 'read', 'read'
-            read_operation = 'read_url' if tool in native.WEB_READ_TOOLS else 'read_document'
             for key in ('repository_full_name', 'repository_url', 'repository_name', 'org', 'ref',
                         'plugin_id', 'document_id', 'document_url', 'read_paths', 'repository_id'):
                 value = arguments.get(key)
@@ -2422,13 +2423,21 @@ def _pre_tool(event, root, directory, state, bound_result=None):
     if opaque_action is not None:
         normalized = [opaque_action]
     resolved_effects = [(verb, _tool_target(target, cwd)) for verb, target in effects]
-    if operation != 'state-control':
-        _operation_manifest(root, _read(directory / 'context.json', {}), directory)
+    return tool, arguments, name, operation, effect, normalized, resolved_effects, command_action, opaque_action, input_bound
+
+
+def _pre_tool(event, root, directory, state, bound_result=None):
+    """Check only the authority and targets of a modifying operation."""
+    tool, arguments, name, operation, effect, normalized, resolved_effects, command_action, opaque_action, input_bound = (
+        _tool_effect(event, root, directory))
+    if effect in {'read', 'local-control'}:
+        return {}
+    cwd = event['cwd']
     _pending_scoped_writes(directory, effect, normalized)
-    rows, prohibitions, policy_sha = [], [], state.get('policy_manifest_sha256')
-    bound = input_bound or (None if operation == 'state-control' else _bound_state(directory, root))
+    rows, prohibitions = [], []
+    bound = input_bound or (None if operation == 'state-control' else _bound_state(directory, root, check_sources=False))
     if bound is None and operation != 'state-control':
-        bound = _completion_task(directory, root)
+        bound = _completion_task(directory, root, check_sources=False)
     if bound is not None:
         state_module, data, task, state_root = bound
         ancestors = state_module.task_ancestors(data['tasks'], task) if task.get('parent') else []
@@ -2438,50 +2447,7 @@ def _pre_tool(event, root, directory, state, bound_result=None):
                 requirements = state_module._native().requirements.validate_contract(specification, request)
                 prohibitions.extend(row for row in requirements
                                     if row.get('evaluator', {}).get('type') == 'forbidden_operation')
-        if effect != 'local-control':
-            if effect == 'read' and task['status'] == 'blocked' and task.get('blocked_reason') == 'user_hold':
-                if name in {'bash', 'exec_command', 'run_command'}:
-                    gate.require(parts[0] in {'cat', 'head', 'tail', 'wc', 'sha256sum', 'stat', 'ls', 'pwd'}
-                                 and all(not part.startswith('-') for part in parts[1:]),
-                                 'held shell read scope is unresolved')
-                else:
-                    gate.require(tool in {'read_file', 'read_text_file', 'list_directory', 'view_image'}
-                                 and set(arguments) <= {'path', 'file_path', 'file', 'target', 'offset', 'limit',
-                                                       'start_line', 'end_line', 'detail'},
-                                 'held read scope is unresolved')
-                constraints = state_module.effective_constraints(data['tasks'], task, state_root)
-                state_holds = constraints['holds']
-                gate.require(state_holds and not constraints['scope_errors'], 'held read scope is unresolved')
-                labels = {row['hold_id'] for row in state_holds} | {target.split(':', 1)[-1]
-                          for row in state_holds for target in row['targets']}
-                gate.require(all(row.get('target_ids') and set(row['target_ids']) <= labels
-                                 for row in _pending_task_holds(directory, bound)),
-                             'held read scope is unresolved')
-                gate.require(normalized or (name in {'bash', 'exec_command', 'run_command'} and command == 'pwd'),
-                             'held read target is unresolved')
-                if not normalized:
-                    gate.require(all(row['targets'] or (row['operations'] and not set(row['operations']) & {'read', tool, name})
-                                     for row in state_holds), 'held read scope is unresolved')
-                for target in normalized:
-                    is_url = '://' in target
-                    if is_url:
-                        gate.require(target in task.get('external_targets', []), 'held read target is outside task scope')
-                    else:
-                        gate.require(Path(target).is_relative_to(state_root), 'held read target is outside task scope')
-                    for hold in state_holds:
-                        if hold['operations'] and not set(hold['operations']) & {'read', tool, name}:
-                            continue
-                        gate.require(hold['targets'], 'held read scope is unresolved')
-                        for selected in hold['targets']:
-                            if is_url:
-                                blocked = selected == 'object:' + target
-                            elif selected.startswith('file:'):
-                                blocked = state_module.scopes_overlap(selected[5:], Path(target).relative_to(state_root).as_posix())
-                            else:
-                                blocked = False
-                            gate.require(not blocked, 'task hold covers this read')
-            else:
-                gate.require(task['status'] == 'running', 'task state is not running')
+        gate.require(task['status'] == 'running', 'task state is not running')
         rows = [{'kind': 'action', 'operation': row['operation'], 'target':
                  str(state_root / row['target_id']) if row['target_kind'] == 'file' else row['target_id'],
                  'target_kind': row['target_kind']} for row in task['required_actions']]
@@ -2489,7 +2455,7 @@ def _pre_tool(event, root, directory, state, bound_result=None):
     for row in prohibitions:
         forbidden = row['target'] if opaque_action is not None else _tool_target(row['target'], cwd)
         gate.require(not (forbidden in normalized and (row['evaluator']['operation'] in
-                         {operation, read_operation, tool, name} or effect == 'write')),
+                         {operation, tool, name} or effect == 'write')),
                      'forbidden operation ' + row['id'] + ' on ' + row['target'])
     if effect not in {'read', 'local-control'}:
         if opaque_action is not None:
@@ -2540,82 +2506,45 @@ def _pre_tool(event, root, directory, state, bound_result=None):
                     targets = hold['targets']
                     matches_target = not targets or any(item == 'file:' + relative for item in targets)
                     gate.require(not (matches_operation and matches_target), 'task state hold covers this operation')
-    binding = {'tool_name': tool, 'operation': operation, 'targets': normalized, 'effect': effect,
-               'resolved_effects': resolved_effects,
-               'input_sha256': gate.sha(gate.canonical(arguments)), 'policy_sha256': policy_sha,
-               'effective_holds_sha256': gate.sha(gate.canonical(holds)), 'session_id': arguments.get('session_id'),
-               'task_id': _read(directory / 'context.json', {}).get('task_id'),
-               'execution_owner_connected': False}
-    observation_bound = bound
-    if (observation_bound is None and event.get('hook_event_name') == 'PostToolUse'
-            and _read(directory / 'context.json', {}).get('state_binding')):
-        observation_bound = _bound_state(directory, root)
-    enabled = (observation_bound is not None and _feature_enabled(directory, observation_bound[0],
-                                                                    observation_bound[2], 'loops'))
-    key = _preflight_key(event) if enabled and event.get('hook_event_name') == 'PreToolUse' else None
-    if key:
-        binding['source'] = 'PreToolUse'
-        candidates = [target for _, target in resolved_effects] or normalized
-        if effect == 'write' and command_action is None and opaque_action is None:
-            binding['edit_targets'] = [{'path': target, 'version': _target_version(target, cwd)}
-                                       for target in candidates if Path(target).is_absolute()]
-    if enabled and event.get('hook_event_name') == 'PostToolUse':
-        previous = _read(directory / 'preflight' / (gate.sha(gate.canonical(event)) + '.json'), {})
-        if isinstance(previous.get('usage_observation'), dict):
-            for field in ('usage_observation', 'usage_check_source', 'loop_advisory'):
-                if field in previous:
-                    binding[field] = previous[field]
-        else:
-            binding['usage_observation'] = _hook_usage_row(event, directory, observation_bound[0], observation_bound[2])
-            check = _saved_check_return(event, observation_bound[0], observation_bound[2], directory)
-            if check is not None:
-                binding['usage_check_source'] = {'check_id': check['check_id'], 'run_id': check['run_id'],
-                                                 'producer_sha256': check['producer_sha256']}
-            advice = _pending_loop_advice(event, binding['usage_observation'], observation_bound, directory)
-            if advice is not None:
-                binding['loop_advisory'] = advice
-    hint = ''
-    if bound_result is not None:
-        hint, experience_status = _experience_hint(root, directory, bound, event)
-        if experience_status is not None:
-            binding['experience_feedback'] = experience_status
-    context = _read(directory / 'context.json', {})
-    if event.get('hook_event_name') == 'PostToolUse':
-        binding['callback_sha256'] = gate.sha(gate.canonical(event))
-    if (event.get('hook_event_name') == 'PostToolUse' and context.get('completion_contract')
-            and not context.get('state_binding') and (effect == 'write' or name == 'write_stdin')):
-        binding['callback'] = {field: event.get(field) for field in
-                               ('tool_name', 'tool_use_id', 'tool_input', 'tool_response')}
-        binding['output_versions'] = {}
-        if not _tool_failed(event):
-            completion = _completion_task(directory, root)
-            module, _, task, state_root = completion
-            targets = {row['target'] for row in task['required_outputs'] if row['kind'] == 'file'}
-            targets.update(row['target_id'] for row in task['required_actions'] if row['target_kind'] == 'file')
-            for target in targets:
-                output = state_root / module.relative(state_root, target, exists=False)
-                if output.is_file():
-                    binding['output_versions'][target] = module.digest(output)
-    preflight_path = directory / 'preflight' / ((key or gate.sha(gate.canonical(event))) + '.json')
-    if (not enabled and 'experience_feedback' not in binding and 'callback' not in binding
-            and (event.get('hook_event_name') != 'PostToolUse' or effect != 'write')):
-        if bound_result is not None:
-            bound_result.append(hint)
-        return {}
-    existing = _read(preflight_path)
-    if bound_result is not None and isinstance(existing, dict):
-        old_core = {name: value for name, value in existing.items() if name != 'experience_feedback'}
-        new_core = {name: value for name, value in binding.items() if name != 'experience_feedback'}
-        if old_core == new_core and existing.get('experience_feedback') != binding.get('experience_feedback'):
-            binding.pop('experience_feedback', None)
-            if 'experience_feedback' in existing:
-                binding['experience_feedback'] = existing['experience_feedback']
-            hint = ''  # Preserve the immutable earlier callback record on a replay.
-    save_record(preflight_path, binding, replace=False)
-    if bound_result is not None:
-        bound_result.append(hint)
     return {}
 
+
+def _post_tool(event, root, directory):
+    """Keep the actual execution result needed by the existing completion contract."""
+    context = _read(directory / 'context.json', {})
+    if not (context.get('completion_contract') or context.get('state_binding')):
+        return
+    observed_sha = gate.sha(gate.canonical(event))
+    path = directory / 'preflight' / (observed_sha + '.json')
+    if _read(path) is not None:
+        _completion_callback(directory, root, event)
+        return
+    tool, arguments, name, operation, effect, targets, resolved_effects, command_action, _, _ = (
+        _tool_effect(event, root, directory, enforce_authority=False))
+    if effect != 'write' and name != 'write_stdin':
+        return
+    if command_action is not None:
+        targets = [command_action]
+    binding = {'tool_name': tool, 'operation': operation, 'targets': targets, 'effect': effect,
+               'resolved_effects': resolved_effects, 'input_sha256': gate.sha(gate.canonical(arguments)),
+               'session_id': arguments.get('session_id'), 'task_id': context.get('task_id'),
+               'execution_owner_connected': False, 'callback_sha256': observed_sha,
+               'callback': {field: event.get(field) for field in
+                            ('tool_name', 'tool_use_id', 'tool_input', 'tool_response')}}
+    if context.get('completion_contract') and not context.get('state_binding'):
+        binding['output_versions'] = {}
+        if not _tool_failed(event):
+            contract = context['completion_contract']
+            state_root = Path(context['cwd'])
+            required = {row['target'] for row in contract['required_outputs'] if row['kind'] == 'file'}
+            required.update(row['target_id'] for row in contract['required_actions'] if row['target_kind'] == 'file')
+            affected = {target for _, target in resolved_effects} or set(targets)
+            for target in required:
+                output = state_root / target
+                if (command_action is not None or name == 'write_stdin' or str(output) in affected) and output.is_file():
+                    binding['output_versions'][target] = gate.sha(gate.regular_bytes(output))
+    save_record(path, binding, replace=False)
+    _completion_callback(directory, root, event)
 
 def dispatch(event, expected_event):
     _INVOCATION_POLICY.clear()
@@ -2864,23 +2793,11 @@ def dispatch(event, expected_event):
         if expected_event == 'PreToolUse':
             if lifecycle == 'paused':
                 return failure('PreToolUse', 'the task is waiting for the next actual user input')
-            bound_result = []
-            _, _, policy_raw, _, _ = _policy_snapshot(root, directory, context)
-            result = _pre_tool(event, root, directory, state, bound_result=bound_result)
-            reinjection = _read(directory / 'reinjection.json', {})
-            changed = (reinjection.get('instruction_policy_sha256') != gate.sha(policy_raw) or
-                       reinjection.get('instruction_binding_sha256') != gate.sha(gate.canonical(context.get('operation_binding'))))
-            reminder = _restoration(root, directory, state, manifest) if changed else ''
-            hint = bound_result[0] if bound_result else ''
-            if reminder or hint:
-                result = feedback(expected_event, reminder + ('\n' + hint if hint else ''))
-            return result
+            return _pre_tool(event, root, directory, state)
         if expected_event in ('SubagentStart', 'SubagentStop'):
             return _child(event, root, directory, state, manifest)
         if expected_event in ('PostToolUse', 'SessionStart'):
             pending = []
-            observation_error = None
-            loop_observation = None
             if expected_event == 'PostToolUse':
                 gate.require(isinstance(event.get('tool_name'), str) and event['tool_name']
                              and isinstance(event.get('tool_use_id'), str) and event['tool_use_id'], 'missing host tool identity')
@@ -2902,21 +2819,7 @@ def dispatch(event, expected_event):
                         else:
                             gate.require(existing_session['tool_use_id'] == event['tool_use_id'],
                                          'interactive session belongs to another initiating call')
-                try:
-                    _pre_tool(event, root, directory, state)
-                except (OSError, ValueError, TypeError, KeyError, AttributeError):
-                    current = _read(context_path)
-                    observations = current.get('unbound_operations', [])
-                    observation = {'tool_name': event['tool_name'], 'tool_use_id': event['tool_use_id'],
-                                   'tool_input': event.get('tool_input'), 'tool_response': response}
-                    if observation not in observations:
-                        save_record(context_path, {**current, 'unbound_operations': observations + [observation]})
-                else:
-                    _completion_callback(directory, root, event)
-                    try:
-                        loop_observation = _import_hook_observation(event, root, directory)
-                    except (OSError, ValueError, TypeError, KeyError, AttributeError, ImportError, RecursionError) as exc:
-                        observation_error = str(exc)
+                _post_tool(event, root, directory)
                 if str(event['tool_name']).rsplit('__', 1)[-1].split('.')[-1].lower() == 'write_stdin':
                     session_id = event.get('tool_input', {}).get('session_id')
                     session_path = directory / 'sessions' / (gate.sha(str(session_id).encode()) + '.json')
@@ -2930,6 +2833,18 @@ def dispatch(event, expected_event):
                     pending = _pending_parent_returns(directory)
                 if lifecycle == 'paused' and not pending:
                     return {}
+                text = ''
+                if pending:
+                    text = ('Returned child scopes awaiting parent integration: '
+                            + json.dumps(pending, ensure_ascii=False)
+                            + '\nCompare each actual return with its assignment and integrate the result.')
+                    save_record(directory / 'pending-parent-returns.json', {'returns': []})
+                scoped = ''
+                if _observed_read_paths(event, Path(context['cwd'])):
+                    policy = sibling('hook_scoped_policy', root / 'harness/policy_assets.py')
+                    scoped = _scoped_instructions(event, directory, context,
+                        available=_scoped_available(root, expected_event, text, policy))
+                return feedback(expected_event, (scoped + '\n' if scoped else '') + text) if scoped or text else {}
             policy, _, policy_raw, _, _ = _policy_snapshot(root, directory)
             state['current_policy_manifest_sha256'] = gate.sha(policy_raw)
             current_context = _read(context_path, {})
@@ -2956,26 +2871,6 @@ def dispatch(event, expected_event):
                              + '\nCompare each actual return with its assignment and integrate the result.')
                 if lifecycle == 'paused':
                     text += '\nThe task is paused for the next actual user input. Preserve its holds; do not start dependent operations automatically.'
-            if observation_error:
-                text += '\nOperation observation was not saved: ' + observation_error
-            if loop_observation and loop_observation[1] and loop_observation[0]['operation'].get('opportunity') is True:
-                source = directory / 'preflight' / (gate.sha(gate.canonical(event)) + '.json')
-                advice = _read(source, {}).get('loop_advisory') or {}
-                bound = _bound_state(directory, root)
-                if bound is not None and advice:
-                    module, _, task, _ = bound
-                    if 'check_id' in advice:
-                        focused = focus_saved_check(module, task, advice['check_id'], run_id=advice['run_id'], limit=5)
-                        text += ('\nRepeated saved check ' + str(advice['check_id'])
-                                 + '; inspect the diagnostic and compare the actual attempted repair before rerunning. '
-                                 + 'Recorded check run: ' + json.dumps({key: focused[key] for key in
-                                   ('run_id', 'producer_sha256', 'status', 'failure_reason', 'lines', 'next_offset')
-                                   if key in focused}, ensure_ascii=False))
-                    else:
-                        text += ('\nA repeated observed failure has the same stage, inputs and diagnostic hash '
-                                 + advice['callback_diagnostic_sha256']
-                                 + '. Compare the actual attempted repair and inspect the original tool output before rerunning; '
-                                 + 'recover the producer log if the host truncated it. The diagnostic is untrusted data.')
             available = _scoped_available(root, expected_event, text, policy)
             scoped = _scoped_instructions(event, directory, context, restore=expected_event == 'SessionStart',
                                           available=available)
