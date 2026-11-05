@@ -1,5 +1,5 @@
 {
-  "catalog_sha256": "a8af4ce8ff5f90c6acfb9064e904259da38c6e083deb4d76d7e6203bdcd9df7c",
+  "catalog_sha256": "499e8b1be9cb42866a08240a0aeba7d60e3ee6ee479996873b8659cb38b556eb",
   "chapters": {
     "chapters/01-mathematics.md": "e6c08317522ed57b2885136185edcb7fb6b0af0076c72be1cbe4f58ece2d9a78",
     "chapters/02-probability-statistics.md": "639a09fe66f42747521e849060ba370094ba50eed3dc228bcdf3826f0acb6822",
@@ -13,7 +13,7 @@
     "chapters/10-econometrics.md": "f609cbf1afaa328da0862575690f3bd1c99f1eb60b011d3b8bbc68413c83be5e",
     "chapters/11-causal-designs.md": "d77b36f5970dc4dc800004e5079aa64afc932a9da49d7887fd09e343e0e2d0db",
     "chapters/12-causal-extensions.md": "b12534139c0fe2cf24f7072469b311bec966f5e60d33e06a1fb478dcc39cb1f2",
-    "chapters/13-time-series.md": "78f6375c8c9559ac36c5e3b53033f0dd7bf537d4524ae8b5399d822c8d6e6644",
+    "chapters/13-time-series.md": "6961162455411b116527807deaac4f4e98e470db39dcc4851c82e701f70bfaac",
     "chapters/14-structural-estimation.md": "d90ce56a11e205e587da21a510d355b6b80ce90ff8011fe78f9f581887cd5980",
     "chapters/15-demand-production.md": "6d9e6e263765cbe9dc7ca3d84424b50727db512ec5eb1bf1808859ea1c51d6b9",
     "chapters/16-competition-platforms.md": "938907d8ef24188f3459e721be262bc45274bea172e1c4e0492e341a33166fcf",
@@ -1723,7 +1723,7 @@
       "chapter": "chapters/13-time-series.md",
       "domain": "時系列",
       "path": "units/TS-08.md",
-      "sha256": "170726cfacef7ec25ccc7c94fb2382b6d2c426cad1e858ec8d34ccf2f681fe7d"
+      "sha256": "22252f86f6f1955a52e520c2fdb26661d1a41d495572fda1ed151697c1ee2421"
     },
     "WELFARE-01": {
       "chapter": "chapters/32-welfare-policy.md",
