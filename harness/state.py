@@ -8,6 +8,7 @@ import importlib.util
 import json
 import math
 import os
+import re
 import shlex
 import uuid
 from pathlib import Path
@@ -2402,12 +2403,272 @@ def _project_descendant(tasks, key, ancestor):
     return False
 
 
+def github_issue_identity(url):
+    match = re.fullmatch(r'https://github\.com/([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)/issues/([1-9][0-9]*)', str(url))
+    if not match:
+        raise ValueError('Use a canonical GitHub issue URL')
+    return match.group(1), int(match.group(2))
+
+
+def github_binding(value):
+    if (not isinstance(value, dict) or set(value) - {'repository', 'project', 'issues'}
+            or not re.fullmatch(r'[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+', str(value.get('repository', '')))):
+        raise ValueError('GitHub binding requires repository owner/name')
+    if not isinstance(value.get('issues', []), list):
+        raise ValueError('GitHub issues must be a list of canonical issue URLs')
+    for url in value.get('issues', []):
+        if github_issue_identity(url)[0] != value['repository']:
+            raise ValueError('Bound issues must belong to the selected repository')
+    project = value.get('project')
+    if project is not None and (not isinstance(project, dict)
+            or set(project) - {'owner', 'number', 'owner_type'}
+            or not re.fullmatch(r'[A-Za-z0-9_.-]+', str(project.get('owner', '')))
+            or type(project.get('number')) is not int or project['number'] < 1
+            or project.get('owner_type', 'user') not in {'user', 'organization'}):
+        raise ValueError('GitHub project requires its owner and positive project number')
+    return value
+
+
+def github_cli(*args, payload=None):
+    """Use the user's existing gh authentication; never inspect credential storage."""
+    try:
+        result = subprocess.run(['gh', *args], input=None if payload is None else json.dumps(payload),
+                                capture_output=True, text=True)
+    except FileNotFoundError as exc:
+        raise ValueError('Install GitHub CLI in the analysis environment or supply --github with the connected tool response') from exc
+    if result.returncode:
+        raise ValueError(result.stderr.strip() or result.stdout.strip() or 'GitHub operation failed')
+    value = json.loads(result.stdout) if result.stdout.strip() else None
+    if isinstance(value, dict) and value.get('errors'):
+        raise ValueError('GitHub GraphQL operation failed: ' + json.dumps(value['errors']))
+    return value
+
+
+def github_snapshot(binding, work=()):
+    """Read only the selected issues and project. This return is a view, not task state."""
+    binding = github_binding(binding)
+    urls = list(dict.fromkeys([*binding.get('issues', []),
+                             *(row['issue_url'] for row in work if row.get('issue_url'))]))
+    result = {'repository': binding['repository'], 'fetched_at': now(), 'issues': [], 'project': None}
+    project = binding.get('project')
+    if project:
+        flags = (str(project['number']), '--owner', project['owner'], '--format', 'json')
+        metadata = github_cli('project', 'view', *flags)
+        items = github_cli('project', 'item-list', *flags, '--limit', '10000')
+        for container, key in ((items, 'items'),):
+            if container.get('totalCount', len(container[key])) > len(container[key]):
+                raise ValueError('GitHub returned an incomplete project page; narrow the bound project')
+        # field-list omits iteration configuration and ordinary field data types.
+        # Read these from the official schema before constructing typed writes.
+        query = '''query($id:ID!, $cursor:String) { node(id:$id) { ... on ProjectV2 {
+          fields(first:100, after:$cursor) { pageInfo { hasNextPage endCursor } nodes {
+            ... on ProjectV2FieldCommon { id name dataType }
+            ... on ProjectV2SingleSelectField { options { id name } }
+            ... on ProjectV2IterationField { configuration {
+              iterations { id title startDate duration }
+              completedIterations { id title startDate duration }
+            } }
+          } }
+        } } }'''
+        fields, cursor = [], None
+        while True:
+            response = github_cli('api', 'graphql', '--input', '-',
+                                  payload={'query': query, 'variables': {'id': metadata['id'], 'cursor': cursor}})
+            page = response['data']['node']['fields']
+            fields.extend(page['nodes'])
+            if not page['pageInfo']['hasNextPage']:
+                break
+            cursor = page['pageInfo']['endCursor']
+        result['project'] = {**metadata, 'items': items['items'], 'fields': fields}
+        for item in items['items']:
+            content = item.get('content', {})
+            url = content.get('url', '')
+            if '/issues/' in url and github_issue_identity(url)[0] == binding['repository']:
+                urls.append(url)
+    if not urls:
+        raise ValueError('Bind selected issue URLs or a GitHub project before fetching tasks')
+    for url in dict.fromkeys(urls):
+        repository, number = github_issue_identity(url)
+        issue = github_cli('api', f'repos/{repository}/issues/{number}')
+        pages = github_cli('api', f'repos/{repository}/issues/{number}/dependencies/blocked_by', '--paginate', '--slurp')
+        issue['blocked_by'] = [entry for page in pages for entry in page]
+        result['issues'].append(issue)
+    return result
+
+
+def github_payload(value):
+    """Accept native REST/GraphQL and the connected GitHub tool's returned envelope."""
+    while isinstance(value, dict):
+        if 'structuredContent' in value:
+            value = value['structuredContent']
+        elif isinstance(value.get('content'), str):
+            value = json.loads(value['content'])
+        else:
+            break
+    if isinstance(value, list):
+        return {'issues': value}
+    if not isinstance(value, dict):
+        raise ValueError('GitHub snapshot must contain returned issue objects')
+    if 'issue' in value:
+        return {'issues': [value['issue']]}
+    if 'issues' in value:
+        return value
+    if 'number' in value or 'issue_number' in value:
+        return {'issues': [value]}
+    raise ValueError('GitHub snapshot has no issue results')
+
+
+def github_project_view(binding, snapshot, work=()):
+    """Derive meeting/task views without copying assignments into the execution store."""
+    binding = github_binding(binding)
+    snapshot = github_payload(snapshot)
+    if snapshot.get('repository', binding['repository']) != binding['repository']:
+        raise ValueError('GitHub snapshot repository differs from its project binding')
+    project = snapshot.get('project') or {}
+    items = {item.get('content', {}).get('url'): item for item in project.get('items', [])}
+    mapped = {row['issue_url']: row for row in work if row.get('issue_url')}
+    selected = set(binding.get('issues', [])) | set(mapped)
+    tasks = []
+    for issue in snapshot['issues']:
+        url = issue.get('html_url') or issue.get('url')
+        if github_issue_identity(url)[0] != binding['repository']:
+            raise ValueError('Snapshot issue is outside the bound repository')
+        if selected and url not in selected and not binding.get('project'):
+            continue
+        item = items.get(url, {})
+        fields = dict(item.get('fields', {}))
+        for key, value in item.items():
+            if key not in {'id', 'content', 'title', 'fields', 'fieldValues'}:
+                fields.setdefault(key, value)
+        for field in item.get('fieldValues', {}).get('nodes', []):
+            name = field.get('field', {}).get('name')
+            if name:
+                fields[name] = next((field[k] for k in ('name', 'text', 'date', 'number', 'title') if k in field), None)
+        lower = {key.lower(): value for key, value in fields.items()}
+        state_value = str(issue.get('state', '')).lower()
+        if state_value not in {'open', 'closed'}:
+            raise ValueError('GitHub issue response must contain its actual state')
+        body = issue.get('body') or ''
+        def template_field(name):
+            found = re.search(r'^###[ \t]+' + re.escape(name) + r'[ \t]*\r?\n(.*?)(?=^###[ \t]|\Z)',
+                              body, re.MULTILINE | re.DOTALL)
+            return found.group(1).strip() if found else ''
+        status = lower.get('status') or template_field('Progress') or state_value
+        row = {'id': str(issue.get('number', issue.get('issue_number', url))), 'url': url,
+               'title': issue['title'], 'state': state_value, 'status': status,
+               'assignees': [v.get('login') if isinstance(v, dict) else v for v in issue.get('assignees') or []],
+               'priority': lower.get('priority') or template_field('Priority'),
+               'due_date': lower.get('date') or lower.get('target date') or lower.get('due date') or template_field('Due date'),
+               'iteration': lower.get('iteration'), 'project_fields': fields,
+               'project_item_id': item.get('id'), 'updated_at': issue.get('updated_at', issue.get('updatedAt')),
+               'blocked_by': [{'url': x.get('html_url', x.get('url')), 'state': str(x.get('state', '')).lower()}
+                              for x in issue.get('blocked_by', [])]}
+        if url in mapped:
+            row['task_id'] = mapped[url]['task_id']
+        tasks.append(row)
+    returned = {row['url'] for row in tasks}
+    if selected - returned:
+        raise ValueError('Snapshot omits selected issues: ' + ', '.join(sorted(selected - returned)))
+    completed = [row for row in tasks if row['state'] == 'closed' or str(row['status']).lower() in {'done', 'completed'}]
+    active = [row for row in tasks if row not in completed and str(row['status']).lower() in {'in progress', 'in-progress', 'doing', '進行中'}]
+    next_work = [row for row in tasks if row not in completed and row not in active
+                 and not any(dep['state'] != 'closed' for dep in row['blocked_by'])]
+    return {'tasks': tasks, 'completed': completed, 'active': active, 'next': next_work,
+            'github': {'repository': binding['repository'], 'project': binding.get('project'),
+                       'url': project.get('url'), 'fetched_at': snapshot.get('fetched_at'),
+                       'source_sha256': content_hash(snapshot)}}
+
+
+def github_update(binding, work, issue_url, changes, expected_updated_at=None):
+    """Write requested issue/Project fields through the official CLI and return real API results."""
+    binding = github_binding(binding)
+    repository, number = github_issue_identity(issue_url)
+    if repository != binding['repository']:
+        raise ValueError('Issue update is outside the bound repository')
+    permitted = {'title', 'body', 'state', 'state_reason', 'assignees', 'labels', 'milestone', 'fields', 'blocked_by'}
+    if not isinstance(changes, dict) or not changes or set(changes) - permitted:
+        raise ValueError('Use issue fields, named Project fields, or blocked_by issue URLs')
+    before = github_cli('api', f'repos/{repository}/issues/{number}')
+    if expected_updated_at is not None and before['updated_at'] != expected_updated_at:
+        raise ValueError('Issue changed since it was read; retrieve its current values')
+    responses = []
+    fields = changes.get('fields', {})
+    if not isinstance(fields, dict) or not isinstance(changes.get('blocked_by', []), list):
+        raise ValueError('Project fields must be an object and blocked_by must be a list of issue URLs')
+    planned = []
+    if fields:
+        if not binding.get('project'):
+            raise ValueError('Project field updates require a bound GitHub project')
+        live = github_snapshot(binding, work)
+        project = live['project']
+        item = next((row for row in project['items'] if row.get('content', {}).get('url') == issue_url), None)
+        if item is None:
+            raise ValueError('Selected issue is not in the bound project')
+        catalog = {row['name']: row for row in project['fields']}
+        for name, value in fields.items():
+            if name not in catalog:
+                raise ValueError('Project field does not exist: ' + name)
+            field = catalog[name]
+            command = ['project', 'item-edit', '--id', item['id'], '--project-id', project['id'], '--field-id', field['id']]
+            kind = str(field.get('dataType', field.get('type', ''))).upper()
+            if value is None:
+                command.append('--clear')
+            elif field.get('options') is not None:
+                option = next((row for row in field['options'] if row['name'] == value or row['id'] == value), None)
+                if option is None:
+                    raise ValueError('Project option does not exist: ' + name + '/' + str(value))
+                command += ['--single-select-option-id', option['id']]
+            elif 'ITERATION' in kind:
+                iterations = field.get('configuration', {})
+                choices = [*iterations.get('iterations', []), *iterations.get('completedIterations', [])]
+                selected = next((row for row in choices if value in {row['id'], row['title']}), None)
+                if selected is None:
+                    raise ValueError('Select an existing project iteration ID or title')
+                command += ['--iteration-id', selected['id']]
+            elif kind == 'DATE':
+                datetime.strptime(str(value), '%Y-%m-%d')
+                command += ['--date', str(value)]
+            elif 'NUMBER' in kind:
+                command += ['--number', str(float(value))]
+            elif kind == 'TEXT':
+                command += ['--text', str(value)]
+            else:
+                raise ValueError('Use the issue fields to update built-in Project field: ' + name)
+            planned.append(command + ['--format', 'json'])
+    dependencies, previous_dependencies = {}, {}
+    if 'blocked_by' in changes:
+        pages = github_cli('api', f'repos/{repository}/issues/{number}/dependencies/blocked_by', '--paginate', '--slurp')
+        previous_dependencies = {row['id']: row for page in pages for row in page}
+    for url in dict.fromkeys(changes.get('blocked_by', [])):
+        repo, issue_number = github_issue_identity(url)
+        dependency = github_cli('api', f'repos/{repo}/issues/{issue_number}')
+        if dependency['id'] == before['id']:
+            raise ValueError('An issue cannot depend on itself')
+        dependencies[dependency['id']] = dependency
+    patch = {key: value for key, value in changes.items() if key not in {'fields', 'blocked_by'}}
+    if patch:
+        responses.append(github_cli('api', '--method', 'PATCH', f'repos/{repository}/issues/{number}', '--input', '-', payload=patch))
+    for command in planned:
+        responses.append(github_cli(*command))
+    for dependency_id in dependencies.keys() - previous_dependencies.keys():
+        responses.append(github_cli('api', '--method', 'POST', f'repos/{repository}/issues/{number}/dependencies/blocked_by',
+                                    '--input', '-', payload={'issue_id': dependency_id}))
+    for dependency_id in previous_dependencies.keys() - dependencies.keys() if 'blocked_by' in changes else ():
+        responses.append(github_cli('api', '--method', 'DELETE',
+                                    f'repos/{repository}/issues/{number}/dependencies/blocked_by/{dependency_id}'))
+    after = github_cli('api', f'repos/{repository}/issues/{number}')
+    result = {'operation': 'github-update', 'target': issue_url, 'responses': responses, 'issue': after}
+    if fields or 'blocked_by' in changes:
+        result['view'] = github_project_view(binding, github_snapshot(binding, work), work)
+    return result
+
+
 def _project_read(root, tasks, task_id, definition_path):
     definition_path = relative(root, definition_path)
     definition = gate.parse_json((root / definition_path).read_bytes())
     required = {'schema_version', 'argument', 'resources', 'work', 'priority', 'data_date_hour',
                 'time_unit', 'origin', 'target_finish_hour', 'approved_finish_hour', 'decision_rights'}
-    optional = {'budget', 'currency'}
+    optional = {'budget', 'currency', 'github'}
     if not isinstance(definition, dict) or set(definition) - required - optional or not required <= set(definition) or type(definition['schema_version']) is not int or definition['schema_version'] != 1:
         raise ValueError('Project definition requires schema version 1 and the declared project fields')
     if definition['time_unit'] != 'hours' or not isinstance(definition['origin'], str) or not definition['origin'].strip():
@@ -2430,6 +2691,8 @@ def _project_read(root, tasks, task_id, definition_path):
         raise ValueError('Project currency must be nonempty')
     if 'budget' in definition and 'currency' not in definition:
         raise ValueError('Project budget requires currency')
+    if 'github' in definition:
+        github_binding(definition['github'])
     argument = definition['argument']
     if not isinstance(argument, dict) or set(argument) != {'path', 'sources_path'}:
         raise ValueError('Project argument requires path and sources_path')
@@ -2464,8 +2727,12 @@ def _project_read(root, tasks, task_id, definition_path):
     ids = []
     for row in work:
         fields = {'task_id', 'node_ids', 'duration_hours', 'resources'}
-        if not isinstance(row, dict) or not fields <= set(row) or set(row) - fields - {'release_hour', 'fixed_cost', 'effect'}:
+        if not isinstance(row, dict) or not fields <= set(row) or set(row) - fields - {'release_hour', 'fixed_cost', 'effect', 'issue_url'}:
             raise ValueError('Invalid project work fields')
+        if 'issue_url' in row:
+            repository, _ = github_issue_identity(row['issue_url'])
+            if repository != definition.get('github', {}).get('repository'):
+                raise ValueError('Work issue must belong to the bound GitHub repository')
         if 'effect' in row and row['effect'] not in {'review', 'recalculate', 'regenerate', 'authority'}:
             raise ValueError('Invalid project work effect')
         key = row['task_id']
@@ -2813,7 +3080,9 @@ def _project_forecast(root, tasks, projects, priority=None, capacities=None, obs
             'schedule': schedules, 'projects': summaries}
 
 
-def _project_view(root, tasks, task_id, role, view, owner, others, priority=None, capacities=None):
+def _project_view(root, tasks, task_id, role, view, owner, others, priority=None, capacities=None, github_data=None):
+    if github_data is not None and view not in {'summary', 'workplan'}:
+        raise ValueError('A GitHub snapshot applies to a summary/workplan view')
     ids = [task_id] + others
     if len(ids) != len(set(ids)):
         raise ValueError('Duplicate selected project')
@@ -2876,6 +3145,24 @@ def _project_view(root, tasks, task_id, role, view, owner, others, priority=None
         result['resources'] = forecast['resources']
     if role == 'manage':
         result['decision_rights'] = definition['decision_rights']
+    if definition.get('github') and view in {'summary', 'workplan'}:
+        snapshot = github_data if github_data is not None else github_snapshot(definition['github'], definition['work'])
+        external = github_project_view(definition['github'], snapshot, definition['work'])
+        result.update(external)
+        by_task = {row['task_id']: row for row in external['tasks'] if row.get('task_id')}
+        for row in result['work']:
+            if row['task_id'] in by_task:
+                issue = by_task[row['task_id']]
+                row.update(execution_status=row['status'], github_issue=issue['url'],
+                           github_state=issue['state'], github_status=issue['status'],
+                           assignees=issue['assignees'], priority=issue['priority'],
+                           due_date=issue['due_date'], iteration=issue['iteration'])
+        result['adopted_decisions'] = [row['value'] for row in obs
+            if row['role'] == 'project_judgment' and row['value']['status'] == 'supported']
+        result['open_decisions'] = [row['value'] for row in obs
+            if row['role'] == 'project_judgment' and row['value']['status'] == 'proposed']
+    elif github_data is not None:
+        raise ValueError('A GitHub snapshot requires a bound GitHub source and a summary/workplan view')
     return result
 
 
@@ -2955,6 +3242,10 @@ def _project_impact(root, tasks, task_id, nodes, resources=(), work_tasks=(), de
             classified[action] = sorted(set(classified[action]) | {key})
     return {'binding': binding, **result, **({'actions': classified} if typed else {}), 'affected_task_ids': sorted(affected),
             'schedule_task_ids': sorted(schedule_tasks), 'allocation_reassessment_required': bool(schedule_tasks),
+            'affected_issues': [{'task_id': key, 'url': work[key]['issue_url']}
+                                for key in sorted(affected) if key in work and work[key].get('issue_url')],
+            'schedule_issues': [{'task_id': key, 'url': work[key]['issue_url']}
+                                for key in sorted(schedule_tasks) if work[key].get('issue_url')],
             'reusable_task_ids': sorted(set(work) - affected),
             'affected_outputs': [{'task_id': key, 'output_id': oid, 'version': row['version']} for key, oid, row in sorted(outputs) if (key, oid) in affected_outputs],
             'reusable_outputs': [{'task_id': key, 'output_id': oid, 'version': row['version']} for key, oid, row in sorted(outputs)
@@ -3097,12 +3388,19 @@ def main():
     project_bind.add_argument('--user-change')
     project_view = sub.add_parser('project-view')
     project_view.add_argument('id')
-    project_view.add_argument('--role', required=True, choices=['contribute', 'manage'])
+    project_view.add_argument('--role', default='manage', choices=['contribute', 'manage'])
     project_view.add_argument('--view', required=True, choices=['summary', 'story', 'workplan', 'forecast'])
     project_view.add_argument('--owner')
     project_view.add_argument('--project', action='append', default=[])
     project_view.add_argument('--priority', action='append', help='Candidate global order; repeat for every selected work task')
     project_view.add_argument('--capacity', help='Candidate resource capacities as a JSON object')
+    project_view.add_argument('--github', help='Root-relative snapshot returned by the connected GitHub tool; otherwise use authenticated gh')
+    project_view.add_argument('--save', help='Save this derived view for a meeting; GitHub remains the task source')
+    project_update = sub.add_parser('project-update', help='Update a bound GitHub issue or its existing Project fields')
+    project_update.add_argument('id')
+    project_update.add_argument('--issue-url', required=True)
+    project_update.add_argument('--changes', required=True, help='JSON object with issue fields, fields, or blocked_by URLs')
+    project_update.add_argument('--expected-updated-at')
     project_impact = sub.add_parser('project-impact')
     project_impact.add_argument('id')
     project_impact.add_argument('--node', action='append', default=[])
@@ -3132,7 +3430,7 @@ def main():
     if Path(args.store).parts[:2] != ('.agents', 'state'):
         raise ValueError('Operational store must stay in the local .agents/state directory')
     path = root / args.store
-    mutate = args.command not in {'show', 'find', 'summary', 'prepare-context', 'analyze', 'project-view', 'project-impact'} and not (args.command == 'inspect' and not args.invalidate)
+    mutate = args.command not in {'show', 'find', 'summary', 'prepare-context', 'analyze', 'project-view', 'project-impact', 'project-update'} and not (args.command == 'inspect' and not args.invalidate)
     if args.command == 'optimization':
         mutate = args.optimization_action in {'on', 'off', 'configure', 'protect'}
     def execute():
@@ -3148,7 +3446,7 @@ def main():
             state = json.loads(source.decode('utf-8'))
             migrate(state)
         tasks = state['tasks']
-        if args.command not in {'find', 'prepare-context'}:
+        if args.command not in {'find', 'prepare-context', 'project-view', 'project-impact', 'project-update'}:
             refresh_constraints(root, tasks)
         if args.command == 'prepare-context':
             output = prepare_hook_context(root, path, tasks, args.hook_context, args.task_id, args.release_hold,
@@ -3241,7 +3539,22 @@ def main():
             if args.capacity is not None and not isinstance(capacities, dict):
                 raise ValueError('Candidate capacities must be a JSON object')
             output = _project_view(root, tasks, args.id, args.role, args.view, args.owner, args.project,
-                                   args.priority, capacities)
+                                   args.priority, capacities,
+                                   gate.parse_json((root / relative(root, args.github)).read_bytes()) if args.github else None)
+            if args.save:
+                destination = root / relative(root, args.save, exists=False)
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                save(destination, output)
+        elif args.command == 'project-update':
+            if not constraints_current(root, tasks, tasks[args.id]) or context_changes(root, tasks[args.id]):
+                raise ValueError('Resolve the current project authority and holds before updating GitHub')
+            if args.issue_url not in tasks[args.id].get('external_targets', []):
+                raise ValueError('Declare the issue URL as this task\'s external target before updating GitHub')
+            definition, _, _ = _project_current(root, tasks, args.id)
+            if not definition.get('github'):
+                raise ValueError('Project has no GitHub binding')
+            output = github_update(definition['github'], definition['work'], args.issue_url,
+                                   gate.parse_json(args.changes.encode('utf-8')), args.expected_updated_at)
         elif args.command == 'project-impact':
             changes = {}
             for value in args.change:
@@ -3733,7 +4046,7 @@ def main():
                 for key in tasks:
                     output['tasks'][key]['stages'] = stages(root, tasks, key)
                     output['tasks'][key]['context_id'] = context_id(tasks[key])
-        elif args.command in {'prepare-context', 'analyze', 'converge', 'run-check', 'optimization', 'project-bind', 'project-view', 'project-impact'}:
+        elif args.command in {'prepare-context', 'analyze', 'converge', 'run-check', 'optimization', 'project-bind', 'project-view', 'project-impact', 'project-update'}:
             pass
         else:
             output = {'command': args.command, 'tasks': len(tasks)}

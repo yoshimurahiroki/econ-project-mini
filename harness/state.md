@@ -119,6 +119,28 @@ Argument nodes can use `references:[{kind,id,path,version,relation,basis}]` to j
 
 Summary, story, workplan and forecast expose these selected dependencies as `reference_impact` and hold work requiring authority. Analyze joins the same impact into affected task findings; Converge consumes that analysis. Completion checks the same selected references for the task and its bound project, rejecting unresolved changes without adding a review plan. A related-reference or bibliographic metadata update supplies no numerical dependency. A changed result follows its actual output consumers; `after` remains start order. A work row can declare the adopted `effect` for a consumed result. A consumer lacking a typed argument edge or work effect requires the owner's decision instead of assuming it is an estimate or an exhibit. Read the classified action and its current reference before choosing review, requeue or artifact generation. A reference query never edits an adopted model, project binding, task, output or permission. Reuse valid estimates during a source review. Adopt an authorized changed specification through the existing versioned project/context binding, then requeue only the affected outputs and record the actual new results. The existing full project restoration retains these references, the original request, fixed decisions and preceding source versions.
 
+### GitHub task source
+
+Add `github` to the existing project definition and `issue_url` to each work row that has a GitHub task. Issues and Projects own assignment, status, priority, dates, iterations and issue dependencies. The local task store retains execution authority, inputs, saved results and actual completion evidence.
+
+```json
+{"github":{"repository":"owner/repository","project":{"owner":"owner","number":1},"issues":["https://github.com/owner/repository/issues/8"]}}
+```
+
+The `project` selector is optional. Issue-only projects use the selected URLs and the repository's `Progress`, `Priority` and `Due date` issue-template sections. Project bindings read existing fields and options without creating another status system. A work row's `issue_url` links its adopted argument nodes, specification and output dependencies to that issue.
+
+```sh
+python harness/state.py --root PROJECT project-view CASE --view summary --save local/meeting-view.json
+python harness/state.py --root PROJECT project-view CASE --view summary --github local/github-response.json --save local/meeting-view.json
+python harness/state.py --root PROJECT project-update CASE --issue-url https://github.com/owner/repository/issues/8 --changes '{"assignees":["researcher"],"fields":{"Status":"In progress","Priority":"P1","Date":"2026-11-20","Iteration":"Iteration 2"}}'
+```
+
+The first command uses the analysis environment's authenticated `gh`. The second consumes a connected GitHub tool's returned JSON envelope or `{repository,issues,project}` snapshot. Snapshot `project` contains the returned `id`, `url`, `items` and `fields`; preserve its API values. The saved output is a derived meeting input. It includes `tasks`, `completed`, `active`, `next`, the source hash, issue timestamps and existing Project fields. Work rows expose both `execution_status` and `github_status`; a closed issue does not create a local calculation result or completion receipt. `project-impact` returns affected and rescheduled Issue links from the same work rows.
+
+`project-update` requires the issue's exact URL in the task's existing `external_targets` and respects current holds. It updates issue fields through the REST API and existing Project fields through `gh project item-edit`, returning the actual responses and readback. Use `--expected-updated-at` with the last retrieved issue timestamp to reject an intervening issue edit. `blocked_by` explicitly replaces the list of blocking Issue URLs; an empty list removes those dependencies. Project values use existing option/iteration names or IDs; `null` clears a value. Assignees, labels and milestones use their Issue fields. Authentication uses the existing GitHub CLI session with the repository and Projects permissions required by the selected operation.
+
+Official interfaces: [Projects API](https://docs.github.com/en/issues/planning-and-tracking-with-projects/automating-your-project/using-the-api-to-manage-projects), [typed item edits](https://cli.github.com/manual/gh_project_item-edit), [Issue dependencies](https://docs.github.com/en/rest/issues/issue-dependencies).
+
 ## Resumption and migration
 
 Restore saved artifacts and compare their versions and governing definitions. Recover the last consumed input and output identities before deciding which work remains. Preserve original records and outputs. Read [State migration](../docs/ai/integration.md#state-migration) only for a requested migration.
