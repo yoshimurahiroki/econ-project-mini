@@ -3833,7 +3833,7 @@ def main():
             state = json.loads(source.decode('utf-8'))
             migrate(state)
         tasks = state['tasks']
-        if args.command not in {'find', 'prepare-context'}:
+        if args.command not in {'find', 'prepare-context', 'project-view', 'project-impact', 'project-history', 'project-diff', 'project-update'}:
             refresh_constraints(root, tasks)
         if args.command == 'prepare-context':
             output = prepare_hook_context(root, path, tasks, args.hook_context, args.task_id, args.release_hold,
@@ -4414,7 +4414,8 @@ def main():
                         task['usage'].append({'usage_contract': 2, 'hash': run_hash, **identity,
                             'elapsed_seconds': args.elapsed_seconds, 'imported': now()})
                         task['human_corrections'] += args.human_corrections
-        refresh_constraints(root, tasks)
+        if args.command not in {'find', 'prepare-context', 'project-view', 'project-impact', 'project-history', 'project-diff', 'project-update'}:
+            refresh_constraints(root, tasks)
         if args.command == 'inspect':
             findings, stale = inspect(root, state, args.stale_seconds)
             if args.invalidate:
