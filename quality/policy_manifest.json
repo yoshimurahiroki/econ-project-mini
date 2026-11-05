@@ -11,7 +11,7 @@
     },
     "codex_hooks": {
       "path": "harness/codex_hooks.py",
-      "sha256": "399773ed9908fa256223e86b59a44d0cd7f79f160eca680305b4772bc4fac47e"
+      "sha256": "c5b1a9c56e6161d965187097b7ec0a73cb44bfd0cfc49627f0cf4ef11388d659"
     },
     "core": {
       "path": "runtime/CORE.md",
@@ -31,7 +31,7 @@
     },
     "local_checks": {
       "path": "harness/local_checks.py",
-      "sha256": "52829a6a7450433480572955adf177a5700217153ee6b1b942a1574fbea0ec73"
+      "sha256": "91d1625e4cefb3b3b5672c1ff6e000084415d3da69fbeb8e5a2d1bfe4eefea30"
     },
     "native_check": {
       "path": "harness/native_check.py",
@@ -63,7 +63,7 @@
     },
     "registry_resources": {
       "path": "registry/resources.json",
-      "sha256": "05f1d11dc2de5574c7393ae3310c7f9c5f467f50abe165152b3d5a6ba55fd673"
+      "sha256": "3a4f8205f17ca2cc5bb4cb5a82523f3acf8c499461910ae4a6db4ec72092cd14"
     },
     "requirements_check": {
       "path": "harness/requirements_check.py",
@@ -235,7 +235,7 @@
     },
     "resource:latex-slides-pandoc": {
       "path": "tex/slides/pandoc_template.latex",
-      "sha256": "849f2275fabaa4167c22d37c2f706d05e191333241d2e27c346ca2b0eca7bbdc"
+      "sha256": "c6aa978af832472de8255858f28ce17814e1c55b0e4f83ddfa82825173c88d97"
     },
     "resource:latex-slides-quarto": {
       "path": "tex/slides/quarto_template.qmd",
@@ -419,7 +419,7 @@
     },
     "resource:research-artifacts": {
       "path": "harness/research_artifacts.py",
-      "sha256": "e5901bd26900081d9ee3f69fdfbb5440513fa5f6d3b8c7ae17a28b9eb9ce1176"
+      "sha256": "257b096669b1cf3eac0373f78011fdd625f77ba8b80d83367c69098ec306c870"
     },
     "resource:research-case": {
       "path": "skills/econ-data/scripts/research_case.py",
@@ -475,7 +475,7 @@
     },
     "resource:research-execution": {
       "path": "harness/research.md",
-      "sha256": "832368dc27201ba7c1244c48b4b7b56b22848996acfe2d5c882bac791017ce3d"
+      "sha256": "2cf9a9fb9fd7cc506440b5f446cccec351f08cdafe69b8f9d5c136b8f5f97b12"
     },
     "resource:research-experience": {
       "path": "harness/experience.py",
@@ -511,7 +511,7 @@
     },
     "resource:research-meetings": {
       "path": "harness/research_meetings.py",
-      "sha256": "09ffc3ffbce493aeb690bbf41d70d2e9aba288f583a40b7a5a17822585542f2c"
+      "sha256": "958553ea601c425a07cb4ceae01b858a6d81022c22694f428e31cbf0c12d2d26"
     },
     "resource:research-numerics": {
       "path": "skills/econ-data/scripts/research_numerics.py",
@@ -523,7 +523,7 @@
     },
     "resource:research-reproduction": {
       "path": "harness/reproduction.py",
-      "sha256": "85bfb21e451cc21763bd8118f1982e3393baf801aaddefb32b2d0e2ccb07ede6"
+      "sha256": "54884ae530017a85ba85e0051700a880a66045d8567ad949552a5f481594174f"
     },
     "resource:research-runner": {
       "path": "harness/research.py",
@@ -559,7 +559,7 @@
     },
     "resource:state-contract": {
       "path": "harness/state.md",
-      "sha256": "c8fdc7ebc1bf1a927048f39e4940768be8e5837e73611e008b2cce83df61c5fb"
+      "sha256": "ec1d25ec8702dec643c848550299afb5b61156f2291381b82d1239947ccfe229"
     },
     "resource:tool-pack-context-sh": {
       "path": "scripts/pack_context.sh",
@@ -575,7 +575,7 @@
     },
     "state": {
       "path": "harness/state.py",
-      "sha256": "f3dcc60d43740d06195fac9871651c96d6c6613b077191ab14777ccacbbf5cc5"
+      "sha256": "e23013bfd15a3652fa828da57aecac97a48b51b0e9a577adb943f38b7b3fb81f"
     },
     "team": {
       "path": "runtime/TEAM.md",

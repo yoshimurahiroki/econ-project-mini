@@ -2845,6 +2845,26 @@
       "all": {
         "whole_resource": true
       }
+    },
+    "research-gallery": {
+      "all": {
+        "whole_resource": true
+      }
+    },
+    "research-meetings": {
+      "all": {
+        "whole_resource": true
+      }
+    },
+    "meeting-quarto-template": {
+      "all": {
+        "whole_resource": true
+      }
+    },
+    "meeting-templates": {
+      "all": {
+        "whole_resource": true
+      }
     }
   },
   "rules": {
@@ -6075,6 +6095,38 @@
     "meeting-materials.all": {
       "rule_id": "meeting-materials.all",
       "resource_id": "meeting-materials",
+      "section_id": "all",
+      "requires": [],
+      "conditional_requires": [],
+      "optional_examples": []
+    },
+    "research-gallery.all": {
+      "rule_id": "research-gallery.all",
+      "resource_id": "research-gallery",
+      "section_id": "all",
+      "requires": [],
+      "conditional_requires": [],
+      "optional_examples": []
+    },
+    "research-meetings.all": {
+      "rule_id": "research-meetings.all",
+      "resource_id": "research-meetings",
+      "section_id": "all",
+      "requires": [],
+      "conditional_requires": [],
+      "optional_examples": []
+    },
+    "meeting-quarto-template.all": {
+      "rule_id": "meeting-quarto-template.all",
+      "resource_id": "meeting-quarto-template",
+      "section_id": "all",
+      "requires": [],
+      "conditional_requires": [],
+      "optional_examples": []
+    },
+    "meeting-templates.all": {
+      "rule_id": "meeting-templates.all",
+      "resource_id": "meeting-templates",
       "section_id": "all",
       "requires": [],
       "conditional_requires": [],

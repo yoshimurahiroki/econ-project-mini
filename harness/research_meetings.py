@@ -282,12 +282,14 @@ def change_sections(bundle, *, expected_revision, order=None, add=None, remove=N
     return {"source_revision": load_meeting(bundle)[2], "analysis_executed": False}
 
 
-def artifact_notes(entry):
+def artifact_notes(entry, *, output_format="html"):
     metadata = entry.get("metadata", {})
     labels = {"sample": "標本", "observation_unit": "観測単位", "comparison": "比較", "period": "期間",
               "unit": "単位", "estimand": "推定対象", "estimator": "推定方法", "clustering": "クラスタ",
               "confidence_level": "信頼区間", "n": "N", "source": "出所",
               "measurement_units": "単位", "inference": "推論", "data_source": "データ出所"}
+    if output_format == "pdf":
+        labels.update({"population": "母集団", "variables": "変数"})
     parts = []
     for key, label in labels.items():
         value = metadata.get(key)
@@ -297,6 +299,22 @@ def artifact_notes(entry):
             parts.append(label + ": " + str(value))
     if entry.get("result_ids"):
         parts.append("結果ID: " + ", ".join(entry["result_ids"]))
+    if output_format == "pdf":
+        for result_id in entry.get("result_ids", []):
+            definition = metadata.get("result_definitions", {}).get(result_id, {})
+            for key, label in labels.items():
+                value = definition.get(key)
+                if value is not None and value != "" and value != metadata.get(key):
+                    if isinstance(value, (dict, list)):
+                        value = json.dumps(value, ensure_ascii=False)
+                    parts.append(result_id + " " + label + ": " + str(value))
+            producer = metadata.get("producers", {}).get(result_id, {})
+            identity = producer.get("identity") or {}
+            origin = dict(identity)
+            if producer.get("run_id"):
+                origin["run_id"] = producer["run_id"]
+            if origin:
+                parts.append(result_id + " 生成元: " + json.dumps(origin, ensure_ascii=False))
     return "。".join(parts)
 
 
@@ -319,7 +337,7 @@ def table_markdown(entry):
     return "\n".join(lines)
 
 
-def exhibit_markdown(entry):
+def exhibit_markdown(entry, *, output_format="html", layout="stack"):
     files = entry.get("files", {})
     image = next((value for suffix in (".png", ".jpg", ".jpeg", ".svg")
                   for value in files.values() if Path(value).suffix.lower() == suffix), None)
@@ -331,11 +349,22 @@ def exhibit_markdown(entry):
         content = "![" + entry.get("title", "").replace("]", "\\]") + "](" + image + "){fig-alt=" + json.dumps(entry.get("title", ""), ensure_ascii=False) + "}"
     else:
         content = table_markdown(entry)
-    notes = artifact_notes(entry)
+    notes = artifact_notes(entry, output_format=output_format)
+    if output_format == "pdf":
+        note = "```{=latex}\n\\begingroup\\scriptsize\\raggedright\n```\n\n" + notes + "\n\n```{=latex}\n\\par\\endgroup\n```" if notes else ""
+        if image and not table:
+            # Reserve room for the saved definitions and preserve the display's
+            # aspect ratio while bounding both dimensions within its column.
+            height = "70%" if layout == "stack" else "40%"
+            content = content[:-1] + " width=100% height=" + height + "}"
+            content = "```{=latex}\n\\begingroup\\setkeys{Gin}{keepaspectratio}\n```\n\n" + content + "\n\n```{=latex}\n\\endgroup\n```"
+            if note and layout == "stack":
+                return ":::: {.columns}\n::: {.column width=\"68%\"}\n" + content + "\n:::\n::: {.column width=\"32%\"}\n" + note + "\n:::\n::::"
+        return "\n\n".join(part for part in (content, note) if part)
     return content + ("\n\n::: {.exhibit-note}\n" + notes + "\n:::" if notes else "")
 
 
-def document_source(root, meeting, bodies):
+def document_source(root, meeting, bodies, *, output_format="html"):
     template = template_path(root, "meeting_template.qmd")
     if template is None:
         raise ValueError("Missing tex/slides/meeting_template.qmd")
@@ -346,9 +375,10 @@ def document_source(root, meeting, bodies):
         body = bodies[section["id"]]
         if "{{<" in body:
             raise ValueError("Meeting Markdown uses saved bundle assets; expand Quarto shortcodes before export")
-        selected = [exhibit_markdown(meeting["artifacts"][key]) for key in section.get("artifacts", [])]
-        exhibits = "\n\n".join(selected)
         layout = section.get("layout", "stack")
+        selected = [exhibit_markdown(meeting["artifacts"][key], output_format=output_format, layout=layout)
+                    for key in section.get("artifacts", [])]
+        exhibits = "\n\n".join(selected)
         if layout in {"figure-left", "figure-right"} and exhibits:
             first, second = (exhibits, body) if layout == "figure-left" else (body, exhibits)
             content = ":::: {.columns}\n::: {.column width=\"52%\"}\n" + first + "\n:::\n::: {.column width=\"48%\"}\n" + second + "\n:::\n::::"
@@ -359,7 +389,10 @@ def document_source(root, meeting, bodies):
         else:
             content = "\n\n".join(part for part in (body, exhibits) if part)
         if section.get("caption"):
-            content += "\n\n::: {.exhibit-note}\n" + section["caption"] + "\n:::"
+            if output_format == "pdf":
+                content += "\n\n```{=latex}\n\\begingroup\\scriptsize\\raggedright\n```\n\n" + section["caption"] + "\n\n```{=latex}\n\\par\\endgroup\n```"
+            else:
+                content += "\n\n::: {.exhibit-note}\n" + section["caption"] + "\n:::"
         if section.get("speaker_notes"):
             content += "\n\n::: {.notes}\n" + section["speaker_notes"] + "\n:::"
         slides.append("## " + section["title"].replace("\n", " ") + " {#" + section["id"] + "}\n\n" + content)
@@ -401,7 +434,7 @@ def render_bundle(root, bundle, output, *, quarto="quarto", output_format="html"
     meeting, bodies, revision = load_meeting(bundle)
     if output.exists():
         raise ValueError("Choose a new render directory; completed editions are retained")
-    source = document_source(root, meeting, bodies)
+    source = document_source(root, meeting, bodies, output_format=output_format)
     output.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix=".ers-meeting-render-", dir=output.parent) as temporary:
         stage = Path(temporary)
