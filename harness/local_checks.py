@@ -1004,6 +1004,8 @@ def changed_checks(root, paths, checks):
              'harness/test_state.py::TeamStateTests::test_project_observations_use_existing_output_and_context_owners'),
             ({'harness/state.py', 'harness/test_state.py'},
              'harness/test_state.py::TeamStateTests::test_native_github_read_paginates_project_and_dependency_connections'),
+            ({'harness/state.py', 'harness/test_state.py'},
+             'harness/test_state.py::TeamStateTests::test_github_update_checks_targets_types_and_returns_actual_readback'),
             ({'harness/codex_hooks.py', 'hooks/check.py', 'hooks/hooks.json', 'harness/test_state.py'},
              'harness/test_state.py::HookCallbacksTests::test_actual_callbacks_and_stop_reuse_execution_records'),
             ({'harness/codex_hooks.py', 'harness/policy_assets.py', 'hooks/hooks.json', 'harness/test_state.py'},

@@ -141,9 +141,9 @@ Add the GitHub identifiers to the existing definition. A Project is selected by 
 }
 ```
 
-`repository` is required. `project_id`, `issue_template`, `fields` and `status_groups` are optional. Field mappings default to the names shown. Artifact IDs link the existing result/gallery/document registry; saved results, figures and documents retain their original owners. `links` in the derived task includes the bound plan, linked artifact IDs, current execution outputs and Issue URL.
+`repository` is required. `project_id`, `issue_template`, `fields` and `status_groups` are optional. A Project can also use `project:{"owner":"OWNER","number":1,"owner_type":"organization"}`; `owner_type` defaults to `user`. The reader resolves this selector to the current GraphQL node ID. When both selectors are supplied, they must identify the same Project. Field mappings default to the names shown. Artifact IDs link the existing result/gallery/document registry; saved results, figures and documents retain their original owners. `links` in the derived task includes the bound plan, linked artifact IDs, current execution outputs and Issue URL.
 
-`project-view` reads Issues and both directions of their native dependencies through GitHub REST. It reads Project fields and items through GraphQL, including all returned pages. The external executable is GitHub CLI with `gh api --paginate --slurp`; it uses the current user's existing authentication. Issue reads require repository Issues read access; Project reads require `read:project` or the corresponding GitHub App permission. See [GitHub's Projects API](https://docs.github.com/en/issues/planning-and-tracking-with-projects/automating-your-project/using-the-api-to-manage-projects), [Issue dependencies REST API](https://docs.github.com/en/rest/issues/issue-dependencies) and [gh api](https://cli.github.com/manual/gh_api). Every harness request is a read; native browser or connector writes use their separately authorized operation.
+`project-view` reads Issues and both directions of their native dependencies through GitHub REST. It reads Project fields and items through GraphQL, including all returned pages, field types, single-select options and current/completed iterations. The external executable is GitHub CLI with `gh api --paginate --slurp`; it uses the current user's existing authentication. Issue reads require repository Issues read access; Project reads require `read:project` or the corresponding GitHub App permission. See [GitHub's Projects API](https://docs.github.com/en/issues/planning-and-tracking-with-projects/automating-your-project/using-the-api-to-manage-projects), [Issue dependencies REST API](https://docs.github.com/en/rest/issues/issue-dependencies) and [gh api](https://cli.github.com/manual/gh_api). `project-view` performs reads. `project-update` is the explicit write command described below; browser and connector writes use their authorized operation.
 
 For an Issues-only workflow, use an Issue form with headings `Priority`, `Due date`, `Classification`, `Progress` and `Related research`. The corresponding Japanese headings are `優先順位`, `期限`, `分類`, `進捗` and `関連研究`. Current Project field values take precedence over these Issue-body values. Title, URL, assignees, open/closed state and native issue dependencies come from the Issue API. Editing the Issue body or Project field in GitHub changes the next view. An absent due date remains JSON `null`.
 
@@ -155,7 +155,7 @@ python harness/state.py --root PROJECT project-view CASE --role contribute --own
 python harness/state.py --root PROJECT project-view CASE --role manage --view summary --github github-read.json --save project-summary.json
 ```
 
-`--github` accepts a current read snapshot from an authorized connector. Repeat it for a portfolio. The snapshot identifies its actual source and acquisition time, matches the bound repository/Project, and contains complete Issue/dependency lists. Native reads construct the same shape:
+`--github` accepts a current read snapshot from an authorized connector. Repeat it for a portfolio. A connector's nested `structuredContent` and JSON-string `content` envelopes are unwrapped before the existing snapshot validation. The contained snapshot identifies its actual source and acquisition time, matches the bound repository/Project, and contains complete Issue/dependency lists. Native reads construct the same shape:
 
 ```json
 {
@@ -177,6 +177,23 @@ Summary exposes `tasks` once per Issue and `work` once per executable task. Ever
 `work.execution` exposes local worker state and executable dependencies. `current_completion` and `next_tasks` retain the existing scientific result/receipt and executable DAG predicates. The GitHub Issue's completion and the scientific execution result each retain their respective meanings. `project-impact` returns only the affected scientific results and the corresponding Issue links; resource or deadline changes return schedule Issue links separately.
 
 `--save` writes the derived JSON atomically, without changing the task store. It can replace an existing `artifact_kind:"project-view"` output and preserves canonical plan, source and state paths. The saved view carries source/acquisition identities, the plan binding, current findings, interpretations and decisions. Meeting generation reads this file plus the selected saved result/gallery IDs. Requested meeting destinations are Markdown, Quarto HTML, Beamer PDF and native Google Slides. Refresh the view to incorporate subsequent GitHub edits; make human-task edits at GitHub.
+
+### Explicit GitHub updates
+
+`project-update` edits a linked work Issue or an Issue in the bound Project. Its exact Issue URL must already be declared in the task's `external_targets`. A Project field edit also requires that Project's exact browser URL in the same existing contract. Current contract/context sources, task/ancestor holds and external-target ownership apply. The command uses the existing task lock and leaves the task store and adopted research sources intact.
+
+```sh
+python harness/state.py --root PROJECT project-update CASE \
+  --issue-url https://github.com/OWNER/REPO/issues/12 \
+  --expected-updated-at 2026-11-05T12:00:00Z \
+  --changes '{"assignees":["PERSON"],"fields":{"Status":"In Progress","Due date":"2026-11-20","Iteration":"Iteration 2"}}'
+```
+
+Issue changes support `title`, `body`, `state`, `state_reason`, `assignees`, `labels` and `milestone`. A milestone is its positive number or `null`; assignees and labels are lists of names. `state_reason` accompanies a state change and uses `completed`, `not_planned`, `reopened` or `null`. `fields` uses existing Project field names: single-select values use a name or ID; iterations use an existing title or ID, including completed iterations; dates use `YYYY-MM-DD`; numbers use finite JSON numbers; text uses strings. `null` clears a supported Project field. Built-in Issue fields use the Issue keys. `blocked_by` replaces the Issue's blocking dependencies with canonical Issue URLs; an empty list removes them.
+
+The command validates all supplied values before writing, compares `--expected-updated-at` with the current Issue when supplied, and executes native [Issue PATCH](https://docs.github.com/en/rest/issues/issues#update-an-issue), [typed Project item edits](https://cli.github.com/manual/gh_project_item-edit), and dependency additions/removals in sequence. The return contains actual operation responses and readback of the changed values. A failed later operation returns `completed_responses` and its error so continuation uses the completed writes. Required execution evidence uses the existing returned-action record. Issue writes require Issues write access; Project edits require `project` scope or the corresponding GitHub App permission.
+
+The explicit update, typed field editing, connector-envelope handling and owner/number selector were adapted from [PR #9, commit 8e5cfd4](https://github.com/yoshimurahiroki/econ-project-mini/commit/8e5cfd4b04fcf9a15faa525cadcacc40c719a4d3) into this project's existing schema and authority paths.
 
 ## Resumption and migration
 

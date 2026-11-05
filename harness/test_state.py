@@ -50,7 +50,7 @@ class TeamStateTests(unittest.TestCase):
         (self.root / name).write_text(json.dumps(value, ensure_ascii=False))
         return name
 
-    def project_fixture(self, repository='acme/research', numbers=(11, 12), project_id=None, decisions=None):
+    def project_fixture(self, repository='acme/research', numbers=(11, 12), project_id=None, decisions=None, project_selector=None):
         """Synthetic scientific inputs, independent of any real research result."""
         self.write_json('context.json', {'request_refs': [], 'active_instruction_refs': [],
             'goal_and_constraints': 'Exercise project integration with synthetic source text.',
@@ -96,6 +96,8 @@ class TeamStateTests(unittest.TestCase):
         definition['work'][0]['artifact_ids'] = {'results': ['R1'], 'figures': ['F1'], 'documents': ['DOC1']}
         if project_id:
             definition['github']['project_id'] = project_id
+        if project_selector:
+            definition['github']['project'] = project_selector
         self.write_json('plan-v1.json', definition)
         self.cli('project-bind', 'CASE', '--definition', 'plan-v1.json')
         return definition, graph
@@ -128,6 +130,10 @@ class TeamStateTests(unittest.TestCase):
         self.assertEqual(['F1'], summary['completed'][0]['links']['artifact_ids']['figures'])
         self.assertEqual({'keep': True}, summary['plan']['custom_project_field'])
         self.assertIn('template=research-task.yml', summary['github']['management']['new_issue_url'])
+        self.write_json('wrapped.json', {'structuredContent': {'content': json.dumps(data)}})
+        wrapped = self.cli('project-view', 'CASE', '--role', 'manage', '--view', 'summary', '--github', 'wrapped.json')
+        self.assertEqual(summary['tasks'], wrapped['tasks'])
+        self.assertEqual(summary['github']['snapshot_sha256'], wrapped['github']['snapshot_sha256'])
         data['issues'][0].update(state='open', closed_at=None, body='### Progress\n\nNot started')
         data['issues'][1]['blocked_by'] = [data['issues'][0].copy()]
         self.write_json('github.json', data)
@@ -196,20 +202,25 @@ class TeamStateTests(unittest.TestCase):
         self.assertNotEqual(summary['interpretations'][0]['version'], edited['interpretations'][0]['version'])
 
     def test_native_github_read_paginates_project_and_dependency_connections(self):
-        self.project_fixture(project_id='PVT_fixture')
+        selector = {'owner': 'acme', 'number': 1, 'owner_type': 'organization'}
+        self.project_fixture(project_selector=selector)
         issues = self.github_snapshot()['issues']
         project = {'id': 'PVT_fixture', 'title': 'Research', 'url': 'https://github.com/orgs/acme/projects/1'}
         def run(command, **kwargs):
             endpoint = command[4]
             if endpoint == 'graphql':
                 query = next(value[6:] for value in command if value.startswith('query='))
+                if 'organization(login:' in query:
+                    self.assertIn('projectV2(number: 1)', query)
+                    return SimpleNamespace(returncode=0, stdout=json.dumps({'data': {'organization': {'projectV2': {'id': 'PVT_fixture'}}}}), stderr='')
                 self.assertTrue(query.startswith('query('))
                 self.assertIn('--paginate', command)
                 self.assertIn('--slurp', command)
                 connection = 'fields' if 'fields(first:' in query else 'items'
                 page_rows = ([
                     [{'id': 'status', 'name': 'Status'}],
-                    [{'id': 'priority', 'name': 'Priority', 'options': [{'id': 'p1', 'name': 'P1'}, {'id': 'p2', 'name': 'P2'}]}]]
+                    [{'id': 'priority', 'name': 'Priority', 'options': [{'id': 'p1', 'name': 'P1'}, {'id': 'p2', 'name': 'P2'}]},
+                     {'id': 'iteration', 'name': 'Iteration', 'dataType': 'ITERATION', 'configuration': {'iterations': [{'id': 'it2', 'title': 'Sprint 2'}], 'completedIterations': []}}]]
                     if connection == 'fields' else [
                     [{'id': 'item11', 'isArchived': False, 'content': {'number': 11, 'repository': {'nameWithOwner': 'acme/research'}},
                       'priority': {'name': 'P1'}, 'status': {'name': 'Done'}}],
@@ -230,9 +241,174 @@ class TeamStateTests(unittest.TestCase):
         self.assertEqual('P2', summary['active'][0]['priority'])
         self.assertEqual('2026-11-09', summary['active'][0]['due_date'])
         self.assertEqual('gh api', summary['github']['source'])
+        self.assertEqual(selector, summary['plan']['github']['project'])
+        self.assertEqual('it2', summary['github']['management']['fields'][-1]['configuration']['iterations'][0]['id'])
+        self.write_json('project-envelope.json', {'structuredContent': {'content': json.dumps({
+            **self.github_snapshot(), 'project': {**project, 'fields': summary['github']['management']['fields'],
+                'items': [{'id': 'item11', 'issue_number': 11, 'fields': {'Status': 'Done'}}]}})}})
+        with patch.object(h, '_github_cli', side_effect=AssertionError('A matching connector snapshot performs no native read')):
+            saved = self.cli('project-view', 'CASE', '--role', 'manage', '--view', 'summary', '--github', 'project-envelope.json')
+        self.assertEqual('synthetic connector fixture', saved['github']['source'])
         with patch.object(h.subprocess, 'run', return_value=SimpleNamespace(returncode=1, stdout='', stderr='authentication required')):
             with self.assertRaisesRegex(ValueError, 'authentication required'):
                 self.cli('project-view', 'CASE', '--role', 'manage', '--view', 'summary')
+        with patch.object(h.subprocess, 'run', return_value=SimpleNamespace(returncode=0, stdout='', stderr='')):
+            with self.assertRaisesRegex(ValueError, 'no JSON'):
+                self.cli('project-view', 'CASE', '--role', 'manage', '--view', 'summary')
+
+    def test_github_update_checks_targets_types_and_returns_actual_readback(self):
+        self.project_fixture(project_id='PVT_fixture')
+        issue_url = 'https://github.com/acme/research/issues/11'
+        project_url = 'https://github.com/orgs/acme/projects/1'
+        issue = {**self.github_snapshot()['issues'][0], 'id': 1100, 'labels': [], 'milestone': None}
+        project_fields = [
+            {'id': 'priority', 'name': 'Priority', 'dataType': 'SINGLE_SELECT', 'options': [{'id': 'p1', 'name': 'P1'}, {'id': 'p2', 'name': 'P2'}]},
+            {'id': 'date', 'name': 'Due date', 'dataType': 'DATE'},
+            {'id': 'estimate', 'name': 'Estimate', 'dataType': 'NUMBER'},
+            {'id': 'notes', 'name': 'Notes', 'dataType': 'TEXT'},
+            {'id': 'iteration', 'name': 'Iteration', 'dataType': 'ITERATION', 'configuration': {
+                'iterations': [{'id': 'it2', 'title': 'Sprint 2'}], 'completedIterations': [{'id': 'it1', 'title': 'Sprint 1'}]}},
+            {'id': 'clear', 'name': 'Clear field', 'dataType': 'TEXT'},
+        ]
+        values = {'Priority': 'P1', 'Clear field': 'old'}
+        dependencies = {2100: {'id': 2100, 'number': 21}, 2200: {'id': 2200, 'number': 22}}
+        writes, field_commands = [], []
+        fail_field = [False]
+
+        def run(command, **kwargs):
+            self.assertEqual('github.com', kwargs['env']['GH_HOST'])
+            if command[1:3] == ['project', 'item-edit']:
+                if fail_field[0]:
+                    return SimpleNamespace(returncode=1, stdout='', stderr='typed field rejected')
+                self.assertEqual('item11', command[command.index('--id') + 1])
+                self.assertEqual('PVT_fixture', command[command.index('--project-id') + 1])
+                field = next(row for row in project_fields if row['id'] == command[command.index('--field-id') + 1])
+                if '--clear' in command:
+                    values.pop(field['name'], None)
+                else:
+                    flag = {'SINGLE_SELECT': '--single-select-option-id', 'ITERATION': '--iteration-id',
+                            'DATE': '--date', 'NUMBER': '--number', 'TEXT': '--text'}[field['dataType']]
+                    value = command[command.index(flag) + 1]
+                    if field['dataType'] == 'SINGLE_SELECT':
+                        value = next(row['name'] for row in field['options'] if row['id'] == value)
+                    elif field['dataType'] == 'ITERATION':
+                        value = next(row['title'] for row in field['configuration']['completedIterations'] + field['configuration']['iterations'] if row['id'] == value)
+                    elif field['dataType'] == 'NUMBER':
+                        value = float(value)
+                    values[field['name']] = value
+                field_commands.append(command)
+                writes.append('field')
+                result = {'id': 'item11', 'field_id': field['id']}
+            else:
+                endpoint = command[4]
+                method = command[command.index('--method') + 1]
+                if endpoint == 'graphql':
+                    query = next(value[6:] for value in command if value.startswith('query='))
+                    self.assertTrue(query.startswith('query('))
+                    self.assertIn('--paginate', command)
+                    self.assertIn('--slurp', command)
+                    if 'fields(first:' in query:
+                        self.assertIn('completedIterations', query)
+                        connection, pages = 'fields', [project_fields[:3], project_fields[3:]]
+                    else:
+                        projected = {}
+                        for alias, encoded in h.re.findall(r'(\w+): fieldValueByName\(name: ("[^"]+")\)', query):
+                            name = json.loads(encoded)
+                            if name in values:
+                                field = next(row for row in project_fields if row['name'] == name)
+                                key = {'SINGLE_SELECT': 'name', 'ITERATION': 'title', 'NUMBER': 'number',
+                                       'TEXT': 'text', 'DATE': 'date'}[field['dataType']]
+                                projected[alias] = {key: values[name]}
+                        connection = 'items'
+                        pages = [[{'id': 'item12', 'isArchived': False, 'content': {'number': 12, 'repository': {'nameWithOwner': 'acme/research'}}}],
+                                 [{'id': 'item11', 'isArchived': False, 'content': {'number': 11, 'repository': {'nameWithOwner': 'acme/research'}}, **projected}]]
+                    result = [{'data': {'node': {'id': 'PVT_fixture', 'title': 'Research', 'url': project_url,
+                              connection: {'nodes': rows, 'pageInfo': {'hasNextPage': index == 0, 'endCursor': str(index)}}}}}
+                              for index, rows in enumerate(pages)]
+                elif method == 'PATCH':
+                    payload = json.loads(kwargs['input'])
+                    for key, value in payload.items():
+                        issue[key] = ([{'login' if key == 'assignees' else 'name': row} for row in value]
+                                      if key in {'assignees', 'labels'} else {'number': value} if key == 'milestone' and value is not None else value)
+                    issue['updated_at'] = '2026-11-05T12:02:00Z'
+                    writes.append('patch')
+                    result = issue
+                elif '/dependencies/' in endpoint:
+                    if method == 'GET':
+                        self.assertIn('--paginate', command)
+                        self.assertIn('--slurp', command)
+                        result = [[row] for row in dependencies.values()]
+                    elif method == 'POST':
+                        dependency_id = json.loads(kwargs['input'])['issue_id']
+                        dependencies[dependency_id] = {'id': dependency_id, 'number': 31}
+                        writes.append('add')
+                        result = dependencies[dependency_id]
+                    else:
+                        self.assertEqual('DELETE', method)
+                        del dependencies[int(endpoint.rsplit('/', 1)[1])]
+                        writes.append('remove')
+                        result = None
+                elif endpoint.endswith('/31'):
+                    result = {'id': 3100, 'number': 31}
+                else:
+                    self.assertEqual('repos/acme/research/issues/11', endpoint)
+                    self.assertEqual('GET', method)
+                    result = issue
+            return SimpleNamespace(returncode=0, stdout=json.dumps(result) if result is not None else '', stderr='')
+
+        def update(changes, *args):
+            return self.cli('project-update', 'CASE', '--issue-url', issue_url,
+                            '--changes', json.dumps(changes), *args)
+
+        requirement = json.dumps(self.task('CASE')['required_outputs'][0])
+        with patch.object(h, '_github_cli') as native:
+            with self.assertRaisesRegex(ValueError, 'Issue URL'):
+                update({'title': 'Saved result'})
+            native.assert_not_called()
+        self.cli('set-contract', 'CASE', '--required-output', requirement, '--external-target', issue_url)
+        with patch.object(h.subprocess, 'run', side_effect=run):
+            with self.assertRaisesRegex(ValueError, 'Project URL'):
+                update({'fields': {'Priority': 'P2'}})
+        self.assertEqual([], writes)
+        self.cli('set-contract', 'CASE', '--required-output', requirement,
+                 '--external-target', issue_url, '--external-target', project_url)
+        self.cli('start', 'CASE')
+        self.cli('transition', 'CASE', 'blocked', '--reason', 'permission', '--hold-id', 'github-edit',
+                 '--hold-operation', 'external', '--hold-target', 'object:' + issue_url, '--next', 'Release the fixture hold')
+        with patch.object(h, '_github_cli') as native:
+            with self.assertRaisesRegex(ValueError, 'authority, holds and context'):
+                update({'title': 'Held edit'})
+            native.assert_not_called()
+        self.release('CASE', '--hold-id', 'github-edit', '--authority', 'fixture-user-release', '--next', 'Apply the fixture edit')
+        original = (self.root / '.agents/state/team.json').read_bytes()
+        with patch.object(h.subprocess, 'run', side_effect=run):
+            with self.assertRaisesRegex(ValueError, 'finite JSON number'):
+                update({'title': 'Invalid type must not patch', 'fields': {'Estimate': True}})
+            with self.assertRaisesRegex(ValueError, 'changed since'):
+                update({'title': 'Old edit'}, '--expected-updated-at', '2026-11-04T12:00:00Z')
+            self.assertEqual([], writes)
+            result = update({'title': 'Saved result', 'body': 'Updated from the fixture', 'state': 'closed',
+                'state_reason': 'completed', 'assignees': ['researcher'], 'labels': ['analysis'], 'milestone': 7,
+                'fields': {'Priority': 'p2', 'Due date': '2026-11-20', 'Estimate': 3.5, 'Notes': 'Saved interpretation',
+                           'Iteration': 'it1', 'Clear field': None},
+                'blocked_by': ['https://github.com/acme/research/issues/31']},
+                '--expected-updated-at', '2026-11-05T12:00:00Z')
+            self.assertEqual('Saved result', result['issue']['title'])
+            self.assertEqual([{'login': 'researcher'}], result['issue']['assignees'])
+            self.assertEqual([3100], [row['id'] for row in result['issue']['blocked_by']])
+            self.assertEqual({'Priority': 'P2', 'Due date': '2026-11-20', 'Estimate': 3.5,
+                              'Notes': 'Saved interpretation', 'Iteration': 'Sprint 1'}, result['project']['items'][1]['fields'])
+            self.assertEqual(['patch', *['field'] * 6, 'add', 'remove', 'remove'], writes)
+            self.assertEqual(10, len(result['responses']))
+            self.assertIn('--clear', field_commands[-1])
+            fail_field[0] = True
+            with self.assertRaises(ValueError) as failure:
+                update({'title': 'Second edit', 'fields': {'Notes': 'Rejected field'}})
+            partial = json.loads(str(failure.exception))
+            self.assertEqual('issue-update', partial['completed_responses'][0]['operation'])
+            self.assertEqual('Second edit', partial['completed_responses'][0]['response']['title'])
+            self.assertIn('typed field rejected', partial['error'])
+        self.assertEqual(original, (self.root / '.agents/state/team.json').read_bytes())
 
     def add(self, *args, name='T', kind='create'):
         if '--required-output' not in args and '--required-action' not in args:
@@ -326,6 +502,14 @@ class HookCallbacksTests(unittest.TestCase):
              patch.object(hooks, '_bound_state', side_effect=AssertionError('state scan')), \
              patch.object(hooks, '_completion_task', side_effect=AssertionError('contract scan')):
             self.assertEqual({}, self.dispatch(read))
+        update = self.event('PreToolUse', 'exec_command')
+        command = f'python {self.plugin}/harness/state.py --root {self.root} project-update CASE --issue-url https://github.com/example/repo/issues/1 --changes \'{{"state":"closed"}}\''
+        update['tool_input'] = {'cmd': command}
+        classified = hooks._tool_effect(update, self.plugin, self.directory)
+        self.assertEqual(('execute_command', 'write'), classified[3:5])
+        self.assertEqual(command, classified[7])
+        with self.assertRaisesRegex(ValueError, 'authority'):
+            self.dispatch(update)
         write = self.event('PreToolUse')
         with patch.object(hooks, '_completion_task', return_value=None):
             with self.assertRaisesRegex(ValueError, 'authority'):

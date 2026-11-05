@@ -1901,8 +1901,8 @@ def _tool_effect(event, root, directory, *, enforce_authority=True):
             elif (parts[0] in {'python', 'python3'} and len(parts) >= 3
                   and _tool_target(parts[2] if parts[1] == '-B' and len(parts) > 3 else parts[1], cwd)
                   == str((root / 'harness/state.py').resolve())):
+                tail = parts[3:] if parts[1] == '-B' else parts[2:]
                 if enforce_authority:
-                    tail = parts[3:] if parts[1] == '-B' else parts[2:]
                     specified = [tail[i + 1] for i, value in enumerate(tail[:-1]) if value == '--root']
                     specified += [value.split('=', 1)[1] for value in tail if value.startswith('--root=')]
                     context = _read(directory / 'context.json', {})
@@ -1910,7 +1910,10 @@ def _tool_effect(event, root, directory, *, enforce_authority=True):
                     selected_root = _tool_target(specified[0], cwd) if specified else str(Path(cwd).resolve())
                     gate.require(len(specified) <= 1 and selected_root == task_root,
                                  'state bookkeeping root differs from the original task root')
-                operation, effect = 'state-control', 'local-control'
+                if 'project-update' in tail:
+                    operation, effect, command_action = 'execute_command', 'write', command
+                else:
+                    operation, effect = 'state-control', 'local-control'
             elif (parts[0] in {'python', 'python3'} and len(parts) >= 3
                   and _tool_target(parts[2] if parts[1] == '-B' and len(parts) > 3 else parts[1], cwd)
                   == str((root / 'harness/codex_hooks.py').resolve())):
