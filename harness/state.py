@@ -8,12 +8,14 @@ import importlib.util
 import json
 import math
 import os
+import re
 import shlex
 import uuid
 from pathlib import Path
 import subprocess
 import sys
 import tempfile
+from urllib.parse import urlencode
 
 if __name__ == '__main__':
     sys.dont_write_bytecode = True
@@ -2402,14 +2404,257 @@ def _project_descendant(tasks, key, ancestor):
     return False
 
 
+_GITHUB_FIELDS = {'status': 'Status', 'priority': 'Priority', 'due_date': 'Due date',
+                  'classification': 'Classification', 'progress': 'Progress'}
+_GITHUB_GROUPS = {'completed': ['Done', 'Completed'], 'active': ['In Progress', '進行中'],
+                  'next': ['Todo', 'Not started', '未着手'], 'blocked': ['Blocked', '待機中']}
+
+
+def _project_github_config(config):
+    if (not isinstance(config, dict) or not isinstance(config.get('repository'), str)
+            or not re.fullmatch(r'[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+', config['repository'])
+            or any(part in {'.', '..'} for part in config['repository'].split('/'))):
+        raise ValueError('Project github.repository must be OWNER/REPO')
+    for key in ('project_id', 'issue_template'):
+        if key in config and (not isinstance(config[key], str) or not config[key].strip()):
+            raise ValueError('Project github.' + key + ' must be nonempty')
+    fields = config.get('fields', {})
+    if (not isinstance(fields, dict) or set(fields) - set(_GITHUB_FIELDS)
+            or any(not isinstance(value, str) or not value.strip() for value in fields.values())):
+        raise ValueError('GitHub fields maps status, priority, due_date, classification and progress to Project field names')
+    groups = config.get('status_groups', {})
+    if (not isinstance(groups, dict) or set(groups) - {'completed', 'active', 'next', 'blocked'}
+            or any(not isinstance(values, list) or any(not isinstance(v, str) or not v.strip() for v in values)
+                   for values in groups.values())):
+        raise ValueError('GitHub status_groups maps completed, active, next and blocked to status names')
+    names = [value.casefold() for values in {**_GITHUB_GROUPS, **groups}.values() for value in values]
+    if len(names) != len(set(names)):
+        raise ValueError('A GitHub status belongs to one summary group')
+
+
+def _github_api(endpoint, *, query=None, project_id=None, paginate=False):
+    """Read GitHub through the user's gh authentication; never send a mutation."""
+    command = ['gh', 'api', '--hostname', 'github.com', endpoint]
+    if query is None:
+        command += ['--method', 'GET', '-H', 'Accept: application/vnd.github+json',
+                    '-H', 'X-GitHub-Api-Version: 2026-03-10']
+    else:
+        command += ['--method', 'POST', '-f', 'query=' + query, '-f', 'id=' + project_id]
+    if paginate:
+        command += ['--paginate', '--slurp']
+    try:
+        result = subprocess.run(command, capture_output=True, text=True, timeout=60)
+    except FileNotFoundError as exc:
+        raise ValueError('GitHub reads require gh api or --github with a connector snapshot') from exc
+    except subprocess.TimeoutExpired as exc:
+        raise ValueError('GitHub read timed out: ' + endpoint) from exc
+    if result.returncode:
+        raise ValueError('GitHub read failed: ' + result.stderr.strip())
+    value = gate.parse_json(result.stdout.encode('utf-8'))
+    pages = value if paginate else [value]
+    if not isinstance(pages, list) or any(isinstance(page, dict) and page.get('errors') for page in pages):
+        raise ValueError('GitHub query returned errors: ' + json.dumps(value, ensure_ascii=False))
+    return value
+
+
+def _project_github_fetch(config, work):
+    repository = config['repository']
+    numbers = {row['issue_number'] for row in work if 'issue_number' in row}
+    project = None
+    if config.get('project_id'):
+        fields = {**_GITHUB_FIELDS, **config.get('fields', {})}
+        value_fragment = ('... on ProjectV2ItemFieldSingleSelectValue { name } '
+                          '... on ProjectV2ItemFieldTextValue { text } '
+                          '... on ProjectV2ItemFieldDateValue { date } '
+                          '... on ProjectV2ItemFieldNumberValue { number }')
+        selected = ' '.join(key + ': fieldValueByName(name: ' + json.dumps(name) + ') { ' + value_fragment + ' }'
+                            for key, name in fields.items())
+        queries = {
+            'fields': 'nodes { ... on ProjectV2FieldCommon { id name dataType } '
+                      '... on ProjectV2SingleSelectField { options { id name } } }',
+            'items': 'nodes { id isArchived content { ... on Issue { number repository { nameWithOwner } } } '
+                     + selected + ' }'}
+        project = {'id': config['project_id'], 'fields': [], 'items': []}
+        for connection, selection in queries.items():
+            query = ('query($id: ID!, $endCursor: String) { node(id: $id) { ... on ProjectV2 { id title url '
+                     + connection + '(first: 100, after: $endCursor) { pageInfo { hasNextPage endCursor } '
+                     + selection + ' } } } }')
+            for page in _github_api('graphql', query=query, project_id=config['project_id'], paginate=True):
+                node = page.get('data', {}).get('node')
+                if not isinstance(node, dict) or connection not in node:
+                    raise ValueError('GitHub Project was not returned: ' + config['project_id'])
+                project.update({key: node[key] for key in ('title', 'url')})
+                for item in node[connection]['nodes']:
+                    if connection == 'fields':
+                        project['fields'].append(item)
+                    elif (not item['isArchived'] and item.get('content')
+                          and item['content'].get('repository', {}).get('nameWithOwner', '').casefold() == repository.casefold()):
+                        number = item['content']['number']
+                        numbers.add(number)
+                        values = {fields[key]: next((value[k] for k in ('name', 'text', 'date', 'number') if k in value), None)
+                                  for key in fields if (value := item.get(key))}
+                        project['items'].append({'id': item['id'], 'issue_number': number, 'fields': values})
+    issues = []
+    for number in sorted(numbers):
+        endpoint = f'repos/{repository}/issues/{number}'
+        issue = _github_api(endpoint)
+        for relation in ('blocked_by', 'blocking'):
+            pages = _github_api(endpoint + '/dependencies/' + relation + '?per_page=100', paginate=True)
+            issue[relation] = [row for page in pages for row in page]
+        issues.append(issue)
+    return {'schema_version': 1, 'repository': repository, 'fetched_at': now(),
+            'source': 'gh api', 'issues': issues, 'project': project}
+
+
+def _github_form_fields(body):
+    aliases = {'priority': {'priority', '優先順位'}, 'due_date': {'due date', '期限'},
+               'classification': {'classification', '分類'}, 'progress': {'progress', '進捗'},
+               'related_research': {'related research', '関連研究'}}
+    sections = re.split(r'^###\s+(.+?)\s*$', body or '', flags=re.MULTILINE)
+    result = {}
+    for title, value in zip(sections[1::2], sections[2::2]):
+        value = value.strip()
+        if value and value not in {'_No response_', 'No response'}:
+            for key, names in aliases.items():
+                if title.casefold() in names:
+                    result[key] = value
+    return result
+
+
+def _project_github(root, definition, snapshots):
+    """Derive a view from a current API read or an explicitly supplied read snapshot."""
+    config = definition['github']
+    matches = [row for row in snapshots if row.get('repository', '').casefold() == config['repository'].casefold()
+               and (row.get('project') or {}).get('id') == config.get('project_id')]
+    if len(matches) > 1:
+        raise ValueError('Multiple GitHub snapshots match the same repository and Project')
+    data = matches[0] if matches else _project_github_fetch(config, definition['work'])
+    if (type(data.get('schema_version')) is not int or data['schema_version'] != 1 or not isinstance(data.get('source'), str) or not data['source'].strip()
+            or not isinstance(data.get('issues'), list)):
+        raise ValueError('GitHub snapshot requires schema_version, source, fetched_at and issues')
+    try:
+        timestamp = datetime.fromisoformat(data['fetched_at'].replace('Z', '+00:00'))
+        if timestamp.tzinfo is None:
+            raise ValueError
+    except (KeyError, AttributeError, ValueError) as exc:
+        raise ValueError('GitHub fetched_at requires an ISO timestamp with timezone') from exc
+    project = data.get('project')
+    if project is not None and (not isinstance(project, dict) or not isinstance(project.get('items'), list)
+                                or not isinstance(project.get('fields'), list)
+                                or not isinstance(project.get('url'), str) or not project['url'].startswith('https://github.com/')):
+        raise ValueError('GitHub Project snapshot requires id, url, fields and items')
+    field_names = {**_GITHUB_FIELDS, **config.get('fields', {})}
+    for field in (project or {}).get('fields', []):
+        if (not isinstance(field, dict) or not isinstance(field.get('name'), str)
+                or not isinstance(field.get('options', []), list)
+                or any(not isinstance(option, dict) or not isinstance(option.get('name'), str) for option in field.get('options', []))):
+            raise ValueError('Project fields require their names and single-select option names')
+    items = {}
+    for item in (project or {}).get('items', []):
+        if not isinstance(item, dict):
+            raise ValueError('Project items must be objects')
+        number = item.get('issue_number')
+        if (type(number) is not int or number < 1 or number in items or not isinstance(item.get('fields'), dict)
+                or any(value is not None and type(value) not in {str, int, float} for value in item['fields'].values())):
+            raise ValueError('Project items require distinct issue_number and fields')
+        items[number] = item
+    groups = {**_GITHUB_GROUPS, **config.get('status_groups', {})}
+    groups = {key: {value.casefold() for value in values} for key, values in groups.items()}
+    issues = []
+    seen = set()
+    for issue in data['issues']:
+        if not isinstance(issue, dict):
+            raise ValueError('GitHub Issues must be REST objects')
+        number = issue.get('number')
+        url = f"https://github.com/{config['repository']}/issues/{number}"
+        if (type(number) is not int or number < 1 or number in seen or issue.get('pull_request')
+                or not isinstance(issue.get('title'), str) or not issue['title'].strip()
+                or not isinstance(issue.get('html_url'), str) or issue['html_url'].casefold() != url.casefold() or issue.get('state') not in {'open', 'closed'}
+                or issue.get('body') is not None and not isinstance(issue['body'], str)
+                or not isinstance(issue.get('assignees'), list)
+                or any(not isinstance(row, dict) or not isinstance(row.get('login'), str) for row in issue['assignees'])):
+            raise ValueError('GitHub snapshot requires distinct REST Issues from the bound repository')
+        seen.add(number)
+        dependencies = {}
+        for relation in ('blocked_by', 'blocking'):
+            if not isinstance(issue.get(relation), list):
+                raise ValueError('GitHub Issue snapshot requires blocked_by and blocking arrays')
+            dependencies[relation] = []
+            for dependency in issue[relation]:
+                if (not isinstance(dependency, dict) or dependency.get('state') not in {'open', 'closed'}
+                        or not isinstance(dependency.get('html_url'), str)
+                        or not re.fullmatch(r'https://github\.com/[^/]+/[^/]+/issues/[1-9][0-9]*', dependency['html_url'])):
+                    raise ValueError('GitHub dependency requires its Issue html_url and state')
+                dependencies[relation].append({'url': dependency['html_url'], 'number': dependency.get('number'),
+                                               'title': dependency.get('title'), 'state': dependency['state']})
+        values = _github_form_fields(issue.get('body'))
+        fields = items.get(number, {}).get('fields', {})
+        for key, name in field_names.items():
+            if fields.get(name) is not None:
+                values[key] = fields[name]
+        status = values.get('status') or issue['state']
+        status_name = str(status).casefold()
+        progress = str(values.get('progress', '')).casefold()
+        if issue['state'] == 'closed' or status_name in groups['completed']:
+            bucket = 'completed'
+        elif status_name in groups['blocked'] or progress in groups['blocked'] or any(row['state'] == 'open' for row in dependencies['blocked_by']):
+            bucket = 'blocked'
+        elif status_name in groups['active'] or progress in groups['active']:
+            bucket = 'active'
+        else:
+            bucket = 'next'
+        linked = [row for row in definition['work'] if row.get('issue_number') == number]
+        artifacts = {kind: list(dict.fromkeys(value for row in linked for value in row.get('artifact_ids', {}).get(kind, [])))
+                     for kind in ('results', 'figures', 'documents')}
+        issues.append({'number': number, 'title': issue['title'], 'url': issue['html_url'],
+                       'assignees': [row['login'] for row in issue['assignees']], 'state': issue['state'], 'status': status,
+                       **{key: values.get(key) for key in ('priority', 'due_date', 'classification', 'progress')},
+                       'updated_at': issue.get('updated_at'), 'closed_at': issue.get('closed_at'),
+                       'bucket': bucket, 'dependencies': dependencies, 'project_item_id': items.get(number, {}).get('id'),
+                       'execution_task_ids': [row['task_id'] for row in linked],
+                       'links': {'issue': issue['html_url'], 'artifact_ids': artifacts,
+                                 'related_research': values.get('related_research')}})
+    needed = {row['issue_number'] for row in definition['work'] if 'issue_number' in row} | set(items)
+    if needed - seen:
+        raise ValueError('GitHub snapshot omits bound or Project Issues: ' + ', '.join(map(str, sorted(needed - seen))))
+    issues = [row for row in issues if row['number'] in needed]
+    options = next((row.get('options', []) for row in (project or {}).get('fields', [])
+                    if row.get('name') == field_names['priority']), [])
+    ranks = {row['name']: index for index, row in enumerate(options)}
+    positions = {number: index for index, number in enumerate(items)}
+    def priority_rank(issue):
+        value = issue['priority']
+        if value in ranks:
+            return ranks[value]
+        if type(value) in {int, float}:
+            return value
+        numbered = re.fullmatch(r'P([0-9]+)', str(value), flags=re.IGNORECASE)
+        return int(numbered.group(1)) if numbered and not ranks else math.inf
+    issues.sort(key=lambda row: (priority_rank(row), positions.get(row['number'], len(items)), row['number']))
+    order = [key for issue in issues for key in issue['execution_task_ids']]
+    order.extend(row['task_id'] for row in definition['work'] if row['task_id'] not in order)
+    new_issue = f"https://github.com/{config['repository']}/issues/new"
+    if config.get('issue_template'):
+        new_issue += '?' + urlencode({'template': config['issue_template']})
+    return {'repository': config['repository'], 'source': data['source'], 'fetched_at': data['fetched_at'],
+            'snapshot_sha256': content_hash(data), 'tasks': issues, 'execution_priority': order,
+            'project': project, 'management': {'issues_url': f"https://github.com/{config['repository']}/issues",
+                'new_issue_url': new_issue, 'project_url': (project or {}).get('url'),
+                'fields': (project or {}).get('fields', []), 'field_mapping': field_names,
+                'rest_api': f"https://api.github.com/repos/{config['repository']}/issues",
+                'graphql_api': 'https://api.github.com/graphql'}}
+
+
 def _project_read(root, tasks, task_id, definition_path):
     definition_path = relative(root, definition_path)
     definition = gate.parse_json((root / definition_path).read_bytes())
-    required = {'schema_version', 'argument', 'resources', 'work', 'priority', 'data_date_hour',
+    required = {'schema_version', 'argument', 'resources', 'work', 'data_date_hour',
                 'time_unit', 'origin', 'target_finish_hour', 'approved_finish_hour', 'decision_rights'}
-    optional = {'budget', 'currency'}
-    if not isinstance(definition, dict) or set(definition) - required - optional or not required <= set(definition) or type(definition['schema_version']) is not int or definition['schema_version'] != 1:
+    if not isinstance(definition, dict) or not required <= set(definition) or type(definition['schema_version']) is not int or definition['schema_version'] != 1:
         raise ValueError('Project definition requires schema version 1 and the declared project fields')
+    github = definition.get('github')
+    if 'github' in definition:
+        _project_github_config(github)
     if definition['time_unit'] != 'hours' or not isinstance(definition['origin'], str) or not definition['origin'].strip():
         raise ValueError('Project time unit must be hours and origin must be an explicit timezone ISO timestamp or relative label')
     origin = definition['origin']
@@ -2431,7 +2676,7 @@ def _project_read(root, tasks, task_id, definition_path):
     if 'budget' in definition and 'currency' not in definition:
         raise ValueError('Project budget requires currency')
     argument = definition['argument']
-    if not isinstance(argument, dict) or set(argument) != {'path', 'sources_path'}:
+    if not isinstance(argument, dict) or not {'path', 'sources_path'} <= set(argument):
         raise ValueError('Project argument requires path and sources_path')
     graph_path, sources_path = (relative(root, argument[k]) for k in ('path', 'sources_path'))
     graph = gate.parse_json((root / graph_path).read_bytes())
@@ -2449,7 +2694,7 @@ def _project_read(root, tasks, task_id, definition_path):
     if not isinstance(resources, dict) or any(not isinstance(k, str) or not k.strip() for k in resources):
         raise ValueError('Project resources must map nonempty IDs to resource objects')
     for resource in resources.values():
-        if not isinstance(resource, dict) or set(resource) != {'capacity_units', 'hourly_cost'}:
+        if not isinstance(resource, dict) or not {'capacity_units', 'hourly_cost'} <= set(resource):
             raise ValueError('Resource requires capacity_units and hourly_cost')
         _project_number(resource['capacity_units'], 'capacity_units', positive=True)
         _project_number(resource['hourly_cost'], 'hourly_cost')
@@ -2464,8 +2709,16 @@ def _project_read(root, tasks, task_id, definition_path):
     ids = []
     for row in work:
         fields = {'task_id', 'node_ids', 'duration_hours', 'resources'}
-        if not isinstance(row, dict) or not fields <= set(row) or set(row) - fields - {'release_hour', 'fixed_cost', 'effect'}:
+        if not isinstance(row, dict) or not fields <= set(row):
             raise ValueError('Invalid project work fields')
+        if 'issue_number' in row and (github is None or type(row['issue_number']) is not int or row['issue_number'] < 1):
+            raise ValueError('Work issue_number requires a positive issue number and project github binding')
+        if 'artifact_ids' in row:
+            artifacts = row['artifact_ids']
+            if (not isinstance(artifacts, dict) or set(artifacts) - {'results', 'figures', 'documents'}
+                    or any(not isinstance(values, list) or any(not isinstance(v, str) or not v.strip() for v in values)
+                           or len(values) != len(set(values)) for values in artifacts.values())):
+                raise ValueError('Work artifact_ids maps results, figures and documents to distinct IDs')
         if 'effect' in row and row['effect'] not in {'review', 'recalculate', 'regenerate', 'authority'}:
             raise ValueError('Invalid project work effect')
         key = row['task_id']
@@ -2485,8 +2738,12 @@ def _project_read(root, tasks, task_id, definition_path):
             _project_number(units, 'resource units', positive=True)
             if units > resources[name]['capacity_units']:
                 raise ValueError('Project work resource demand exceeds capacity: ' + name)
-    if not isinstance(definition['priority'], list) or any(not isinstance(v, str) for v in definition['priority']) or len(definition['priority']) != len(ids) or set(definition['priority']) != set(ids):
-        raise ValueError('Project priority must contain every work task exactly once')
+    if github is None or 'priority' in definition:
+        priority = definition.get('priority')
+        if not isinstance(priority, list) or any(not isinstance(v, str) for v in priority) or len(priority) != len(ids) or set(priority) != set(ids):
+            raise ValueError('Project priority must contain every work task exactly once')
+    if github is not None and not github.get('project_id') and not any('issue_number' in row for row in work):
+        raise ValueError('GitHub binding requires project_id or a work issue_number')
     binding = {'definition': {'path': definition_path, 'sha256': digest(root / definition_path)},
                'argument': {'path': graph_path, 'sha256': digest(root / graph_path)},
                'sources': {'path': sources_path, 'sha256': digest(root / sources_path)}}
@@ -2543,6 +2800,95 @@ def _project_current(root, tasks, task_id):
     return definition, graph, binding
 
 
+def _project_history(root, tasks, task_id):
+    _project_current(root, tasks, task_id)
+    return {'project_id': task_id, 'revisions': [
+        {'revision': index + 1, 'project_sha256': content_hash(row['binding']), **row}
+        for index, row in enumerate(tasks[task_id]['project_history'])]}
+
+
+def _project_diff(root, tasks, task_id, from_revision=None, to_revision=None, definition_path=None):
+    history = _project_history(root, tasks, task_id)['revisions']
+    if definition_path is not None and to_revision is not None:
+        raise ValueError('Select a proposed definition or a saved to-revision')
+    before = from_revision if from_revision is not None else len(history) if definition_path else max(1, len(history) - 1)
+    after = to_revision if to_revision is not None else len(history)
+    if not 1 <= before <= len(history) or not 1 <= after <= len(history):
+        raise ValueError('Project revision is outside the saved history')
+    old = _project_read(root, tasks, task_id, history[before - 1]['binding']['definition']['path'])
+    new = _project_read(root, tasks, task_id, definition_path or history[after - 1]['binding']['definition']['path'])
+    changes = []
+    def compare(left, right, path):
+        if left == right:
+            return
+        if isinstance(left, dict) and isinstance(right, dict):
+            for key in sorted(set(left) | set(right)):
+                location = path + '/' + key.replace('~', '~0').replace('/', '~1')
+                if key not in left:
+                    changes.append({'path': location, 'operation': 'add', 'after': right[key]})
+                elif key not in right:
+                    changes.append({'path': location, 'operation': 'remove', 'before': left[key]})
+                else:
+                    compare(left[key], right[key], location)
+        else:
+            changes.append({'path': path, 'operation': 'replace', 'before': left, 'after': right})
+    for kind in ('definition', 'argument', 'sources'):
+        compare(gate.parse_json((root / old[2][kind]['path']).read_bytes()),
+                gate.parse_json((root / new[2][kind]['path']).read_bytes()), '/' + kind)
+    old_nodes = {row['node_id']: row for row in old[1]['nodes']}
+    new_nodes = {row['node_id']: row for row in new[1]['nodes']}
+    nodes = {key for key in set(old_nodes) | set(new_nodes) if old_nodes.get(key) != new_nodes.get(key)}
+    old_edges = {content_hash(row): row for row in old[1]['dependencies']}
+    new_edges = {content_hash(row): row for row in new[1]['dependencies']}
+    nodes.update((old_edges.get(key) or new_edges[key])['to'] for key in set(old_edges) ^ set(new_edges))
+    old_work = {row['task_id']: row for row in old[0]['work']}
+    new_work = {row['task_id']: row for row in new[0]['work']}
+    timing = set()
+    for key in set(old_work) | set(new_work):
+        left, right = old_work.get(key, {}), new_work.get(key, {})
+        if left.get('node_ids') != right.get('node_ids'):
+            nodes.update(left.get('node_ids', []))
+            nodes.update(right.get('node_ids', []))
+        if any(left.get(field) != right.get(field) for field in ('duration_hours', 'resources', 'release_hour', 'fixed_cost')):
+            timing.add(key)
+    resources = {key for key in set(old[0]['resources']) | set(new[0]['resources'])
+                 if old[0]['resources'].get(key) != new[0]['resources'].get(key)}
+    dates = any(old[0].get(key) != new[0].get(key) for key in
+                ('origin', 'data_date_hour', 'target_finish_hour', 'approved_finish_hour', 'budget', 'currency'))
+    dates |= ('github' not in old[0] or 'github' not in new[0]) and old[0].get('priority') != new[0].get('priority')
+    impacts = [_project_impact(root, tasks, task_id, sorted(nodes & {row['node_id'] for row in current[1]['nodes']}),
+                               resources=resources & set(current[0]['resources']),
+                               work_tasks=timing & {row['task_id'] for row in current[0]['work']}, deadline=dates, current=current)
+               for current in (old, new)]
+    affected = {(row['task_id'], row['output_id']): row for impact in impacts for row in impact['affected_outputs']}
+    impacted_tasks = sorted(set().union(*(set(impact['affected_task_ids']) for impact in impacts)))
+    scheduled = sorted(set().union(*(set(impact['schedule_task_ids']) for impact in impacts)))
+    impact = {'affected_task_ids': impacted_tasks, 'affected_outputs': list(affected.values()), 'schedule_task_ids': scheduled,
+              'allocation_reassessment_required': bool(scheduled) or old[0]['decision_rights'] != new[0]['decision_rights'],
+              'reusable_task_ids': sorted(set(new_work) - set(impacted_tasks)),
+              'reusable_outputs': [row for row in impacts[1]['reusable_outputs'] if (row['task_id'], row['output_id']) not in affected]}
+    if any('actions' in value for value in impacts):
+        impact['actions'] = {action: sorted(set().union(*(set(value.get('actions', {}).get(action, [])) for value in impacts)))
+                             for action in ('review', 'recalculate', 'regenerate', 'authority')}
+    impact['affected_issues'] = _project_issue_links([old[0], new[0]], impacted_tasks)
+    impact['schedule_issues'] = _project_issue_links([old[0], new[0]], scheduled)
+    return {'project_id': task_id, 'from_revision': before, 'to_revision': None if definition_path else after,
+            'proposed': definition_path is not None, 'from_binding': old[2], 'to_binding': new[2],
+            'changes': changes, 'impact': impact}
+
+
+def _project_issue_links(definitions, task_ids):
+    links = {}
+    for definition in definitions:
+        if 'github' not in definition:
+            continue
+        for row in definition['work']:
+            if row['task_id'] in task_ids and 'issue_number' in row:
+                url = f"https://github.com/{definition['github']['repository']}/issues/{row['issue_number']}"
+                links[(row['task_id'], url)] = {'task_id': row['task_id'], 'url': url}
+    return list(links.values())
+
+
 def project_context(root, tasks, task):
     """Restore each applicable bound project's exact sources, from root to this task."""
     result = []
@@ -2559,7 +2905,8 @@ def project_context(root, tasks, task):
 
 
 def _project_observations(root, tasks, task_id, definition, graph, binding):
-    roles = {'project_judgment', 'project_acceptance', 'project_handover', 'project_outcome', 'project_actual'}
+    roles = {'project_judgment', 'project_acceptance', 'project_handover', 'project_outcome', 'project_actual',
+             'project_finding', 'project_interpretation', 'project_open_decision'}
     result = []
     for key, task in tasks.items():
         if not _project_descendant(tasks, key, task_id):
@@ -2597,9 +2944,16 @@ def _project_observations(root, tasks, task_id, definition, graph, binding):
             statuses = {'project_judgment': {'supported', 'refuted', 'proposed'},
                         'project_acceptance': {'proposed', 'accepted', 'rejected'},
                         'project_handover': {'proposed', 'handed_over', 'rejected'},
-                        'project_outcome': {'proposed', 'observed'}, 'project_actual': {'proposed', 'actual'}}
+                        'project_outcome': {'proposed', 'observed'}, 'project_actual': {'proposed', 'actual'},
+                        'project_finding': {'observed'}, 'project_interpretation': {'recorded', 'proposed'},
+                        'project_open_decision': {'open', 'resolved'}}
             if value['status'] not in statuses[role]:
                 continue
+            if role in {'project_finding', 'project_interpretation', 'project_open_decision'}:
+                if not isinstance(value.get('text'), str) or not value['text'].strip():
+                    continue
+                if role == 'project_open_decision' and (not isinstance(value.get('decision_id'), str) or not value['decision_id'].strip()):
+                    continue
             if role in {'project_acceptance', 'project_handover'} and value['status'] in {'accepted', 'handed_over'}:
                 if definition['decision_rights'].get(role.removeprefix('project_')) != value['actor']:
                     continue
@@ -2624,6 +2978,13 @@ def _project_allocation(projects, observations):
     """Apply current economic judgments through the projects' existing decision rights."""
     bindings = {key: content_hash(binding) for key, _, _, binding in projects}
     baseline = [key for _, definition, _, _ in projects for key in definition['priority']]
+    if any('github' in definition for _, definition, _, _ in projects):
+        local = {project[0]: _project_allocation([project], observations) for project in projects if 'github' not in project[1]}
+        priority = [task_id for key, definition, _, _ in projects
+                    for task_id in (local[key]['priority'] if key in local else definition['priority'])]
+        return {'status': 'decision-required' if any(row['status'] == 'decision-required' for row in local.values()) else 'github',
+                'project_bindings': bindings, 'priority': priority,
+                'records': [record for row in local.values() for record in row['records']]}
     rights = {key: definition['decision_rights'].get('allocation') for key, definition, _, _ in projects}
     candidates = {}
     for rows in observations.values():
@@ -2813,11 +3174,27 @@ def _project_forecast(root, tasks, projects, priority=None, capacities=None, obs
             'schedule': schedules, 'projects': summaries}
 
 
-def _project_view(root, tasks, task_id, role, view, owner, others, priority=None, capacities=None):
+def _project_view(root, tasks, task_id, role, view, owner, others, priority=None, capacities=None, github=()):
     ids = [task_id] + others
     if len(ids) != len(set(ids)):
         raise ValueError('Duplicate selected project')
     projects = [(key, *_project_current(root, tasks, key)) for key in ids]
+    snapshots = [gate.parse_json((root / relative(root, path)).read_bytes()) for path in github]
+    if any(not isinstance(row, dict) or not isinstance(row.get('repository'), str)
+           or row.get('project') is not None and not isinstance(row['project'], dict) for row in snapshots):
+        raise ValueError('GitHub snapshots require a repository and a Project object or null')
+    if any(not any(row.get('repository', '').casefold() == definition.get('github', {}).get('repository', '').casefold()
+                   and (row.get('project') or {}).get('id') == definition.get('github', {}).get('project_id')
+                   for _, definition, _, _ in projects if 'github' in definition) for row in snapshots):
+        raise ValueError('GitHub snapshot does not match a selected project binding')
+    external = {key: _project_github(root, definition, snapshots) for key, definition, _, _ in projects
+                if 'github' in definition and view != 'story'}
+    scheduled = [(key, {**definition, 'priority': external[key]['execution_priority']} if key in external else definition,
+                  graph, binding) for key, definition, graph, binding in projects]
+    human = {execution_id: row for data in external.values() for row in data['tasks'] for execution_id in row['execution_task_ids']}
+    external_tasks = {row['task_id'] for key, definition, _, _ in projects if key in external for row in definition['work']}
+    def selected_owner(key):
+        return owner is None or (owner in human.get(key, {}).get('assignees', []) if key in external_tasks else tasks[key]['owner'] == owner)
     dependencies = {key: _project_impact(root, tasks, key, [], references=True, current=(definition, graph, binding))
                     for key, definition, graph, binding in projects if any(n.get('references') for n in graph['nodes'])}
     if (priority is not None or capacities is not None) and view != 'forecast':
@@ -2826,25 +3203,51 @@ def _project_view(root, tasks, task_id, role, view, owner, others, priority=None
         raise ValueError('An argument story belongs to one project')
     observations = {key: _project_observations(root, tasks, key, definition, graph, binding)
                     for key, definition, graph, binding in projects}
-    forecast = _project_forecast(root, tasks, projects, priority, capacities, observations) if view != 'story' else None
+    forecast = _project_forecast(root, tasks, scheduled, priority, capacities, observations) if view != 'story' else None
     if dependencies and forecast is not None:
         forecast['reference_impact'] = dependencies
         held = {tid for impact in dependencies.values() for tid in impact['actions']['authority']}
         forecast['next_tasks'] = [tid for tid in forecast['next_tasks'] if tid not in held]
     if view == 'forecast':
         forecast['role'] = role
+        forecast['github'] = {key: {name: value for name, value in data.items() if name not in {'tasks', 'execution_priority', 'project'}}
+                              for key, data in external.items()}
+        for key, row in forecast['schedule'].items():
+            if row['project_id'] in external:
+                row['execution_owner'] = row.pop('owner')
+                row['assignees'] = human.get(key, {}).get('assignees', [])
+                row['issue_url'] = human.get(key, {}).get('url')
         if owner is not None:
-            forecast['schedule'] = {key: value for key, value in forecast['schedule'].items() if tasks[key]['owner'] == owner}
-            forecast['next_tasks'] = [key for key in forecast['next_tasks'] if tasks[key]['owner'] == owner]
+            forecast['schedule'] = {key: value for key, value in forecast['schedule'].items() if selected_owner(key)}
+            forecast['next_tasks'] = [key for key in forecast['next_tasks'] if selected_owner(key)]
         return forecast
     definition, graph, binding = projects[0][1:]
     obs = observations[task_id]
-    result = {'project_id': task_id, 'role': role, 'view': view, 'binding': binding,
+    decisions = (tasks[task_id].get('task_context') or {}).get('adopted_decisions', [])
+    result = {'artifact_kind': 'project-view', 'generated_at': now(), 'project_id': task_id, 'role': role, 'view': view, 'binding': binding,
+              'plan_revision': len(tasks[task_id]['project_history']),
               'argument_sha256': _project_argument().argument_sha256(graph),
               'central_question': graph['central_question'], 'central_answer': graph['central_answer'],
               'problem': graph.get('problem'), 'observations': obs,
               'outcome': [r for r in obs if r['role'] == 'project_outcome' and r['value']['status'] == 'observed'] or None,
               'target_finish_hour': definition['target_finish_hour'], 'approved_finish_hour': definition['approved_finish_hour']}
+    result['findings'] = [row for row in obs if row['role'] == 'project_finding']
+    result['interpretations'] = [row for row in obs if row['role'] == 'project_interpretation']
+    result['open_decisions'] = [row for row in obs if row['role'] == 'project_open_decision' and row['value']['status'] == 'open'
+                                and row['value']['decision_id'] not in {decision['decision_id'] for decision in decisions}]
+    result['adopted_decisions'] = decisions
+    result['plan'] = definition
+    if task_id in external:
+        data = external[task_id]
+        result['github'] = {key: value for key, value in data.items() if key not in {'tasks', 'execution_priority', 'project'}}
+        result['tasks'] = [row for row in data['tasks'] if owner is None or owner in row['assignees']]
+        for row in result['tasks']:
+            row['links']['plan'] = binding
+            row['links']['outputs'] = [{'task_id': key, 'output_id': output_id, 'kind': output['kind'], 'version': output['version']}
+                                      for key in row['execution_task_ids'] for output_id, output in tasks[key]['outputs'].items()]
+        for group in ('completed', 'active', 'next', 'blocked'):
+            result[group] = [row for row in result['tasks'] if row['bucket'] == group]
+        result['completed'].sort(key=lambda row: row['closed_at'] or row['updated_at'] or '', reverse=True)
     if dependencies:
         result['reference_impact'] = dependencies
     if view == 'story':
@@ -2860,7 +3263,7 @@ def _project_view(root, tasks, task_id, role, view, owner, others, priority=None
                  'required_actions': tasks[row['task_id']]['required_actions'],
                  'outputs': {key: {'kind': output['kind'], 'version': output['version']}
                              for key, output in tasks[row['task_id']]['outputs'].items()}}
-                for row in definition['work'] if owner is None or tasks[row['task_id']]['owner'] == owner]
+                for row in definition['work'] if selected_owner(row['task_id'])]
         result['work'] = work
         result['allocation'] = forecast['allocation']
         result['next_tasks'] = [key for key in forecast['next_tasks'] if key in {row['task_id'] for row in work}]
@@ -2871,6 +3274,21 @@ def _project_view(root, tasks, task_id, role, view, owner, others, priority=None
                 row['current_completion'] = row['current_completion'] and not row['dependency_actions']
             row['priority_rank'] = forecast['priority'].index(row['task_id']) + 1
             row['schedule'] = forecast['schedule'].get(row['task_id'])
+            if task_id in external:
+                row['execution'] = {key: row[key] for key in ('owner', 'status', 'after', 'next_action')}
+                issue = human.get(row['task_id'], {})
+                row.update({key: issue.get(key) for key in ('title', 'url', 'status', 'priority', 'due_date', 'classification', 'progress')})
+                row['assignees'] = issue.get('assignees', [])
+                row['owner'] = ', '.join(row['assignees']) or None
+                row['dependencies'] = issue.get('dependencies')
+                row['links'] = issue.get('links')
+                if row['schedule']:
+                    row['schedule']['execution_owner'] = row['schedule'].pop('owner')
+                    row['schedule']['assignees'] = row['assignees']
+        if task_id not in external:
+            result['completed'] = [row for row in work if row['current_completion']]
+            result['active'] = [row for row in work if row['status'] == 'running']
+            result['next'] = [row for row in work if row['task_id'] in result['next_tasks'] and row['status'] == 'queued']
     if view == 'workplan':
         result['priority'] = [key for key in forecast['priority'] if any(row['task_id'] == key for row in work)]
         result['resources'] = forecast['resources']
@@ -2881,7 +3299,7 @@ def _project_view(root, tasks, task_id, role, view, owner, others, priority=None
 
 def _project_impact(root, tasks, task_id, nodes, resources=(), work_tasks=(), deadline=False, others=(), *, references=False, changes=None, current=None):
     definition, graph, binding = current if current is not None else _project_current(root, tasks, task_id)
-    if not nodes and not resources and not work_tasks and not deadline and not references and not changes:
+    if not nodes and not resources and not work_tasks and not deadline and not references and not changes and current is None:
         raise ValueError('Project impact requires a node, resource, task or deadline change')
     ids = [task_id, *others]
     if len(set(ids)) != len(ids):
@@ -2955,6 +3373,8 @@ def _project_impact(root, tasks, task_id, nodes, resources=(), work_tasks=(), de
             classified[action] = sorted(set(classified[action]) | {key})
     return {'binding': binding, **result, **({'actions': classified} if typed else {}), 'affected_task_ids': sorted(affected),
             'schedule_task_ids': sorted(schedule_tasks), 'allocation_reassessment_required': bool(schedule_tasks),
+            'affected_issues': _project_issue_links(definitions.values(), affected),
+            'schedule_issues': _project_issue_links(definitions.values(), schedule_tasks),
             'reusable_task_ids': sorted(set(work) - affected),
             'affected_outputs': [{'task_id': key, 'output_id': oid, 'version': row['version']} for key, oid, row in sorted(outputs) if (key, oid) in affected_outputs],
             'reusable_outputs': [{'task_id': key, 'output_id': oid, 'version': row['version']} for key, oid, row in sorted(outputs)
@@ -3095,6 +3515,13 @@ def main():
     project_bind.add_argument('id')
     project_bind.add_argument('--definition', required=True)
     project_bind.add_argument('--user-change')
+    project_history = sub.add_parser('project-history')
+    project_history.add_argument('id')
+    project_diff = sub.add_parser('project-diff')
+    project_diff.add_argument('id')
+    project_diff.add_argument('--from-revision', type=int)
+    project_diff.add_argument('--to-revision', type=int)
+    project_diff.add_argument('--definition', help='Compare a proposed immutable definition with the saved plan')
     project_view = sub.add_parser('project-view')
     project_view.add_argument('id')
     project_view.add_argument('--role', required=True, choices=['contribute', 'manage'])
@@ -3103,6 +3530,8 @@ def main():
     project_view.add_argument('--project', action='append', default=[])
     project_view.add_argument('--priority', action='append', help='Candidate global order; repeat for every selected work task')
     project_view.add_argument('--capacity', help='Candidate resource capacities as a JSON object')
+    project_view.add_argument('--github', action='append', default=[], metavar='SNAPSHOT', help='Current connector read snapshot; repeat for a portfolio')
+    project_view.add_argument('--save', help='Save this derived view as project-relative JSON')
     project_impact = sub.add_parser('project-impact')
     project_impact.add_argument('id')
     project_impact.add_argument('--node', action='append', default=[])
@@ -3112,6 +3541,9 @@ def main():
     project_impact.add_argument('--project', action='append', default=[])
     project_impact.add_argument('--references', action='store_true', help='Compare selected owner references with their adopted versions')
     project_impact.add_argument('--change', action='append', default=[], metavar='NODE=ACTION', help='Classify an actual node change: review, recalculate, regenerate or authority')
+    project_impact.add_argument('--definition', help='Calculate impact from a proposed versioned plan')
+    project_impact.add_argument('--from-revision', type=int)
+    project_impact.add_argument('--to-revision', type=int)
     view = sub.add_parser('inspect')
     view.add_argument('--stale-seconds', type=int, default=1800)
     view.add_argument('--invalidate', action='store_true')
@@ -3132,7 +3564,7 @@ def main():
     if Path(args.store).parts[:2] != ('.agents', 'state'):
         raise ValueError('Operational store must stay in the local .agents/state directory')
     path = root / args.store
-    mutate = args.command not in {'show', 'find', 'summary', 'prepare-context', 'analyze', 'project-view', 'project-impact'} and not (args.command == 'inspect' and not args.invalidate)
+    mutate = args.command not in {'show', 'find', 'summary', 'prepare-context', 'analyze', 'project-view', 'project-impact', 'project-history', 'project-diff'} and not (args.command == 'inspect' and not args.invalidate)
     if args.command == 'optimization':
         mutate = args.optimization_action in {'on', 'off', 'configure', 'protect'}
     def execute():
@@ -3236,12 +3668,30 @@ def main():
                 if task['status'] == 'completed':
                     transition(task, 'blocked', 'Check the changed project binding against preserved outputs', 'interrupted')
             output = {'project_id': args.id, 'binding': binding}
+        elif args.command == 'project-history':
+            output = _project_history(root, tasks, args.id)
+        elif args.command == 'project-diff':
+            output = _project_diff(root, tasks, args.id, args.from_revision, args.to_revision, args.definition)
         elif args.command == 'project-view':
             capacities = gate.parse_json(args.capacity.encode('utf-8')) if args.capacity is not None else None
             if args.capacity is not None and not isinstance(capacities, dict):
                 raise ValueError('Candidate capacities must be a JSON object')
             output = _project_view(root, tasks, args.id, args.role, args.view, args.owner, args.project,
-                                   args.priority, capacities)
+                                   args.priority, capacities, args.github)
+            if args.save:
+                destination = relative(root, args.save, exists=False)
+                sources = {ref['path'] for task in tasks.values() for revision in task.get('project_history', [])
+                           for ref in revision['binding'].values()}
+                if Path(destination).parts[:2] == ('.agents', 'state') or destination in sources or destination in args.github:
+                    raise ValueError('Save a project view outside canonical sources and the task store')
+                target = root / destination
+                if target.exists():
+                    previous = gate.parse_json(target.read_bytes())
+                    if not isinstance(previous, dict) or previous.get('artifact_kind') != 'project-view':
+                        raise ValueError('Project view save can replace an existing derived project-view only')
+                output.update(artifact_kind='project-view', generated_at=now(), project_id=args.id, view=args.view)
+                target.parent.mkdir(parents=True, exist_ok=True)
+                save(target, output)
         elif args.command == 'project-impact':
             changes = {}
             for value in args.change:
@@ -3249,8 +3699,13 @@ def main():
                 if not separator or not key or key in changes:
                     raise ValueError('Use distinct NODE=ACTION changes')
                 changes[key] = action
-            output = _project_impact(root, tasks, args.id, args.node, args.resource, args.task, args.deadline, args.project,
-                                     references=args.references, changes=changes if args.change else None)
+            if args.definition is not None or args.from_revision is not None or args.to_revision is not None:
+                if args.node or args.resource or args.task or args.deadline or args.project or args.references or args.change:
+                    raise ValueError('Compare plan versions separately from explicit impact selectors')
+                output = _project_diff(root, tasks, args.id, args.from_revision, args.to_revision, args.definition)
+            else:
+                output = _project_impact(root, tasks, args.id, args.node, args.resource, args.task, args.deadline, args.project,
+                                         references=args.references, changes=changes if args.change else None)
         elif hasattr(args, 'id'):
             task = tasks[args.id]
             if args.command == 'optimization':
@@ -3733,7 +4188,7 @@ def main():
                 for key in tasks:
                     output['tasks'][key]['stages'] = stages(root, tasks, key)
                     output['tasks'][key]['context_id'] = context_id(tasks[key])
-        elif args.command in {'prepare-context', 'analyze', 'converge', 'run-check', 'optimization', 'project-bind', 'project-view', 'project-impact'}:
+        elif args.command in {'prepare-context', 'analyze', 'converge', 'run-check', 'optimization', 'project-bind', 'project-view', 'project-impact', 'project-history', 'project-diff'}:
             pass
         else:
             output = {'command': args.command, 'tasks': len(tasks)}
