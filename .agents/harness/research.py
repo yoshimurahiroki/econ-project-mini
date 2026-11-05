@@ -1337,6 +1337,9 @@ def run(root, store, manifest, parent=None, retry_failed=None, retry_reason=None
 
 
 def main():
+    if len(sys.argv) > 1 and sys.argv[1] == 'gallery':
+        import research_artifacts
+        return research_artifacts.gallery_main(sys.argv[2:])
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--root', type=Path, default=Path.cwd())
     parser.add_argument('--store', default='.agents/state/team.json')
