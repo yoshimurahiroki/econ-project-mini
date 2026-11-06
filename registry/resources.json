@@ -5751,12 +5751,7 @@
       "rule_id": "result-artifacts.all",
       "resource_id": "result-artifacts",
       "section_id": "all",
-      "requires": [
-        "research-artifacts.all",
-        "research-runner.all",
-        "research-causal.all",
-        "research-markets.all"
-      ],
+      "requires": [],
       "conditional_requires": [],
       "optional_examples": []
     },

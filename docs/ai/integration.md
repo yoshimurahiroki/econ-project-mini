@@ -12,6 +12,8 @@
 6. Review the integrated result and verify the changed behavior through its actual entry point.
 7. Save the requested result and producing evidence in its existing destination; reuse matching completed work after restoring the governing context.
 
+Saved-result registration and display edits select `research_result_artifacts` and read its complete result-artifact contract. The resource dependencies keep the executable gallery, renderer and examples in the package. They do not make every producing estimator's source a required reading. Select the corresponding method condition when designing or changing that calculation, and read the owning source when changing its code. This separates the registry's existing rule dependencies from its executable-resource dependencies.
+
 The lead owns economic choices, decomposition, integration and the final result. The implementer executes adopted bounded specifications; the retriever performs settled retrieval and extraction; the specialist receives the consequential core after the lead's actual attempts and cause-specific repairs leave it unresolved. TEAM owns role authority and delegation; each native host configuration owns model selection. The five specialist owners and seven writing modes retain their specialist methods and actual completion contracts.
 
 `project-work:clarify` resolves requested task requirements and work-approach choices; `project-work:prompt` creates or improves the resulting executable prompt. Both use the existing task sources, CORE, PROSE, TEAM and state requirements mapping when needed. Settled inputs go directly to the requested output. An ordinary research, writing or implementation request keeps its actual specialist and execution responsibility.
