@@ -42,6 +42,7 @@ R_METHODS = {
     'rddensity': ('rddensity', 'rddensity'),
     'rdpower': ('rdpower', 'rdpower'),
     'grf': ('grf', 'causal_forest'),
+    'iv_ar_robust': ('ivDiag', 'AR_test'),
 }
 
 
@@ -553,7 +554,6 @@ def select_method(request):
     else:
         raise ValueError('unsupported design; use the documented selection contracts')
     if method == 'iv_ar_robust':
-        owner = 'external official R entry: ivDiag::AR_test'
         required_inputs = ['data','Y: outcome column','D: one endogenous treatment column',
             'Z: excluded instrument columns','controls: exogenous control columns',
             'FE: adopted fixed effects','cl: adopted cluster columns','weights: adopted weight column','alpha']
@@ -572,14 +572,7 @@ def select_method(request):
         native_alpha = forward_options.get('args',{}).get('alpha')
         if native_alpha is not None and abs(native_alpha-alpha)>1e-12:
             raise ValueError('options.args.alpha must agree with the selected inference level')
-        required_native_options = {'CI':True,'alpha':alpha}
-        external_implementation = {'language':'R','function':'ivDiag::AR_test','version':'1.0.8',
-            'source':'https://github.com/apoorvalal/ivDiag/blob/cbc391f4b1013c837743593bcde54efd5d733fb7/R/AR_test.R',
-            'covariance':'heteroskedastic without cl; clustered with cl',
-            'numerical_method':'official quadratic inversion for one instrument; transformed whole-line search with root refinement for multiple instruments',
-            'outputs':['Fstat','ci','ci.print','bounded'],
-            'confidence_level':1-alpha,
-            'execution':'invoke the official function from the adopted project analysis; this runner performs no external fit'}
+        required_native_options = {'args.CI':True,'args.alpha':alpha}
     if method == 'fixes_event_study' and target_kind == 'att':
         method = 'fixes_att'; owner = 'external official R entry: fixes::att'
         required_native_options = {'aggregation':'simple','estimator':'adopted cs or bjs'}
@@ -635,7 +628,7 @@ def select_method(request):
     # reviewable proposal. Selection never amends or executes the adopted fit.
     selected_options = deepcopy(forward_options)
     option_changes = []
-    if method in ('sunab','grf','staggered_did','did_multiplegt_dyn','nonabs_did'):
+    if method in ('sunab','grf','staggered_did','did_multiplegt_dyn','nonabs_did','iv_ar_robust'):
         for field, value in required_native_options.items():
             cursor = selected_options
             path = field.split('.', 1)
@@ -645,7 +638,8 @@ def select_method(request):
                 cursor = cursor.setdefault(path[0], {})
             key = path[-1]
             defaults = {'panel':True,'aggregation.type':'dynamic','aggregation':'period',
-                        'aggregation.target.sample':'all','args.normalized':False}
+                        'aggregation.target.sample':'all','args.normalized':False,
+                        'args.CI':True,'args.alpha':.05}
             supplied = cursor.get(key, defaults.get(field))
             if supplied != value:
                 option_changes.append({'field':'options.'+field,'supplied':supplied,'selected':value})
@@ -698,6 +692,8 @@ def select_method(request):
         'family':comparison.get('inference_family',comparison.get('family',
             inherited_inference.get('inference_family',inherited_inference.get('family')))),
         'official_output_required':True}
+    if method == 'iv_ar_robust':
+        inference_contract['confidence_level'] = 1-alpha
     candidate_comparisons = []
     for candidate in alternatives:
         if candidate['method'] == method:
@@ -1027,9 +1023,10 @@ def _official_r(spec, spec_path):
         'honest_did': {'pre_terms','post_terms','restriction'},
         'wild_cluster_bootstrap': set(), 'club_sandwich': set(),
         'rdrobust_r': {'running'}, 'rddensity': {'running'}, 'rdpower': {'running'}, 'grf': {'treatment'},
+        'iv_ar_robust': set(),
     }[method]
     optional = {'args','columns','seed','definitions'}
-    if method in ('ols_r','fixest_ols','fixest_ppml','negative_binomial_r','sunab','fixes_event_study'): optional.add('fixed_effects')
+    if method in ('ols_r','fixest_ols','fixest_ppml','negative_binomial_r','sunab','fixes_event_study','iv_ar_robust'): optional.add('fixed_effects')
     if method == 'sunab': optional |= {'sunab','aggregation','never_treated','confidence_level'}
     if method == 'did2s': optional |= {'event_variable','reference_event_time','confidence_level'}
     if method == 'fixes_event_study': optional |= {'never_treated'}
@@ -1044,6 +1041,11 @@ def _official_r(spec, spec_path):
         raise ValueError('options.args and options.columns must be objects')
     if not isinstance(opt.get('definitions', {}), dict):
         raise ValueError('options.definitions must contain the adopted comparison and inference definitions')
+    if method == 'iv_ar_robust':
+        if opt.get('columns'):
+            raise ValueError('ivDiag takes column names in options.args.cl and options.args.weights')
+        if opt.get('args', {}).get('CI', True) is not True:
+            raise ValueError('iv_ar_robust requires CI=true to save the Anderson-Rubin confidence set')
     if method == 'rdrobust_r' and 'plot' in opt:
         plot_options = {'p','nbins','binselect','scale','kernel','h','covs_eval','covs_drop',
                         'ginv.tol','support','masspoints','ci'}
@@ -1092,6 +1094,7 @@ suppressPackageStartupMessages(library(jsonlite))
 s <- fromJSON(args[1], simplifyVector=TRUE); o <- s$options; method <- s$method
 pkg <- args[3]; fname <- args[4]
 if(!requireNamespace(pkg,quietly=TRUE)) stop(paste('Install the selected official package:',pkg))
+if(method=='iv_ar_robust' && packageVersion('ivDiag') < '1.0.8') stop('iv_ar_robust requires ivDiag >= 1.0.8 for whole-line confidence-set inversion')
 fun <- getExportedValue(pkg,fname)
 formal_names <- names(formals(fun))
 invoke <- function(f, a, additional=character()) {
@@ -1255,6 +1258,26 @@ if(method %in% c('ols_r','fixest_ols','fixest_ppml','negative_binomial_r','sunab
 } else if(method=='grf') {
   owned <- list(X=as.matrix(d[,s$regressors,drop=FALSE]),Y=d[[s$outcome]],W=d[[o$treatment]])
   kind <- 'heterogeneity'
+} else if(method=='iv_ar_robust') {
+  model_columns <- unique(c(s$outcome,s$endogenous,s$instruments,s$regressors,o$fixed_effects,call_args$cl,call_args$weights))
+  if(!all(model_columns %in% names(d))) stop('Missing adopted IV outcome, treatment, instrument, control, effect, cluster or weight columns')
+  if(length(intersect(c(s$outcome,s$endogenous),c(s$instruments,s$regressors)))) stop('IV outcome and endogenous treatment must be distinct from instruments and controls')
+  if(length(intersect(s$instruments,s$regressors))) stop('Excluded instruments must be distinct from exogenous controls')
+  keep <- complete.cases(d[,model_columns,drop=FALSE])
+  diagnostics$excluded_missing_ids <- I(ids[!keep])
+  diagnostics$input_rows <- length(ids)
+  d <- d[keep,,drop=FALSE]; ids <- ids[keep]
+  if(!nrow(d)) stop('The adopted IV sample contains no complete observations')
+  owned <- list(data=d,Y=s$outcome,D=s$endogenous[[1]],Z=s$instruments,controls=s$regressors,FE=o$fixed_effects)
+  if(is.null(call_args$CI)) call_args$CI <- TRUE
+  if(is.null(call_args$alpha)) call_args$alpha <- .05
+  if(is.null(call_args$prec)) call_args$prec <- 12L
+  if(!is.numeric(call_args$alpha) || length(call_args$alpha)!=1L || !is.finite(call_args$alpha) || call_args$alpha<=0 || call_args$alpha>=1) stop('AR alpha must be between zero and one')
+  confidence_level <- 1-call_args$alpha
+  kind <- 'iv_confidence_set'
+  display_metadata$interval_type <- 'Anderson-Rubin test inversion'
+  display_metadata$inference_unit <- if(is.null(call_args$cl)) s$id else call_args$cl
+  display_metadata$covariance <- if(is.null(call_args$cl)) 'heteroskedastic robust' else 'cluster robust'
 }
 if(length(intersect(names(owned),names(call_args)))) stop(paste('options.args cannot replace owned model inputs:',paste(intersect(names(owned),names(call_args)),collapse=', ')))
 all_args <- c(owned,call_args)
@@ -1464,10 +1487,59 @@ if(method %in% c('ols_r','fixest_ols','fixest_ppml','negative_binomial_r','sunab
 } else if(method=='wild_cluster_bootstrap') {
   rows <- data.frame(term=paste(fit$param,collapse='+'),p_value=fit$p_val)
   if(length(fit$conf_int)==2) { rows$ci_low <- fit$conf_int[1]; rows$ci_high <- fit$conf_int[2] }
+} else if(method=='iv_ar_robust') {
+  stage_args <- c(all_args[intersect(names(all_args),c('data','Y','D','Z','controls','FE','cl','weights','prec'))],
+    list(bootstrap=FALSE,run.AR=FALSE,parallel=FALSE))
+  stage_fit <- invoke(ivDiag::ivDiag,stage_args)
+  if(stage_fit$N != length(ids)) stop('Official IV stages changed the complete-case sample')
+  ends <- fit$ci
+  empty <- length(ends)==1L && is.na(ends)
+  if(empty) {
+    rows <- data.frame(term=s$endogenous[[1]],set_type='empty')
+    intervals <- list(); set_type <- 'empty'
+  } else {
+    if(!length(ends) || length(ends)%%2L || anyNA(ends)) stop('Unsupported official AR confidence-set endpoint structure')
+    lower <- ends[seq.int(1L,length(ends),by=2L)]
+    upper <- ends[seq.int(2L,length(ends),by=2L)]
+    rows <- data.frame(term=s$endogenous[[1]],lower=ifelse(is.finite(lower),lower,NA_real_),upper=ifelse(is.finite(upper),upper,NA_real_),
+      lower_unbounded=is.infinite(lower),upper_unbounded=is.infinite(upper),set_type='interval')
+    intervals <- lapply(seq_along(lower),function(j) list(lower=if(is.finite(lower[j])) lower[j] else NULL,
+      upper=if(is.finite(upper[j])) upper[j] else NULL))
+    set_type <- if(length(ends)>2L) 'disconnected' else if(all(is.infinite(ends))) 'real_line' else if(any(is.infinite(ends))) 'unbounded' else 'bounded'
+  }
+  diagnostics$anderson_rubin <- list(confidence_level=confidence_level,intervals=intervals,set_type=set_type,
+    null_endpoint='unbounded',null_test=as.list(fit$Fstat),printed_set=fit$ci.print,bounded=fit$bounded)
+  diagnostics$observations <- stage_fit$N
+  diagnostics$n_clusters <- stage_fit$N_cl
+  diagnostics$cluster_columns <- call_args$cl
+  diagnostics$cluster_counts <- setNames(lapply(call_args$cl,function(column) length(unique(d[[column]]))),call_args$cl)
+  diagnostics$stages <- stage_fit
+  diagnostics$stage_function <- 'ivDiag::ivDiag'
+  diagnostics$stage_arguments <- stage_args[setdiff(names(stage_args),'data')]
+  for(stage in c('first_stage','reduced_form','2sls')) {
+    tab <- switch(stage,first_stage=stage_fit$est_fs,reduced_form=stage_fit$est_rf,`2sls`=stage_fit$est_2sls)
+    names_interval <- if(stage=='2sls') c('CI 2.5%','CI 97.5%') else c('CI.2.5%','CI.97.5%')
+    stage_rows <- data.frame(term=if(stage=='2sls') s$endogenous[[1]] else rownames(tab),estimate=tab[,'Coef'],
+      se=tab[,'SE'],p_value=tab[,'p.value'],ci_low=tab[,names_interval[1]],ci_high=tab[,names_interval[2]],stage=stage)
+    stage_unit <- switch(stage,first_stage=o$definitions$first_stage_unit,reduced_form=o$definitions$reduced_form_unit,`2sls`=s$unit)
+    if(is.null(stage_unit)) stage_unit <- paste(if(stage=='first_stage') s$endogenous[[1]] else s$outcome,'per instrument unit')
+    extra_displays[[paste0('iv_',stage)]] <- list(kind=switch(stage,first_stage='iv_first_stage',reduced_form='iv_reduced_form',`2sls`='regression'),
+      rows=stage_rows,metadata=list(stage=stage,unit=stage_unit,confidence_level=.95,interval_type='conventional Wald',
+        estimand=switch(stage,first_stage=paste('First-stage linear-projection coefficients for',s$endogenous[[1]]),
+          reduced_form=paste('Reduced-form linear-projection coefficients for',s$outcome),`2sls`=paste('2SLS coefficient on',s$endogenous[[1]])),
+        interval_constant=1.96,instruments=I(s$instruments),outcome=if(stage=='first_stage') s$endogenous[[1]] else s$outcome,
+        estimator=if(stage=='2sls') '2SLS' else 'OLS',engine='ivDiag::ivDiag',
+        producer=list(`function`='ivDiag::ivDiag',version=as.character(packageVersion('ivDiag')),signature=names(formals(ivDiag::ivDiag))),
+        effective_options=diagnostics$stage_arguments,
+        sample=list(observations=stage_fit$N,included_ids_ref='sample.included_ids'),
+        inference_unit=display_metadata$inference_unit,covariance=display_metadata$covariance))
+  }
 }
 if(!is.null(estimates)) rows <- estimates
 # Retain the native package result for subsequent official post-estimation.
-native <- serialize(list(fit=fit,data=d,ids=ids),NULL,version=3)
+native_record <- list(fit=fit,data=d,ids=ids)
+if(method=='iv_ar_robust') native_record$stages <- stage_fit
+native <- serialize(native_record,NULL,version=3)
 clean <- function(x) {
   if(is.null(x) || is.atomic(x)) return(x)
   if(is.data.frame(x)) return(x)
@@ -1490,6 +1562,7 @@ obj <- list(engine=paste0(pkg,'::',fname),versions=setNames(list(as.character(pa
   estimates=estimates,covariance=covariance,covariance_terms=if(is.null(covariance_terms)) rownames(covariance) else covariance_terms,diagnostics=clean(diagnostics),
   sample=list(included_ids=I(as.character(ids))),display=list(kind=kind,rows=rows,metadata=display_metadata),displays=extra_displays,
   native_fit=list(format='R-serialize-v3',data=base64_enc(native)))
+if(method=='iv_ar_robust') obj$versions$lfe <- as.character(packageVersion('lfe'))
 obj$confidence_level <- if(method=='rdrobust_r' && !is.null(call_args$level)) call_args$level/100 else if(method=='wild_cluster_bootstrap' && !is.null(call_args$sign_level)) 1-call_args$sign_level else if(method=='honest_did' && !is.null(call_args$alpha)) 1-call_args$alpha else confidence_level
 write_json(obj,args[5],auto_unbox=TRUE,digits=16,na='null',null='null',dataframe='rows')
 '''
@@ -1538,6 +1611,18 @@ write_json(obj,args[5],auto_unbox=TRUE,digits=16,na='null',null='null',dataframe
         block['metadata'] = {**result['display']['metadata'],**block.get('metadata',{})}
     result['diagnostics']['engine_messages'] = proc.stderr.strip()
     result['statistics'] = {}
+    if method == 'iv_ar_robust':
+        ar = result['diagnostics']['anderson_rubin']
+        result['inference'] = {'confidence_level':ar['confidence_level'],
+            'confidence_sets':{spec['endogenous'][0]:ar['intervals']},
+            'set_type':ar['set_type'],'null_test':ar['null_test'],
+            'interval_type':'Anderson-Rubin test inversion','source':result['engine']}
+        result['sample']['input_rows'] = result['diagnostics']['input_rows']
+        result['sample']['excluded_missing_ids'] = result['diagnostics']['excluded_missing_ids']
+        for name, display in result['displays'].items():
+            for row in display['rows']:
+                result['statistics'][f'{name}.coefficient.{row["term"]}'] = {
+                    'value':row['estimate'],'unit':display['metadata']['unit']}
     if result['estimates']:
         estimates = result.pop('estimates')
         if any(r.get('estimate') is None or not np.isfinite(r['estimate']) for r in estimates):
@@ -1582,13 +1667,13 @@ def run(spec, spec_path):
             raise ValueError(f'{key} must be a list of distinct column names')
     if method == 'shift_share':
         if len(spec['endogenous']) != 1 or spec['instruments']: raise ValueError('shift_share requires one endogenous regressor and no input instruments')
-    elif method in ('iv_gmm','iv_ar'):
+    elif method in ('iv_gmm','iv_ar','iv_ar_robust'):
         if not spec['endogenous'] or len(spec['instruments']) < len(spec['endogenous']):
             raise ValueError('IV GMM requires endogenous regressors and at least as many instruments')
     elif spec['endogenous'] or spec['instruments']:
         raise ValueError('endogenous and instruments are reserved for IV methods')
-    if method == 'iv_ar' and len(spec['endogenous']) != 1:
-        raise ValueError('iv_ar requires one endogenous regressor')
+    if method in ('iv_ar','iv_ar_robust') and len(spec['endogenous']) != 1:
+        raise ValueError('Anderson-Rubin methods require one endogenous regressor')
     if not isinstance(spec['options'],dict):
         raise ValueError('options must be an object')
     if method in R_METHODS:

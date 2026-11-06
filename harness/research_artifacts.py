@@ -31,7 +31,7 @@ GALLERY_KINDS = ('descriptive', 'sample_composition', 'distribution', 'time_seri
 PLOT_TYPES = ('table', 'bar', 'line', 'scatter', 'step', 'area', 'coefficient', 'event_study', 'density', 'ecdf', 'box',
               'att_gt', 'cohort_event', 'parallel_trends', 'rdd', 'iv_first_stage', 'iv_reduced_form',
               'iv_confidence_set', 'scm', 'scm_gap', 'scm_placebo', 'binned_scatter', 'smd', 'structural', 'geo')
-GALLERY_RENDER_VERSION = 6
+GALLERY_RENDER_VERSION = 7
 DISPLAY_FIELDS = {'title', 'column_order', 'column_labels', 'formats', 'row_order',
                   'sort_by', 'ascending', 'notes', 'plot_type', 'x', 'y', 'lower', 'upper',
                   'series', 'visible_series', 'selected_result_ids', 'x_label', 'y_label',
@@ -1008,6 +1008,8 @@ def gallery_plot_panel(axis, rows, display, metadata, columns, family, font_size
         return
     if not xkey or not ykey:
         raise ValueError('plot display requires x and y saved column keys')
+    for name in ('x', 'y'):
+        getattr(axis, 'set_' + name + 'scale')(display.get(name + '_scale', 'linear'))
     units = {row.get('unit') for row in rows if row.get(ykey) is not None and row.get('unit')}
     if len(units) > 1:
         raise ValueError('One plot axis requires one saved unit; select matching saved series or a facet')
@@ -1156,7 +1158,6 @@ def gallery_plot_panel(axis, rows, display, metadata, columns, family, font_size
         if reference.get('axis') in ('x', 'y') and type(reference.get('value')) in (int, float):
             (axis.axvline if reference['axis'] == 'x' else axis.axhline)(reference['value'], color='#73808c', linestyle=':', linewidth=.8, label=reference.get('label'))
     for name in ('x', 'y'):
-        getattr(axis, 'set_' + name + 'scale')(display.get(name + '_scale', 'linear'))
         if display.get(name + '_limits') is not None:
             getattr(axis, 'set_' + name + 'lim')(*display[name + '_limits'])
     axis.spines[['top', 'right']].set_visible(False)
