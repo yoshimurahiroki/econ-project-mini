@@ -441,10 +441,16 @@ def saved_display_definitions(result_id, saved):
                 y = 'cohort'
             elif kind == 'smd' and 'smd' in keys:
                 y = 'smd'
+            elif kind == 'rdd':
+                x = next((key for key in ('running', 'x', 'bin_mid', 'mean_x') if key in keys), None)
             if (x is None or y is None) and not (kind == 'geo' and 'geometry' in keys) and kind != 'iv_confidence_set':
                 plot_type = 'table'
             display = {'plot_type': plot_type, 'style': 'paper',
                        'formats': {key: '.3g' for key in keys if any(type(row.get(key)) in (int, float) for row in rows)}}
+            if kind == 'rdd' and plot_type == 'table':
+                order = ('term', 'estimate', 'se', 'ci_low', 'ci_high', 'p_value')
+                display['column_order'] = [key for key in order if key in keys] + [key for key in keys if key not in order]
+                display['height'] = max(300, min(1600, 160 + len(rows) * 34))
             if source_kind == 'table1':
                 display['column_order'] = [key for key in keys if key in ('variable', 'group', 'period', 'mean', 'sd', 'median', 'min', 'max', 'n', 'unit') or key.startswith('q')]
                 display['height'] = max(300, min(1600, 160 + len(rows) * 34))
@@ -1009,6 +1015,8 @@ def gallery_plot_panel(axis, rows, display, metadata, columns, family, font_size
         raise ValueError('plot y column must contain numeric saved values or null')
     labels = list(dict.fromkeys(row[xkey] for row in rows if row.get(xkey) is not None))
     categorical = any(type(value) not in (int, float) for value in labels)
+    if plot_type == 'rdd' and categorical:
+        raise ValueError('RDD plots require numeric saved running-variable coordinates')
     horizontal = display.get('orientation') == 'horizontal'
     component_key = display.get('component', 'component')
     series_key = display.get('series')
