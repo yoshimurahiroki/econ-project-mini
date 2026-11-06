@@ -489,8 +489,10 @@ def select_method(request):
             method = model; owner = 'skills/econ-data/scripts/research_dynamic.py run'
         elif model == 'dynamic_game':
             method = model; owner = 'skills/econ-data/scripts/equity.py dynamic'
+        elif model in ('finite_horizon_choice','lifecycle_choice'):
+            method = model
         else:
-            raise ValueError('structural_model must name a documented existing market, replacement, entry, adoption or dynamic-game model')
+            raise ValueError('structural_model must name a documented market, replacement, entry, adoption, dynamic-game, finite_horizon_choice or lifecycle_choice model')
         conditions = ['adopted primitives, timing, moments and excluded variation', 'normalizations and equilibrium selection', 'counterfactual re-solves affected endogenous choices']
         method_quantity = ('identified utility/cost parameters and scenario-specific equilibrium prices, choices and welfare' if model == 'blp'
             else 'identified payoff/transition parameters and the re-solved policy or equilibrium under the adopted intervention')
@@ -500,7 +502,9 @@ def select_method(request):
             'capacity_product_game':('nfxp',),'dynamic_game':('nfxp','mpec'),
             'auction_fit':('maximum_likelihood',),'auction':('equilibrium',),
             'search':('equilibrium',),'bargaining':('equilibrium',),
-            'platform':('equilibrium',),'matching':('deferred_acceptance',)}
+            'platform':('equilibrium',),'matching':('deferred_acceptance',),
+            'finite_horizon_choice':('smm','maximum_likelihood'),
+            'lifecycle_choice':('backward_induction',)}
         algorithm = numerical.get('estimation_method', algorithms[model][0])
         if algorithm not in algorithms[model]:
             raise ValueError(f'{model} implements numerical.estimation_method in {algorithms[model]}')
@@ -523,6 +527,65 @@ def select_method(request):
         required_inputs = ['actors/objectives/feasible actions/information and timing','states and transition law',
             'shock distribution and payoff normalization','moments or likelihood and excluded variation',
             'parameter order and fixed/calibrated values','equilibrium selection','intervention and welfare aggregation']
+        if model == 'finite_horizon_choice':
+            smm = algorithm == 'smm'
+            function = 'respy.get_moment_errors_func' if smm else 'respy.get_log_like_func'
+            owner = 'external official Python entry: ' + function
+            method_quantity = ('structural parameters minimizing the adopted weighted finite-horizon simulated-moment distance' if smm
+                else 'structural parameters maximizing the mean log likelihood of the adopted finite-horizon observed histories')
+            conditions = ['finite decision horizon, adopted terminal values and feasible state/action support',
+                'payoff and shock normalizations, information timing and transition law',
+                'parameter-to-moment identification' if smm else 'identified choice/wage likelihood on the adopted observed sample',
+                'fixed solution and simulation draws across parameter evaluations']
+            required_inputs = ['params: ordered parameter dataframe/series with free and fixed parameters, normalizations and adopted bounds',
+                'options: horizon, state/choice definitions, covariates, transitions, integration and simulation settings',
+                'observed population, sample selection, measurement units and target weights',
+                'solution, simulation and estimation seeds and draw counts',
+                'adopted optimizer and structural-parameter inference at the independent sampling unit']
+            required_inputs += (['calc_moments and ordered empirical_moments with matching labels',
+                'replace_nans rule, weighting_matrix and n_simulation_periods'] if smm
+                else ['df: observed choice/wage histories in the official estimation-data format'])
+            required_native_options = {'return_scalar':False}
+            external_implementation = {'language':'Python','function':function,'version':'2.1.1',
+                'source':'https://github.com/OpenSourceEconomics/respy/blob/91e8a193fb7d5cf7212c15e50ae43f810bb9b1eb/respy/'+('method_of_simulated_moments.py' if smm else 'likelihood.py'),
+                'signature':['params','options','calc_moments','replace_nans','empirical_moments','weighting_matrix','n_simulation_periods','return_scalar'] if smm else ['params','options','df','return_scalar'],
+                'parameter_operation':'estimate free structural parameters with adopted fixed values and normalizations',
+                'optimization_direction':'minimize' if smm else 'maximize',
+                'numerical_method':'finite-horizon solution and simulation at each parameter evaluation' if smm else 'finite-horizon solution and mean log-likelihood evaluation at each parameter vector',
+                'inputs':required_inputs,
+                'outputs':['parameter-only criterion callable','value','moment_errors','root_contributions','simulated_moments','comparison_plot_data'] if smm else ['parameter-only log-likelihood callable','value: mean log likelihood','contributions','comparison_plot_data'],
+                'execution':'construct the official criterion with return_scalar=False and pass its value to the adopted project optimizer; retain returned contributions and the adopted parameter-inference calculation'}
+        elif model == 'lifecycle_choice':
+            if facts.get('parameter_status') not in (None,'fixed','estimated'):
+                raise ValueError('lifecycle_choice uses conditions.parameter_status=fixed or estimated')
+            owner = 'external official Python entry: lcm.Model.solve + lcm.Model.simulate'
+            method_quantity = ('target-population aggregation of lifecycle values under the adopted welfare weights and utility or monetary conversion' if target_kind == 'welfare'
+                else 'lifecycle policies, values and simulated outcomes at the adopted fixed or previously estimated parameters')
+            conditions = ['fixed or previously estimated structural parameters and adopted utility/shock normalizations',
+                'finite horizon and terminal regimes with feasible states, actions, constraints and transition laws',
+                'declared information, perceived/realized regime transitions and initial-population distribution',
+                'policy scenarios hold the adopted exogenous paths fixed and re-solve affected household choices',
+                'welfare aggregation uses the adopted population weights and value units']
+            required_inputs = ['lcm.Model: regimes, regime_id_class, initial_nodes and edges',
+                'exactly one of ages and n_periods; states, actions, state_transitions, utility functions, constraints and shocks',
+                'fixed_params and params matching get_params_template(), including discounting and normalizations',
+                'regime-specific official solver, grids, integration and numerical precision',
+                'initial_conditions, seed and adopted taste_shock_seed or shock_paths for scenario comparisons',
+                'policy intervention, exogenous price paths, target population, weights and welfare aggregation/conversion']
+            required_native_options = {'solve.params':'adopted fixed or previously estimated values',
+                'simulate.params':'same canonical values as solve','simulate.solution':'complete SolutionResult',
+                'simulate.seed':'adopted integer seed'}
+            external_implementation = {'language':'Python','function':'lcm.Model.solve + lcm.Model.simulate',
+                'source':'https://github.com/OpenSourceEconomics/pylcm/blob/0fb55673b0be4eb52d270b2585047faa38c4e930/src/lcm/model.py',
+                'signature':{'solve':['params','log_level','runtime_checks','retention','max_compilation_workers','log_path','log_keep_n_latest','period_capture','use_categorical_codes'],
+                    'simulate':['params','initial_conditions','solution','log_level','runtime_checks','seed','taste_shock_seed','shock_paths','log_path','log_keep_n_latest','max_compilation_workers','use_categorical_codes']},
+                'parameter_operation':'hold adopted fixed or previously estimated parameters; solve household choices',
+                'numerical_method':'backward induction through the declared regimes followed by forward simulation',
+                'inputs':required_inputs,
+                'outputs':['SolutionResult values, model/parameter identity and retained policy-replay artifacts',
+                    'SimulationResult and to_dataframe() outcomes','project aggregation of saved scenario values and outcomes'],
+                'execution':'construct the official Model, solve with params and log_level, then simulate with the complete solution, matching params and adopted seeds; aggregate saved outcomes in the existing project analysis',
+                'equilibrium_contract':'household choices conditional on adopted exogenous paths; market clearing requires its own equilibrium owner'}
         alternatives = [
             {'method':'nfxp','difference':'solve the Bellman/equilibrium system within each parameter evaluation',
              'estimand':'parameters of the adopted dynamic likelihood and equilibrium selection',
@@ -548,7 +611,12 @@ def select_method(request):
              'estimand':'parameters satisfying the adopted population moment restrictions',
              'conditions':['moment exclusion and rank','adopted integration and normalization'],
              'data_fit':{'required':['moment observations, instruments and adopted population weights']},
-             'inference':{'procedure':'moment covariance matched to the independent market or sampling unit'}}]
+             'inference':{'procedure':'moment covariance matched to the independent market or sampling unit'}},
+            {'method':'maximum_likelihood','difference':'maximize the mean log likelihood of the observed finite-horizon histories',
+             'estimand':'structural parameters identified by the adopted choice/wage likelihood',
+             'conditions':['identified likelihood and utility/shock normalizations','adopted information, state support and transition law'],
+             'data_fit':{'required':['observed choice/wage histories and their adopted sampling population']},
+             'inference':{'procedure':'adopted likelihood curvature or refitted sampling procedure with the recorded integration draws'}}]
         alternatives = [candidate for candidate in alternatives
                         if candidate['method'] in algorithms[model] and candidate['method'] != algorithm]
     else:
@@ -599,8 +667,10 @@ def select_method(request):
         'dml_plr':{'linear_projection','conditional_mean','structural_parameter','ate'},'dml_did':{'att'},
         'dml_irm':{'ate','att'},'dml_pliv':{'structural_parameter'},'dml_iivm':{'late'},
         'grf':{'cate','ate','att'},'causal_forest':{'cate','ate'},'policy_tree':{'policy_value'},
-        'honest_did':{'sensitivity','confidence_set'}}
-    accepted_targets = {'structural_parameter','equilibrium','welfare'} if design=='structural' else compatible.get(method)
+        'honest_did':{'sensitivity','confidence_set'},
+        'finite_horizon_choice':{'structural_parameter'},'lifecycle_choice':{'policy_value','welfare'},
+        'smm':{'structural_parameter'},'maximum_likelihood':{'structural_parameter'}}
+    accepted_targets = compatible.get(method, {'structural_parameter','equilibrium','welfare'} if design=='structural' else None)
     if target_kind is not None and accepted_targets is not None and target_kind not in accepted_targets:
         raise ValueError(f'{method} implements target.kind in {sorted(accepted_targets)}; received {target_kind}')
     if design=='conditional_mean' and method=='fixest_ols' and target_kind in ('ate','itt'):
@@ -628,7 +698,7 @@ def select_method(request):
     # reviewable proposal. Selection never amends or executes the adopted fit.
     selected_options = deepcopy(forward_options)
     option_changes = []
-    if method in ('sunab','grf','staggered_did','did_multiplegt_dyn','nonabs_did','iv_ar_robust'):
+    if method in ('sunab','grf','staggered_did','did_multiplegt_dyn','nonabs_did','iv_ar_robust','finite_horizon_choice'):
         for field, value in required_native_options.items():
             cursor = selected_options
             path = field.split('.', 1)
@@ -639,12 +709,14 @@ def select_method(request):
             key = path[-1]
             defaults = {'panel':True,'aggregation.type':'dynamic','aggregation':'period',
                         'aggregation.target.sample':'all','args.normalized':False,
-                        'args.CI':True,'args.alpha':.05}
+                        'args.CI':True,'args.alpha':.05,'return_scalar':True}
             supplied = cursor.get(key, defaults.get(field))
             if supplied != value:
                 option_changes.append({'field':'options.'+field,'supplied':supplied,'selected':value})
             cursor[key] = value
-    if method in R_METHODS:
+    if external_implementation:
+        engine = external_implementation['function']
+    elif method in R_METHODS:
         package, function = R_METHODS[method]; engine = f'{package}::{function}'
     else:
         engine = {'staggered_did':'did::att_gt + did::aggte','dml_plr':'doubleml.DoubleMLPLR',
@@ -694,6 +766,16 @@ def select_method(request):
         'official_output_required':True}
     if method == 'iv_ar_robust':
         inference_contract['confidence_level'] = 1-alpha
+    elif method == 'finite_horizon_choice':
+        inference_contract['procedure'] = ('adopted moment covariance with simulation contribution' if algorithm == 'smm'
+            else 'adopted likelihood curvature or refitted sampling procedure')
+        inference_contract['parameter_operation'] = 'estimate structural parameters'
+    elif method == 'lifecycle_choice':
+        inference_contract['procedure'] = 'adopted simulation precision and parameter-draw propagation when requested'
+        inference_contract['parameter_operation'] = 'hold fixed or previously estimated parameters'
+        inference_contract['interval_type'] = comparison.get('interval_type',comparison.get('ci_kind',
+            inherited_inference.get('interval_type',inherited_inference.get('ci_kind'))))
+        inference_contract['official_output_required'] = False
     candidate_comparisons = []
     for candidate in alternatives:
         if candidate['method'] == method:
