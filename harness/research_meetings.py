@@ -190,6 +190,11 @@ def create_bundle(root, output, entries, *, title, kind="meeting", project_view=
         "specification": summary_lines(view.get("specification_description", [])),
         "results": summary_lines(view.get("results_summary", [])),
     })
+    for section_id, field in (("findings", "findings"), ("interpretation", "interpretation"),
+                              ("discussion", "issues"), ("decisions", "adoption_decision")):
+        if not bodies.get(section_id):
+            bodies[section_id] = "\n\n".join(entry.get("title", entry["id"]) + ": " + entry[field]
+                                               for entry in entries if entry.get(field))
     output.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix=".meeting-", dir=output.parent) as temporary:
         stage = Path(temporary) / "bundle"
@@ -201,7 +206,8 @@ def create_bundle(root, output, entries, *, title, kind="meeting", project_view=
                 raise ValueError("Duplicate selected artifact: " + identity)
             exported = {key: copy.deepcopy(entry[key]) for key in
                         ("id", "title", "kind", "plot_type", "metadata", "provenance", "rows", "columns",
-                         "interpretation", "status", "links", "display", "result_ids") if key in entry}
+                         "interpretation", "findings", "issues", "adoption_decision", "status", "links",
+                         "display", "result_ids", "source_reference") if key in entry}
             if "columns" in exported:
                 exported["columns"] = [{"key": column, "label": column} if isinstance(column, str) else column
                                        for column in exported["columns"]]
@@ -219,16 +225,37 @@ def create_bundle(root, output, entries, *, title, kind="meeting", project_view=
                 exported["files"][role] = name
                 exported.setdefault("content_versions", {})[role] = hashlib.sha256(raw).hexdigest()
             artifacts[identity] = exported
-        exhibit_section = "exhibits" if any(row["id"] == "exhibits" for row in sections) else "results"
-        result_position = next((i for i, row in enumerate(sections) if row["id"] == exhibit_section), len(sections))
-        if result_position < len(sections):
-            sections.pop(result_position)
+        slots = {section["artifact_role"]: section["id"] for section in sections if "artifact_role" in section}
+        default_slot = "exhibits" if any(row["id"] == "exhibits" for row in sections) else "results"
+        placements = {}
         for index, entry in enumerate(entries):
-            sid = "result-" + str(index + 1)
-            sections.insert(result_position + index, {"id": sid, "title": entry.get("title", entry["id"]),
-                            "visible": True, "layout": "stack", "artifacts": [entry["id"]],
-                            "caption": "", "speaker_notes": ""})
-            bodies[sid] = entry.get("interpretation", "")
+            metadata = entry.get("metadata", {})
+            role = metadata.get("report_role")
+            if role is None:
+                if entry.get("kind") in {"descriptive", "sample_composition", "group_comparison"}:
+                    role = "descriptive"
+                elif entry.get("kind") == "event_study":
+                    role = "event_study"
+                elif entry.get("kind") in {"robustness", "alternative_specification"}:
+                    role = "additional"
+                else:
+                    role = "main"
+            placements.setdefault(slots.get(role, default_slot), []).append((index, entry))
+        arranged = []
+        for section in sections:
+            selected = placements.pop(section["id"], [])
+            # Retain authored summary text before its exhibits.
+            if not selected or bodies.get(section["id"]):
+                arranged.append(section)
+            for index, entry in selected:
+                sid = "result-" + str(index + 1)
+                arranged.append({"id": sid, "title": entry.get("title", entry["id"]),
+                                 "visible": True, "layout": "stack", "artifacts": [entry["id"]],
+                                 "caption": "", "speaker_notes": "", "source_section": section["id"]})
+                bodies[sid] = entry.get("interpretation", "")
+        if placements:
+            raise ValueError("Template needs an exhibit section for selected saved results")
+        sections = arranged
         for section in sections:
             section.setdefault("visible", bool(bodies.get(section["id"])) or bool(section.get("artifacts")))
             section.setdefault("layout", "stack")
@@ -308,10 +335,15 @@ def change_sections(bundle, *, expected_revision, order=None, add=None, remove=N
 
 def artifact_notes(entry, *, output_format="html"):
     metadata = entry.get("metadata", {})
-    labels = {"sample": "標本", "observation_unit": "観測単位", "comparison": "比較", "period": "期間",
+    labels = {"sample": "標本", "population": "母集団", "observation_unit": "観測単位", "comparison": "比較", "period": "期間",
               "unit": "単位", "estimand": "推定対象", "estimator": "推定方法", "clustering": "クラスタ",
               "confidence_level": "信頼区間", "n": "N", "source": "出所",
-              "measurement_units": "単位", "inference": "推論", "data_source": "データ出所"}
+              "measurement_units": "単位", "inference": "推論", "data_source": "データ出所",
+              "weights": "重み", "weight_type": "重みの種類", "denominator": "分母",
+              "reference_event_time": "基準期", "base_period": "基準期の定義", "interval_type": "区間の種類",
+              "aggregation": "集計", "treatment_history": "処置履歴", "treatment_time": "処置時点",
+              "treatment_group": "処置群", "control_group": "対照群", "inference_unit": "推論単位",
+              "cutoff": "cutoff", "bandwidth": "bandwidth"}
     if output_format == "pdf":
         labels.update({"population": "母集団", "variables": "変数"})
     parts = []
