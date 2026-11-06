@@ -155,6 +155,7 @@ def select_method(request):
     required_native_options = {}
     external_implementation = None
     computation = None
+    respy_simulation = False
     method_quantity = request['estimand']
     score = facts.get('score', request.get('score'))
     if 'score' in facts and 'score' in request and facts['score'] != request['score']:
@@ -482,6 +483,8 @@ def select_method(request):
         method = 'club_sandwich'; conditions = ['saved supported model fit', 'adopted CR correction, coefficient contrast and degrees-of-freedom approximation']
     elif design == 'structural':
         model = request.get('structural_model')
+        if not model and adopted == 'finite_horizon_choice' and numerical.get('operation') in ('simulate','counterfactual'):
+            model = adopted
         if not model:
             model = {'differentiated_products':'blp','replacement':'replacement','dynamic_game':'dynamic_game'}.get(facts.get('market_structure'))
         if not model:
@@ -504,6 +507,7 @@ def select_method(request):
         conditions = ['adopted primitives, timing, moments and excluded variation', 'normalizations and equilibrium selection', 'counterfactual re-solves affected endogenous choices']
         method_quantity = ('identified utility/cost parameters and scenario-specific equilibrium prices, choices and welfare' if model == 'blp'
             else 'identified payoff/transition parameters and the re-solved policy or equilibrium under the adopted intervention')
+        respy_simulation = model == 'finite_horizon_choice' and numerical.get('operation') in ('simulate','counterfactual')
         algorithms = {'blp':('gmm',), 'replacement':('nfxp','ccp','smm','mpec'),
             'latent_replacement':('em',),'discrete_entry':('moment_inequalities','npl','epl','slc'),
             'dynamic_adoption_blp':('share_inversion',),'continuous_time_entry':('nfxp',),
@@ -511,10 +515,10 @@ def select_method(request):
             'auction_fit':('maximum_likelihood',),'auction':('equilibrium',),
             'search':('equilibrium',),'bargaining':('equilibrium',),
             'platform':('equilibrium',),'matching':('deferred_acceptance',),
-            'finite_horizon_choice':('smm','maximum_likelihood'),
+            'finite_horizon_choice':('backward_induction',) if respy_simulation else ('smm','maximum_likelihood'),
             'lifecycle_choice':('backward_induction',),
             'finite_horizon_growth':('slsqp',),'consumption_saving':('backward_induction',)}
-        solution_model = model in ('finite_horizon_growth','consumption_saving','lifecycle_choice')
+        solution_model = model in ('finite_horizon_growth','consumption_saving','lifecycle_choice') or respy_simulation
         numerical_key = 'solution_method' if solution_model else 'estimation_method'
         algorithm = numerical.get(numerical_key, numerical.get('estimation_method', algorithms[model][0]))
         if solution_model and 'solution_method' in numerical and 'estimation_method' in numerical and numerical['solution_method'] != numerical['estimation_method']:
@@ -523,7 +527,12 @@ def select_method(request):
             raise ValueError(f'{model} implements numerical.{numerical_key} in {algorithms[model]}')
         required_native_options['solution_component' if solution_model else 'estimation_component'] = algorithm
         if solution_model or model == 'finite_horizon_choice':
-            available_operations = ['solve','counterfactual'] if model == 'finite_horizon_growth' else (['solve','simulate','counterfactual'] if solution_model else ['estimate'])
+            if respy_simulation:
+                available_operations = ['simulate','counterfactual']
+            elif model == 'finite_horizon_growth':
+                available_operations = ['solve','counterfactual']
+            else:
+                available_operations = ['solve','simulate','counterfactual'] if solution_model else ['estimate']
             operation = numerical.get('operation', 'solve' if solution_model else 'estimate')
             if operation not in available_operations:
                 raise ValueError(f'{model} supports numerical.operation in {available_operations}')
@@ -601,7 +610,43 @@ def select_method(request):
                     'scenario-specific values and outcomes aggregated with the adopted population weights'],
                 'execution':'construct the selected consumer with cycles=1, solve(), then set track_vars and call initialize_sim() and simulate() for requested histories; re-solve each changed scenario at the same fitted primitives',
                 'equilibrium_contract':'individual consumption-saving conditional on prices; market clearing uses the existing macro equilibrium owner'}
-            computation['outputs'] = external_implementation['outputs']
+        elif respy_simulation:
+            simulation_method = numerical.get('simulation_method')
+            if simulation_method not in ('n_step_ahead_with_sampling','n_step_ahead_with_data','one_step_ahead'):
+                raise ValueError('respy simulation requires numerical.simulation_method=n_step_ahead_with_sampling, n_step_ahead_with_data or one_step_ahead')
+            if facts.get('parameter_status') not in ('fixed','calibrated','estimated'):
+                raise ValueError('respy simulation requires explicit fixed, calibrated or estimated parameter_status')
+            owner = 'external official Python entry: respy.get_simulate_func'
+            method_quantity = ('scenario contrast of adopted discounted chosen-flow utility for the same initial population' if target_kind == 'welfare'
+                else 'scenario-specific choices, rewards and state paths from the same respy structural primitives')
+            if simulation_method == 'one_step_ahead':
+                if target_kind == 'welfare':
+                    raise ValueError('respy lifecycle welfare requires an n-step simulation of the counterfactual state path')
+                method_quantity = 'one-period choices and rewards conditional on each observed state under the adopted respy scenario'
+            conditions = ['reuse the fitted respy parameter ordering, normalizations, model options and invariant primitives',
+                'declare sampled initial conditions, fixed observed initial states or observed one-step states',
+                'hold the adopted population, scenario draws, choice ordering and horizon comparison fixed',
+                'aggregate chosen flow utility with adopted discounting, present-bias interpretation and terminal evaluation']
+            required_inputs = ['params: fixed or saved estimated parameter dataframe/series with provenance',
+                'options: the same structural model, decision horizon, initial distributions, solution/simulation seeds and draws',
+                'numerical.simulation_method and the adopted scenario changes',
+                'target population, identifiers, weights, value units and welfare aggregation']
+            if simulation_method != 'n_step_ahead_with_sampling':
+                required_inputs += ['df with Identifier/Period MultiIndex and the adopted state columns; initial-data simulation uses zero-based consecutive IDs at Period=0']
+            required_native_options = {'method':simulation_method,'n_simulation_periods':None}
+            external_implementation = {'language':'Python','function':'respy.get_simulate_func','version':'2.1.1',
+                'source':'https://github.com/OpenSourceEconomics/respy/blob/91e8a193fb7d5cf7212c15e50ae43f810bb9b1eb/respy/simulate.py',
+                'signature':['params','options','method','df','n_simulation_periods'],
+                'parameter_operation':computation['parameter_operation'],
+                'numerical_method':'solve at the supplied parameter vector and simulate with retained base draws',
+                'inputs':required_inputs,
+                'outputs':['parameter-only simulate callable; simulate(params_hat) returns an Identifier/Period-indexed dataframe',
+                    'Choice, Wage, state columns, Discount_Rate and Present_Bias',
+                    'choice-specific Flow_Utility, Value_Function, Continuation_Value and reward columns'],
+                'effective_simulation_horizon':'max observed Period + 1' if simulation_method == 'one_step_ahead' else "options['n_periods']",
+                'horizon_contract':'this pinned implementation replaces an explicit n_simulation_periods with options.n_periods; pass None and match the requested output to the recorded effective horizon',
+                'welfare_contract':'aggregate chosen Flow_Utility under adopted discounting and terminal conditions; Value_Function already contains continuation value',
+                'execution':'construct get_simulate_func from the saved structural specification and call simulate(params_hat) for each adopted scenario; retain actual outputs and aggregate them in project analysis'}
         elif model == 'finite_horizon_choice':
             smm = algorithm == 'smm'
             function = 'respy.get_moment_errors_func' if smm else 'respy.get_log_like_func'
@@ -741,7 +786,7 @@ def select_method(request):
         'dml_irm':{'ate','att'},'dml_pliv':{'structural_parameter'},'dml_iivm':{'late'},
         'grf':{'cate','ate','att'},'causal_forest':{'cate','ate'},'policy_tree':{'policy_value'},
         'honest_did':{'sensitivity','confidence_set'},
-        'finite_horizon_choice':{'structural_parameter'},'lifecycle_choice':{'policy_value','welfare'},
+        'finite_horizon_choice':{'policy_value','welfare'} if respy_simulation else {'structural_parameter'},'lifecycle_choice':{'policy_value','welfare'},
         'finite_horizon_growth':{'policy_value','welfare'},'consumption_saving':{'policy_value','welfare'},
         'smm':{'structural_parameter'},'maximum_likelihood':{'structural_parameter'}}
     accepted_targets = compatible.get(method, {'structural_parameter','equilibrium','welfare'} if design=='structural' else None)
@@ -841,11 +886,11 @@ def select_method(request):
         'official_output_required':True}
     if method == 'iv_ar_robust':
         inference_contract['confidence_level'] = 1-alpha
-    elif method == 'finite_horizon_choice':
+    elif method == 'finite_horizon_choice' and not respy_simulation:
         inference_contract['procedure'] = ('adopted moment covariance with simulation contribution' if algorithm == 'smm'
             else 'adopted likelihood curvature or refitted sampling procedure')
         inference_contract['parameter_operation'] = 'estimate structural parameters'
-    elif method in ('lifecycle_choice','consumption_saving','finite_horizon_growth'):
+    elif method in ('lifecycle_choice','consumption_saving','finite_horizon_growth') or respy_simulation:
         inference_contract['procedure'] = ('original Euler/resource residuals at the adopted deterministic numerical tolerance' if method == 'finite_horizon_growth'
             else 'adopted simulation precision and parameter-draw propagation when requested')
         inference_contract['parameter_operation'] = 'hold fixed or previously estimated parameters'
