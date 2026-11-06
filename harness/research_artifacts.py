@@ -31,7 +31,7 @@ GALLERY_KINDS = ('descriptive', 'sample_composition', 'distribution', 'time_seri
 PLOT_TYPES = ('table', 'bar', 'line', 'scatter', 'step', 'area', 'coefficient', 'event_study', 'density', 'ecdf', 'box',
               'att_gt', 'cohort_event', 'parallel_trends', 'rdd', 'iv_first_stage', 'iv_reduced_form',
               'iv_confidence_set', 'scm', 'scm_gap', 'scm_placebo', 'binned_scatter', 'smd', 'structural', 'geo')
-GALLERY_RENDER_VERSION = 7
+GALLERY_RENDER_VERSION = 8
 DISPLAY_FIELDS = {'title', 'column_order', 'column_labels', 'formats', 'row_order',
                   'sort_by', 'ascending', 'notes', 'plot_type', 'x', 'y', 'lower', 'upper',
                   'series', 'visible_series', 'selected_result_ids', 'x_label', 'y_label',
@@ -470,6 +470,12 @@ def saved_display_definitions(result_id, saved):
                     display['value'] = next((key for key in ('estimate', 'value') if key in keys), None)
                 if plot_type in ('coefficient', 'smd'):
                     display['orientation'] = 'horizontal'
+            if 'columns' in block:
+                columns = copy.deepcopy(block['columns'])
+            if 'display' in block:
+                if not isinstance(block['display'], dict):
+                    raise ValueError('saved display settings must be an object')
+                display.update(copy.deepcopy(block['display']))
             suffix = '-'.join(path[1:]) or source_kind
             identity_suffix = '-'.join(path) if path[0] == 'displays' else suffix
             identity = result_id + '-' + re.sub(r'[^A-Za-z0-9_-]', '_', identity_suffix)
@@ -477,7 +483,7 @@ def saved_display_definitions(result_id, saved):
                                 'kind': kind, 'result_ids': [result_id], 'columns': columns,
                                 'rows': rows, 'metadata': metadata, 'display': display})
         for key, value in block.items():
-            if key not in ('rows', 'columns', 'metadata', 'kind') and isinstance(value, dict):
+            if key not in ('rows', 'columns', 'metadata', 'kind', 'display') and isinstance(value, dict):
                 visit(value, path + [key])
     visit(saved.get('display'), ['display'])
     visit(saved.get('displays'), ['displays'])
@@ -968,13 +974,14 @@ def gallery_plot_panel(axis, rows, display, metadata, columns, family, font_size
         axis.set_ylabel(display.get('y_label') or metadata.get('y_label', ''))
         return
     if plot_type == 'iv_confidence_set':
-        low_key, high_key = display.get('lower', 'lower'), display.get('upper', 'upper')
-        names = list(dict.fromkeys(str(row.get(display.get('series', 'term'), row.get('result_id', ''))) for row in rows))
+        low_key, high_key = display.get('lower') or 'lower', display.get('upper') or 'upper'
+        series_key = display.get('series') or 'term'
+        names = list(dict.fromkeys((row['result_id'], str(row.get(series_key, ''))) for row in rows))
         finite = [row[key] for row in rows for key in (low_key, high_key) if type(row.get(key)) in (int, float)]
         limits = display.get('x_limits') or ([min(finite) - max(1, max(finite) - min(finite)) * .1,
                                             max(finite) + max(1, max(finite) - min(finite)) * .1] if finite else None)
         for row in rows:
-            name = str(row.get(display.get('series', 'term'), row.get('result_id', '')))
+            name = (row['result_id'], str(row.get(series_key, '')))
             index = names.index(name)
             low, high = row.get(low_key), row.get(high_key)
             if row.get('set_type', metadata.get('set_type')) == 'empty':
@@ -998,7 +1005,11 @@ def gallery_plot_panel(axis, rows, display, metadata, columns, family, font_size
             for endpoint, unbounded, marker in ((left, left_open, '<'), (right, right_open, '>')):
                 if unbounded:
                     axis.scatter([endpoint], [index], marker=marker, color='#245b8a', s=55)
-        axis.set_yticks(range(len(names)), [display.get('series_labels', {}).get(name, name) for name in names])
+        multiple_results = len({name[0] for name in names}) > 1
+        labels = [display.get('series_labels', {}).get(series, series) or result_id for result_id, series in names]
+        if multiple_results and series_key != 'result_id':
+            labels = [result_id + (' / ' + label if series else '') for (result_id, series), label in zip(names, labels)]
+        axis.set_yticks(range(len(names)), labels)
         axis.set_xlabel(display.get('x_label') or metadata.get('parameter_definition', '係数'))
         if limits:
             axis.set_xlim(*limits)
@@ -1221,7 +1232,12 @@ def gallery_plot(item):
             result_ids = {row['result_id'] for row in selected}
             if len(result_ids) == 1:
                 metadata = {**metadata, **metadata.get('result_definitions', {}).get(next(iter(result_ids)), {})}
-            gallery_plot_panel(axis, selected, display, metadata, columns, family, font_size)
+            panel_columns = dict(columns)
+            ykey = display.get('y')
+            units = {row['unit'] for row in selected if row.get('unit') and row.get(ykey) is not None}
+            if len(units) == 1 and not next((column['unit'] for column in view['columns'] if column['key'] == ykey), ''):
+                panel_columns[ykey] = panel_columns.get(ykey, ykey) + ' (' + str(next(iter(units))) + ')'
+            gallery_plot_panel(axis, selected, display, metadata, panel_columns, family, font_size)
             axis.tick_params(labelsize=font_size)
             if facet:
                 axis.set_title(str(facets[index]), fontfamily=family, fontsize=font_size + 1)
