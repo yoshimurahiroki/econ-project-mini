@@ -94,8 +94,16 @@ def gallery_registry(root, path):
 def gallery_display_metadata(value):
     """Keep sample membership in the scientific record, outside display metadata."""
     if isinstance(value, dict):
-        return {key: gallery_display_metadata(item) for key, item in value.items()
-                if not (key.endswith('_ids') and key not in ('result_ids', 'specification_ids', 'cohort_ids'))}
+        metadata = {key: gallery_display_metadata(item) for key, item in value.items()
+                    if not (key.endswith('_ids') and key not in ('result_ids', 'specification_ids', 'cohort_ids'))}
+        # Official calls retain resolved column vectors in the source result.
+        # Exhibits retain their column bindings and scalar options.
+        if isinstance(value.get('columns'), dict):
+            for field in ('args', 'inherited_args'):
+                if isinstance(metadata.get(field), dict):
+                    metadata[field] = {key: item for key, item in metadata[field].items()
+                                       if key not in value['columns']}
+        return metadata
     if isinstance(value, list):
         return [gallery_display_metadata(item) for item in value]
     return copy.deepcopy(value)
@@ -111,7 +119,7 @@ def gallery_metadata(registry, result_ids):
             raise ValueError('unknown saved result: ' + result_id)
         record = registry['records'][result_id]
         saved = record.get('source_result') or {}
-        adopted = record.get('adopted') or saved.get('definition') or {}
+        adopted = record.get('adopted') or saved.get('adopted') or saved.get('definition') or {}
         if not isinstance(adopted, dict):
             adopted = {}
         metadata = {key: copy.deepcopy(saved.get(key, adopted.get(key))) for key in fields
@@ -433,7 +441,7 @@ def saved_display_definitions(result_id, saved):
                 y = 'cohort'
             elif kind == 'smd' and 'smd' in keys:
                 y = 'smd'
-            if (x is None or y is None) and not (kind == 'geo' and 'geometry' in keys):
+            if (x is None or y is None) and not (kind == 'geo' and 'geometry' in keys) and kind != 'iv_confidence_set':
                 plot_type = 'table'
             display = {'plot_type': plot_type, 'style': 'paper',
                        'formats': {key: '.3g' for key in keys if any(type(row.get(key)) in (int, float) for row in rows)}}
@@ -457,7 +465,8 @@ def saved_display_definitions(result_id, saved):
                 if plot_type in ('coefficient', 'smd'):
                     display['orientation'] = 'horizontal'
             suffix = '-'.join(path[1:]) or source_kind
-            identity = result_id + '-' + re.sub(r'[^A-Za-z0-9_-]', '_', suffix)
+            identity_suffix = '-'.join(path) if path[0] == 'displays' else suffix
+            identity = result_id + '-' + re.sub(r'[^A-Za-z0-9_-]', '_', identity_suffix)
             definitions.append({'id': identity, 'title': block.get('title', result_id + ' / ' + suffix),
                                 'kind': kind, 'result_ids': [result_id], 'columns': columns,
                                 'rows': rows, 'metadata': metadata, 'display': display})
@@ -465,6 +474,32 @@ def saved_display_definitions(result_id, saved):
             if key not in ('rows', 'columns', 'metadata', 'kind') and isinstance(value, dict):
                 visit(value, path + [key])
     visit(saved.get('display'), ['display'])
+    visit(saved.get('displays'), ['displays'])
+    group_time = saved.get('diagnostics', {}).get('group_time', {})
+    if group_time.get('cells') and not any(item['kind'] == 'att_gt' for item in definitions):
+        # These cells already contain official estimates and interval endpoints.
+        # Retain row-level sample IDs and weights in the source result only.
+        rows = [{key: cell[key] for key in ('time', 'event_time', 'base_period', 'role', 'estimate', 'se', 'ci_low', 'ci_high')
+                 if key in cell} | {'cohort': cell['group']} for cell in group_time['cells']]
+        options = saved.get('diagnostics', {}).get('effective_options', {}).get('att_gt', {})
+        metadata = {**saved.get('display', {}).get('metadata', {}), 'estimand': 'ATT(g,t)',
+                    'aggregation': 'unaggregated group-time cells', 'base_period': options.get('base_period'),
+                    'control_group': options.get('control_group'), 'anticipation': options.get('anticipation'),
+                    'interval_type': None, 'confidence_level': None}
+        if 'cband' in options:
+            metadata['interval_type'] = 'simultaneous' if options['cband'] else 'pointwise'
+        if options.get('alp') is not None:
+            metadata['confidence_level'] = 1 - options['alp']
+        for key in ('cohort_contributions', 'aggregation_weights'):
+            metadata[key] = None
+        visit({'kind': 'att_gt', 'rows': rows, 'metadata': metadata}, ['diagnostics', 'group_time'])
+        visit({'kind': 'cohort_event', 'rows': rows, 'metadata': metadata}, ['diagnostics', 'group_time'])
+        definitions[-1]['id'] += '-cohort-event'
+    gaps = saved.get('diagnostics', {}).get('period_gap')
+    if gaps and not any(item['kind'] == 'scm_gap' for item in definitions):
+        visit({'kind': 'scm_gap', 'rows': [{'time': row['time'], 'estimate': row['gap']} for row in gaps],
+               'metadata': {**saved.get('adopted', {}),
+                            'estimand': 'treated-minus-synthetic outcome gap'}}, ['diagnostics', 'period_gap'])
     return definitions
 
 
@@ -995,6 +1030,7 @@ def gallery_plot_panel(axis, rows, display, metadata, columns, family, font_size
         components = list(dict.fromkeys((str(row.get(component_key, '')), str(row.get('role', ''))) for row in selected))
         for component, role in components:
             component_rows = [row for row in selected if (str(row.get(component_key, '')), str(row.get('role', ''))) == (component, role)]
+            role = {'pretreatment_diagnostic': 'pre_diagnostic', 'post_treatment_att': 'att'}.get(role, role)
             if plot_type == 'rdd':
                 sides = list(dict.fromkeys(row.get('side', row.get('group')) for row in component_rows))
                 if sides != [None]:
@@ -1391,7 +1427,8 @@ def latex_adapter(source, kind):
         source=replace_once(source,'\\bibliographystyle{ecta-fullname} % Style BST file', '% Bibliography style is set to ecta-fullname by the renderer.')
         source=replace_once(source,'\\bibliography{../bibliography}  % Bibliography file (usually \'*.bib\')', '$if(bibliography)$\\bibliography{$for(bibliography)$$bibliography$$sep$,$endfor$}$endif$')
     elif kind=='slides':
-        source=replace_once(source,'\\documentclass[unicode, mathserif, m, 12pt, unknownkeysallowed]{beamer}', '\\documentclass[unicode, mathserif, m, $if(fontsize)$$fontsize$$else$12pt$endif$, unknownkeysallowed$if(aspectratio)$,aspectratio=$aspectratio$$endif$]{beamer}')
+        # Pandoc's common preamble selects Babel's locale through the class option.
+        source=replace_once(source,'\\documentclass[unicode, mathserif, m, 12pt, unknownkeysallowed]{beamer}', '\\documentclass[unicode, mathserif, m, $if(fontsize)$$fontsize$$else$12pt$endif$, unknownkeysallowed$if(babel-lang)$,$babel-lang$$endif$$if(aspectratio)$,aspectratio=$aspectratio$$endif$]{beamer}')
         source=replace_once(source,'\\usetheme[numbering=fraction]{metropolis}', '$if(theme)$\\usetheme{$theme$}$else$\\usetheme[numbering=fraction]{metropolis}$endif$')
         source=replace_once(source,'\\title[Footer title]{TITLE}\n\\subtitle{SUBTITLE}\n\\author{Author}\n\\institute{}\n\\date{\\today}', '$if(title)$\\title{$title$}$endif$\n$if(subtitle)$\\subtitle{$subtitle$}$endif$\n\\author{$for(author)$$author$$sep$ \\and $endfor$}\n$if(institute)$\\institute{$institute$}$endif$\n\\date{$if(date)$$date$$else$\\today$endif$}')
         source=replace_once(source,'\\usepackage{amsmath}\n\\begin{document}', '\\usepackage{amsmath}\n'+common+'\\setbeamerfont{caption}{size=\\scriptsize}\n\\AtBeginEnvironment{longtable}{\\footnotesize\\setlength{\\tabcolsep}{2pt}}\n\\begin{document}')
@@ -1543,7 +1580,7 @@ def normalize(root,spec,selected=None):
         provenance=result.get('provenance',result.get('inputs',{}))
         if not isinstance(provenance,dict): raise ValueError('result provenance must be an object')
         checks={}
-        for ref_name, hash_names in {'specification':('spec_sha256','specification_sha256'),'data':('data_sha256',),'code':('script_sha256','code_sha256')}.items():
+        for ref_name, hash_names in {'specification':('spec_sha256','specification_sha256'),'data':('data_sha256',),'code':('script_sha256','code_sha256','producer_sha256')}.items():
             claimed=next((provenance[k] for k in hash_names if k in provenance),None)
             if claimed is not None:
                 if ref_name not in refs or refs[ref_name]['sha256']!=claimed: raise ValueError(f'{name}: {ref_name} does not match declared producer hash')
@@ -1577,7 +1614,8 @@ def normalize(root,spec,selected=None):
         for key,value in ses.items():
             if value is None: continue
             sname='standard_error.'+key
-            unit=quantities.get(sname,{}).get('statistic',{}).get('unit',units.get(key))
+            unit=quantities.get(sname,{}).get('statistic',{}).get('unit',
+                quantities.get('coefficient.'+key,{}).get('statistic',{}).get('unit',units.get(key)))
             if unit is None: raise ValueError(f'{name}: standard error unit required for {key}')
             add(sname,value,unit,['standard_errors',key])
         inference=result.get('inference',{}) or {}

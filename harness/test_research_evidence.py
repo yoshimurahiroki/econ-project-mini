@@ -89,12 +89,12 @@ class EvidenceTests(unittest.TestCase):
     def test_registration_preserves_saved_inference_without_derivation(self):
         saved = {'method': 'official-example', 'coefficients': {'effect': 0.0, 'omitted': None},
                  'standard_errors': {'effect': 0.25, 'omitted': None},
+                 'statistics': {'coefficient.effect': {'value': 0.0, 'unit': 'hours'}},
+                 'provenance': {'producer_sha256': self.ref('code.py')['sha256']},
                  'covariance': [[0.0625, None], [None, None]],
                  'inference': {'reference_distribution': 'normal'}}
         self.write('saved.json', json.dumps(saved))
-        spec = {'sources': [{'id': 'fit', 'result': 'saved.json', 'code': 'code.py',
-                             'expected_hashes': {'code': self.ref('code.py')['sha256']},
-                             'coefficient_units': {'effect': 'hours'}}], 'bindings': {}}
+        spec = {'sources': [{'id': 'fit', 'result': 'saved.json', 'code': 'code.py'}], 'bindings': {}}
         registry = artifacts.normalize(self.root, spec)
         self.assertEqual(set(registry['statistics']), {'fit.coefficient.effect', 'fit.standard_error.effect'})
         self.assertEqual(registry['records']['fit']['source_result'], saved)
@@ -105,6 +105,30 @@ class EvidenceTests(unittest.TestCase):
         self.assertEqual(registry['statistics']['fit.confidence_lower.effect']['value'], -0.41)
         self.assertNotIn('fit.confidence_95_lower.effect', registry['statistics'])
         self.assertEqual(registry['items']['fit-coefficients']['metadata']['confidence_level'], 0.90)
+
+    def test_saved_specialist_blocks_keep_interval_family_and_cell_coordinates(self):
+        source = {'display': {'kind': 'iv_confidence_set', 'rows': [
+            {'term': 'effect', 'lower': None, 'upper': 0.25, 'lower_unbounded': True, 'upper_unbounded': False}],
+            'metadata': {'effective_options': {'args': {'weights': [11, 17], 'vcov': 'HC1'},
+                                               'columns': {'weights': 'sampling_weight'}}}},
+            'displays': {'simultaneous': {'kind': 'event-study', 'rows': [
+                {'event_time': 0, 'estimate': 1.0, 'ci_low': -0.7, 'ci_high': 2.7}],
+                'metadata': {'interval_type': 'simultaneous', 'confidence_level': 0.9}}},
+            'diagnostics': {'group_time': {'cells': [
+                {'group': 2021, 'time': 2022, 'event_time': 1, 'estimate': 1.4, 'se': 0.2,
+                 'ci_low': 0.9, 'ci_high': 1.9, 'role': 'att', 'sample_ids': ['private-row']} ]}}}
+        items = artifacts.prepare_gallery_items({'records': {'saved': {'source_result': source}}, 'statistics': {}})
+        self.assertEqual(items['saved-iv_confidence_set']['display']['plot_type'], 'iv_confidence_set')
+        options = items['saved-iv_confidence_set']['metadata']['effective_options']
+        self.assertEqual(options, {'args': {'vcov': 'HC1'}, 'columns': {'weights': 'sampling_weight'}})
+        self.assertEqual(source['display']['metadata']['effective_options']['args']['weights'], [11, 17])
+        self.assertEqual(items['saved-displays-simultaneous']['metadata']['interval_type'], 'simultaneous')
+        self.assertEqual(items['saved-displays-simultaneous']['rows'][0]['ci_low'], -0.7)
+        cell = items['saved-group_time']['rows'][0]
+        self.assertEqual((cell['cohort'], cell['time'], cell['estimate'], cell['ci_high']), (2021, 2022, 1.4, 1.9))
+        self.assertNotIn('sample_ids', cell)
+        self.assertIsNone(items['saved-group_time']['metadata']['interval_type'])
+        self.assertEqual(items['saved-group_time-cohort-event']['metadata']['display_source']['key'], ['diagnostics', 'group_time'])
 
     def test_comparison_retains_definitions_within_one_display(self):
         definitions = {'estimand': 'ATT(g,t)', 'population': 'eligible people', 'sample': 'sample-v1',
