@@ -850,8 +850,14 @@ def _staggered_did(spec, data):
 args <- commandArgs(trailingOnly=TRUE)
 suppressPackageStartupMessages(library(did))
 suppressPackageStartupMessages(library(jsonlite))
-if (packageVersion('did') < '2.5.1') stop('did >= 2.5.1 is required')
+did_version <- packageVersion('did')
+if (did_version < '2.5.1') stop('did >= 2.5.1 is required')
+updated_aggregation_rules <- did_version >= '2.5.1.906'
 s <- fromJSON(args[2], simplifyVector=TRUE); o <- s$options
+agg_args <- list(type='dynamic')
+if (length(o$aggregation)) for(k in names(o$aggregation)) agg_args[k] <- o$aggregation[k]
+if (!updated_aggregation_rules && agg_args$type == 'group' && isTRUE(agg_args$min_e > 0))
+  stop('Positive group min_e requires did >= 2.5.1.906; this did version does not apply that aggregation window')
 classes <- setNames('character', s$id)
 d <- read.csv(args[1], check.names=FALSE, colClasses=classes)
 unit <- o$entity; tm <- o$time; gn <- o$cohort
@@ -868,8 +874,7 @@ forward <- c('panel','allow_unbalanced_panel','anticipation','weightsname',
 for (k in intersect(names(o), forward)) call_args[k] <- o[k]
 if (!is.null(o$seed)) set.seed(o$seed)
 invisible(capture.output(a <- do.call(did::att_gt, call_args)))
-agg_args <- list(MP=a, type='dynamic')
-if (length(o$aggregation)) for(k in names(o$aggregation)) agg_args[k] <- o$aggregation[k]
+agg_args$MP <- a
 invisible(capture.output(e <- do.call(did::aggte, agg_args)))
 ap <- a$DIDparams; ep <- e$DIDparams
 if (isTRUE(call_args$cband) && !isTRUE(ap$cband)) stop('did did not retain the requested group-time simultaneous band')
@@ -954,12 +959,31 @@ cells <- lapply(seq_along(a$att), function(j) {
     sampling_weights=I(sampling),raw_sampling_weights=I(raw_sampling),sampling_weight_period=weight_period)
 })
 
+component_support <- !is.na(a$att)
+balance_rule <- NULL
+if (e$type == 'dynamic' && !is.null(e$balance_e) && updated_aggregation_rules) {
+  # Match compute.aggte: balance on the original cell support before trimming
+  # the displayed window, retaining only cohorts with every required ATT.
+  event_time <- a$t-a$group
+  eligible <- max(a$t)-a$group >= e$balance_e
+  eligible_groups <- unique(a$group[eligible])
+  required_events <- unique(event_time[eligible & event_time >= 0 & event_time <= e$balance_e])
+  complete <- vapply(eligible_groups, function(g) {
+    length(required_events) > 0L && all(required_events %in% event_time[a$group == g & component_support])
+  }, logical(1))
+  component_support <- component_support & a$group %in% eligible_groups[complete]
+  balance_rule <- 'common_nonmissing_event_support'
+} else if (e$type == 'dynamic' && !is.null(e$balance_e)) {
+  # did 2.5.1 balances by calendar reach after removing missing ATT cells.
+  component_support <- component_support & max(a$t[component_support])-a$group >= e$balance_e
+  balance_rule <- 'calendar_reach_after_na_removal'
+}
 components <- lapply(seq_along(e$egt), function(k) {
   z <- e$egt[k]
   keep <- switch(e$type, dynamic=(a$t-a$group == z), group=(a$group == z & a$t >= a$group), calendar=(a$t == z & a$group <= a$t))
-  if (e$type == 'dynamic' && !is.null(e$balance_e)) keep <- keep & max(grid)-a$group >= e$balance_e
+  if (e$type == 'group' && updated_aggregation_rules && isTRUE(is.finite(agg_args$min_e))) keep <- keep & a$t >= a$group+agg_args$min_e
   if (e$type == 'group' && isTRUE(is.finite(agg_args$max_e))) keep <- keep & a$t <= a$group+agg_args$max_e
-  keep <- which(keep & !is.na(a$att))
+  keep <- which(keep & component_support)
   weights <- mass[keep] / sum(mass[keep])
   ids <- unique(unlist(lapply(cells[keep], function(x) x$treated_ids), use.names=FALSE))
   list(index=z,cohorts=I(as.numeric(a$group[keep])),times=I(as.numeric(a$t[keep])),
@@ -974,11 +998,15 @@ settings <- function(params) {
     'fix_weights','alp','bstrap','biters','clustervars','cband','est_method','base_period','faster_mode')
   params[intersect(keys,names(params))]
 }
-obj <- list(r_version=as.character(getRversion()), did_version=as.character(packageVersion('did')),
+aggregation_conditions <- list(group_min_e_supported=updated_aggregation_rules,
+  group_event_time_min=if(e$type == 'group') {
+    if(updated_aggregation_rules && !is.null(agg_args$min_e)) max(0,agg_args$min_e) else 0
+  } else NULL, balance_e_rule=balance_rule)
+obj <- list(r_version=as.character(getRversion()), did_version=as.character(did_version),
   drdid_version=as.character(packageVersion('DRDID')),
   runtime=list(library_paths=I(.libPaths()),working_directory=getwd(),profile_user=Sys.getenv('R_PROFILE_USER',unset=NA_character_)),
   signatures=list(att_gt=names(formals(did::att_gt)),aggte=names(formals(did::aggte))),
-  att_gt_options=settings(ap),aggregate_options=c(settings(ep), list(type=e$type,balance_e=agg_args$balance_e,min_e=agg_args$min_e,max_e=agg_args$max_e,na.rm=isTRUE(agg_args$na.rm))),
+  att_gt_options=settings(ap),aggregate_options=c(settings(ep), list(type=e$type,balance_e=agg_args$balance_e,min_e=agg_args$min_e,max_e=agg_args$max_e,na.rm=isTRUE(agg_args$na.rm),effective_conditions=aggregation_conditions)),
   event_times=e$egt,coef=c(e$overall.att,e$att.egt),engine_se=c(e$overall.se,e$se.egt),
   critical_values=c(qnorm(1-ep$alp/2),rep(e$crit.val.egt,length(e$egt))),
   cov=vv,group_cov=gv,groups=a$group,times=a$t,att=a$att,group_se=a$se,n=a$n,
@@ -1059,6 +1087,9 @@ def _official_r(spec, spec_path):
     if method == 'fixes_event_study' and opt['estimator'] == 'sa':
         if spec['regressors'] or 'weights' in opt.get('args',{}) or 'weights' in opt.get('columns',{}):
             raise ValueError('the inspected fixes SA implementation does not pass covariates or sampling weights to its interaction fit; use fixest::sunab for that specification')
+    if method == 'fixes_event_study' and opt['estimator'] in ('bjs','twm','flex'):
+        if 'weights' in opt.get('args',{}) or 'weights' in opt.get('columns',{}):
+            raise ValueError(f"the inspected fixes {opt['estimator'].upper()} implementation does not pass sampling weights to its fit")
     if method == 'nonabs_did' and opt['estimator'] not in ('DCDH','PanelMatch','IFE','FE','MC'):
         raise ValueError('nonabsdid estimator must be DCDH, PanelMatch, IFE, FE or MC')
     if method == 'sunab' and opt.get('aggregation','period') not in ('period','cohort','att'):
