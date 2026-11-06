@@ -207,7 +207,7 @@ def create_bundle(root, output, entries, *, title, kind="meeting", project_view=
             exported = {key: copy.deepcopy(entry[key]) for key in
                         ("id", "title", "kind", "plot_type", "metadata", "provenance", "rows", "columns",
                          "interpretation", "findings", "issues", "adoption_decision", "status", "links",
-                         "display", "result_ids", "source_reference") if key in entry}
+                         "display", "result_ids", "source_reference", "presentation") if key in entry}
             if "columns" in exported:
                 exported["columns"] = [{"key": column, "label": column} if isinstance(column, str) else column
                                        for column in exported["columns"]]
@@ -350,6 +350,9 @@ def artifact_notes(entry, *, output_format="html"):
     notes = entry.get("display", {}).get("notes")
     if notes:
         parts.append(" ".join(str(note) for note in notes) if isinstance(notes, list) else str(notes))
+    for note in entry.get("presentation", {}).get("notes", []):
+        if note and note not in (notes or []):
+            parts.append(str(note))
     definitions = metadata.get("result_definitions") or {key: metadata[key] for key in entry.get("result_ids", [])
                                                        if isinstance(metadata.get(key), dict)}
     for identity, definition in [("", metadata), *definitions.items()]:
@@ -384,24 +387,48 @@ def is_table(entry):
     return plot_type == "table" if plot_type else entry.get("kind") in TABLE_KINDS
 
 
-def table_markdown(entry):
+def table_cells(entry):
+    """Use the selected saved table presentation in document and native Slides exports."""
+    presentation = entry.get("presentation")
+    if presentation:
+        headers = []
+        for row in presentation["headers"]:
+            headers.append([value for cell in row for value in
+                            [cell["text"], *([""] * (cell.get("colspan", 1) - 1))]])
+        width = len(headers[-1]) if headers else 0
+        rows = []
+        for row in [*presentation["body"], *presentation.get("footer", [])]:
+            values = [row.get("label", ""), *row.get("cells", [])]
+            if row.get("kind") == "panel":
+                values.extend([""] * (width - len(values)))
+            if len(values) != width:
+                raise ValueError("Saved table presentation width differs from its header")
+            rows.append(values)
+        return headers, rows
     rows = entry.get("rows", [])
     definitions = entry.get("columns") or ([{"key": key, "label": key} for key in rows[0]] if rows else [])
     columns = [item["key"] for item in definitions]
     if not columns:
-        return ""
+        return [], []
     display = entry.get("display", {})
     def cell(value, key=None):
         if type(value) in (int, float) and key in display.get("formats", {}):
             value = format(value, display["formats"][key])
-        return str(value if value is not None else "—").replace("|", "\\|").replace("\n", " ")
+        return str(value if value is not None else "—")
     labels = {item["key"]: display.get("column_labels", {}).get(item["key"], item.get("label", item["key"])) +
               (" (" + item["unit"] + ")" if item.get("unit") else "") for item in definitions}
     labels.update(display.get("labels", {}))
-    lines = ["| " + " | ".join(cell(labels.get(key, key)) for key in columns) + " |",
-             "| " + " | ".join("---" for _ in columns) + " |"]
-    lines.extend("| " + " | ".join(cell(row.get(key, ""), key) for key in columns) + " |" for row in rows)
-    return "\n".join(lines)
+    return [[cell(labels.get(key, key)) for key in columns]], [[cell(row.get(key, ""), key) for key in columns] for row in rows]
+
+
+def table_markdown(entry):
+    headers, rows = table_cells(entry)
+    if not headers:
+        return ""
+    def line(values):
+        return "| " + " | ".join(str(value).replace("|", "\\|").replace("\n", " ") for value in values) + " |"
+    return "\n".join([line(headers[0]), line(["---"] * len(headers[0])),
+                      *(line(row) for row in [*headers[1:], *rows])])
 
 
 def exhibit_markdown(entry, output_format="html", *, slides=False, caption=""):
@@ -672,34 +699,26 @@ def native_slides_requests(bundle, *, asset_base_url=None):
             paths = files.values() if isinstance(files, dict) else files
             picture = next((value for value in paths if Path(value).suffix.lower() in {".png", ".jpg", ".jpeg"}), None)
             if entry.get("rows") and (is_table(entry) or not picture):
-                rows = entry["rows"]
-                definitions = entry.get("columns") or [{"key": key, "label": key} for key in rows[0]]
-                columns = [column["key"] for column in definitions]
+                headers, rows = table_cells(entry)
+                column_count = len(headers[-1])
+                values = [*headers, *rows]
                 identity = prefix + "table_" + str(index) + "_" + str(number)
-                requests.append({"createTable": {"objectId": identity, "rows": len(rows) + 1, "columns": len(columns), "elementProperties": {
+                requests.append({"createTable": {"objectId": identity, "rows": len(values), "columns": column_count, "elementProperties": {
                     "pageObjectId": page, "size": {"width": {"magnitude": tile_width - 12, "unit": "PT"}, "height": {"magnitude": image_height, "unit": "PT"}},
                     "transform": {"scaleX": 1, "scaleY": 1, "translateX": tile_x, "translateY": image_y, "unit": "PT"}}}})
                 requests.append({"updateTableCellProperties": {"objectId": identity,
-                    "tableRange": {"location": {"rowIndex": 0, "columnIndex": 0}, "rowSpan": 1, "columnSpan": len(columns)},
+                    "tableRange": {"location": {"rowIndex": 0, "columnIndex": 0}, "rowSpan": len(headers), "columnSpan": column_count},
                     "tableCellProperties": {"tableCellBackgroundFill": {"solidFill": {"color": {"rgbColor": {"red": 0.91, "green": 0.94, "blue": 0.97}}}}},
                     "fields": "tableCellBackgroundFill"}})
-                display = entry.get("display", {})
-                labels = [display.get("column_labels", {}).get(column["key"], column.get("label", column["key"])) +
-                          ("\n" + column["unit"] if column.get("unit") else "") for column in definitions]
-                labels = [display.get("labels", {}).get(key, label) for key, label in zip(columns, labels)]
-                values = [labels] + [[row.get(key, "") for key in columns] for row in rows]
-                formats = entry.get("display", {}).get("formats", {})
                 for row_index, values_row in enumerate(values):
                     for column_index, value in enumerate(values_row):
                         location = {"rowIndex": row_index, "columnIndex": column_index}
-                        if row_index and type(value) in (int, float) and columns[column_index] in formats:
-                            value = format(value, formats[columns[column_index]])
                         cell = "—" if value is None else str(value)
                         if not cell:
                             continue
                         requests.append({"insertText": {"objectId": identity, "cellLocation": location, "text": cell}})
                         requests.append({"updateTextStyle": {"objectId": identity, "cellLocation": location, "textRange": {"type": "ALL"},
-                            "style": {"fontFamily": "Noto Sans JP", "fontSize": {"magnitude": 14 if row_index == 0 else 16, "unit": "PT"}, "bold": row_index == 0}, "fields": "fontFamily,fontSize,bold"}})
+                            "style": {"fontFamily": "Noto Sans JP", "fontSize": {"magnitude": 14 if row_index < len(headers) else 16, "unit": "PT"}, "bold": row_index < len(headers)}, "fields": "fontFamily,fontSize,bold"}})
             elif picture:
                 local = str(bundled_path(bundle, picture))
                 url = asset_base_url.rstrip("/") + "/" + quote(picture, safe="/") if asset_base_url else local

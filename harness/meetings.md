@@ -32,6 +32,8 @@ python harness/research.py meeting create --root "$PROJECT" \
 
 テンプレートの `artifact_role` が記述統計、主結果、イベントスタディ、追加結果の挿入位置を指定する。選択結果の `metadata.report_role` で `descriptive`、`main`、`event_study`、`additional` を明示できる。指定がない結果は保存済みの図表種類で配置する。主結果の要約本文は図表の前に保持する。`project-view` に対応する文章がない場合は、選択結果の発見・解釈・検討事項・採用判断を各セクションへ引き継ぐ。
 
+標準回帰表はギャラリーが保存値から組み立てた `presentation` を引き継ぐ。MarkdownとGoogle Slidesのネイティブ表は、同じ列グループ、係数行、括弧付き標準誤差行、モデル情報、表注を使用する。元の数値行と結果IDも資料に保持する。
+
 `project-view` は既存の `project-bind` に登録した GitHub Issues / Projects を読む。`--github` にはコネクタが取得したスナップショットを渡せる。資料内の `task_snapshot` は当該ミーティング時点の記録であり、現在の担当・期限・優先順位・進捗は GitHub で編集する。研究仕様と科学的結果は既存 ERS の正本に置く。
 
 前回資料の `content.md` で編集した決定・To Do を引き継ぐ。該当本文が空欄なら `decisions` と `next_actions` を使う。今回の完了・進行中・次の作業、保存済みの発見・解釈・検討事項・採用判断を各セクションへ入れ、前回から新たに完了したタスクを選ぶ。各図表は結果 ID、標本、観測単位、比較群、期間、単位、推定・標準誤差・区間定義、生成元を引き継ぐ。図表の本文解釈は数値と分けて編集する。
