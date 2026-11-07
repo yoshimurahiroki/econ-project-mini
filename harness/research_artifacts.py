@@ -1864,8 +1864,9 @@ def validate_spec(root, spec):
     models=spec.get('models',[])
     if not isinstance(models,list): raise ValueError('models must be a list')
     for model in models:
-        if not isinstance(model,dict) or set(model)-{'id','source','equation','code_quote','residual_key','tolerance','judgment','parameters'} or not {'id','source','equation','code_quote','residual_key','tolerance','judgment'}<=set(model) or not NAME.fullmatch(model['id']) or model['source'] not in seen or not isinstance(model['equation'],str) or not model['equation'] or not isinstance(model['code_quote'],str) or not model['code_quote'] or not isinstance(model['residual_key'],list) or not model['residual_key'] or any(not isinstance(v,str) or not v for v in model['residual_key']) or type(model['tolerance']) not in (int,float) or not math.isfinite(model['tolerance']) or model['tolerance']<0: raise ValueError('invalid adopted model mapping')
-        evidence.check_judgment(model['judgment'],'model judgment')
+        if not isinstance(model,dict) or set(model)-{'id','source','equation','code_quote','residual_key','tolerance','judgment','parameters'} or not {'id','source','equation','code_quote','residual_key','tolerance'}<=set(model) or not NAME.fullmatch(model['id']) or model['source'] not in seen or not isinstance(model['equation'],str) or not model['equation'] or not isinstance(model['code_quote'],str) or not model['code_quote'] or not isinstance(model['residual_key'],list) or not model['residual_key'] or any(not isinstance(v,str) or not v for v in model['residual_key']) or type(model['tolerance']) not in (int,float) or not math.isfinite(model['tolerance']) or model['tolerance']<0: raise ValueError('invalid adopted model mapping')
+        if 'judgment' in model:
+            evidence.check_judgment(model['judgment'],'model judgment')
     for path in (spec['article_template'],spec['slides_template']):
         text=checked(root,path).read_text(encoding='utf-8')
         names={m.group(1) for m in TOKEN.finditer(text) if m.group(1)}
@@ -2034,7 +2035,8 @@ def make_model_contracts(root,spec,registry_path,article_path):
         def span(body,quote):
             if body.count(quote)!=1: raise ValueError('model quote must occur exactly once')
             start=body.index(quote); return {'start':start,'end':start+len(quote),'quote':quote}
-        mapping={'id':model['id'],'equation':span(article,model['equation']),'code':{**ref(root,code_path),'span':span(code,model['code_quote'])},'judgment':model['judgment'],'result':{**ref(root,registry_file),'identity_keys':{'model':['records',name,'identity','model'],'specification':['records',name,'identity','specification']},'residual_key':['records',name,'source_result',*model['residual_key']],'tolerance':model['tolerance']}}
+        judgment={'judgment':model['judgment']} if 'judgment' in model else {}
+        mapping={'id':model['id'],'equation':span(article,model['equation']),'code':{**ref(root,code_path),'span':span(code,model['code_quote'])},**judgment,'result':{**ref(root,registry_file),'identity_keys':{'model':['records',name,'identity','model'],'specification':['records',name,'identity','specification']},'residual_key':['records',name,'source_result',*model['residual_key']],'tolerance':model['tolerance']}}
         contract={'manuscript':ref(root,article_file),'adopted':identity,'models':[mapping]}
         parameter_rows=[]
         for param in model.get('parameters',[]):
@@ -2042,7 +2044,7 @@ def make_model_contracts(root,spec,registry_path,article_path):
             spec_ref=record['references'].get('specification');
             if not spec_ref: raise ValueError('parameter mapping needs a specification')
             spec_data=load(root/spec_ref['path']); fixed=evidence.lookup(spec_data,param['spec_key'],'parameter specification'); stat=registry['statistics'][param['statistic']]
-            parameter_rows.append({'id':param['id'],'kind':'parameter','status':'derived','target':span(article,param['target']),'code':{**ref(root,code_path),'span':span(code,param['code_quote'])},'judgment':model['judgment'],'origin':{'specification':{**spec_ref,'key':param['spec_key'],'value':fixed,'unit':param['spec_unit']}},'result':{**ref(root,registry_file),'identity_keys':{'model':['records',name,'identity','model'],'specification':['records',name,'identity','specification']},'quantity':{'key':['statistics',param['statistic']],'value':stat['value'],'unit':stat['unit']}}})
+            parameter_rows.append({'id':param['id'],'kind':'parameter','status':'derived','target':span(article,param['target']),'code':{**ref(root,code_path),'span':span(code,param['code_quote'])},**judgment,'origin':{'specification':{**spec_ref,'key':param['spec_key'],'value':fixed,'unit':param['spec_unit']}},'result':{**ref(root,registry_file),'identity_keys':{'model':['records',name,'identity','model'],'specification':['records',name,'identity','specification']},'quantity':{'key':['statistics',param['statistic']],'value':stat['value'],'unit':stat['unit']}}})
         if parameter_rows: contract['mappings']=parameter_rows
         contracts.append({'contract':contract,'check':evidence.bind(contract,root)})
     return contracts
