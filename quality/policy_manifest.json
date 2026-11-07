@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "policy_id": "economics-native-0.59.0",
+  "policy_id": "economics-native-0.60.0",
   "profile": {
     "id": "research-full"
   },
@@ -43,7 +43,7 @@
     },
     "policy_assets": {
       "path": "harness/policy_assets.py",
-      "sha256": "3cdb4ad0d56189ed5e7c62885c7a0377ca9ec86e31533a156dabf4a93ae24713"
+      "sha256": "cc7025cacc6ab25de839c36ee811a6509063fbe92aea2d033452c1fa507cd2e8"
     },
     "prose": {
       "path": "runtime/PROSE.md",
@@ -195,7 +195,7 @@
     },
     "resource:integration": {
       "path": "docs/ai/integration.md",
-      "sha256": "7137f8a33bab721743af1c39f72664c74ea9216f40f577cdd931cc2a1d8475e0"
+      "sha256": "0ef8a54162bc5d638dc63d54960a9d8f0b8c312c3edf580a1505027eee966dca"
     },
     "resource:knowledge-retrieval": {
       "path": "skills/econ-knowledge/scripts/knowledge.py",
@@ -543,7 +543,7 @@
     },
     "resource:resource-guide": {
       "path": "docs/ai/resources.md",
-      "sha256": "cdbb2bc7a2440679bf49feacf4d64dfbc2d9bf4baa59e18af949fb73363e795c"
+      "sha256": "817288f941c88c008886ae90141864720378b4359dc6790e9903a1b356a7634a"
     },
     "resource:result-artifacts": {
       "path": "skills/econ-writing/references/result-artifacts.md",
