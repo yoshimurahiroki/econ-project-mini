@@ -34080,6 +34080,21 @@
           "name": "initial_population",
           "unit": "households and sampling weights",
           "meaning": "Initial assets and permanent income, AgentCount, T_sim, seed and tracked histories for a requested simulation."
+        },
+        {
+          "name": "evaluation",
+          "unit": "normalized resources, ages and population weights",
+          "meaning": "Internal run evaluates mNrm at the declared periods and applies optional probability weights; its finite-life consumer_options require cycles=1."
+        },
+        {
+          "name": "calibration_source",
+          "unit": "parameter provenance",
+          "meaning": "Source of the adopted fixed or previously fitted consumer parameters."
+        },
+        {
+          "name": "scenario",
+          "unit": "native HARK parameter changes",
+          "meaning": "Optional consumer_options changes for the same lifecycle horizon and CRRA normalization."
         }
       ],
       "parameters": [
@@ -34103,6 +34118,11 @@
           "name": "diagnostics",
           "unit": "original-equation residuals",
           "meaning": "Budget, interior Euler equality, borrowing-boundary inequality and complementarity, shock-transition and grid/integration comparisons."
+        },
+        {
+          "name": "statistics and displays",
+          "unit": "named normalized consumption, assets and expected utility",
+          "meaning": "Internal run saves evaluated policies and values, declared population-weighted means, scenario differences, Euler gaps and borrowing complementarity; optional simulation saves official histories."
         }
       ],
       "assumptions": [
@@ -34132,6 +34152,11 @@
         }
       ],
       "implementation": [
+        {
+          "path": "skills/econ-data/scripts/research_macro_extended.py",
+          "symbol": "solve_hark",
+          "command": "run"
+        },
         {
           "module": "HARK.ConsumptionSaving.ConsIndShockModel",
           "symbol": "PerfForesightConsumerType",

@@ -900,40 +900,31 @@ def select_method(request):
                     outputs=['AR(1) estimates and covariance','linearized Euler/resource coefficients and residuals',
                         'conditional impulse responses, stochastic paths and forecast moments','finite-horizon welfare with terminal continuation'])
         elif model == 'consumption_saving':
-            income_process = facts.get('income_process')
+            income_process = facts.get('income_process', adopted_spec.get('income_process'))
             classes = {'perfect_foresight':'PerfForesightConsumerType','idiosyncratic_shocks':'IndShockConsumerType'}
             if income_process not in classes:
                 raise ValueError('consumption_saving requires conditions.income_process=perfect_foresight or idiosyncratic_shocks')
             function = 'HARK.ConsumptionSaving.ConsIndShockModel.' + classes[income_process]
-            owner = 'external official Python entry: ' + function
+            owner = 'skills/econ-data/scripts/research_macro_extended.py run'
             method_quantity = 'age-specific consumption policies, normalized value functions and simulated asset/income paths at adopted parameters'
             conditions = ['finite lifecycle with cycles=1 and T_cycle periods plus the terminal solution',
                 'CRRA utility, adopted discounting, survival, income growth, returns and borrowing constraints',
                 'terminal consumption equals cash on hand in these consumer classes',
                 'initial population and income/shock timing match the adopted model',
                 'prices are exogenous; welfare uses declared value units, population weights and scenario contrast']
-            required_inputs = ['T_cycle, CRRA, DiscFac, Rfree, LivPrb, PermGroFac and BoroCnstArt with matching age profiles',
-                'initial asset/permanent-income distributions, AgentCount, T_sim, seed and track_vars',
-                'target population, period, normalization, weights and fixed or fitted parameter provenance',
-                'scenario changes and utility-to-money conversion when monetary welfare is requested']
+            required_inputs = ['income_process','consumer_options with cycles, T_cycle, CRRA, DiscFac, Rfree, LivPrb, PermGroFac and BoroCnstArt',
+                'evaluation.mNrm with adopted periods and optional population weights','calibration_source',
+                'simulation for requested histories; scenario.consumer_options for a requested counterfactual']
             if income_process == 'idiosyncratic_shocks':
                 required_inputs += ['PermShkStd, TranShkStd, shock distributions, integration counts and asset grid']
-            required_native_options = {'cycles':1}
+            required_native_options = {'consumer_options.cycles':1}
             if income_process == 'idiosyncratic_shocks':
-                required_native_options['vFuncBool'] = True
-            external_implementation = {'language':'Python','function':function,'version':'0.17.2',
-                'source':'https://github.com/econ-ark/HARK/blob/269085077b84cb50feb49d0cd54bbf4da5fa3199/HARK/ConsumptionSaving/ConsIndShockModel.py',
-                'signature':{'solve':['verbose','presolve','postsolve','from_solution','from_t'],
-                    'initialize_sim':[],'simulate':['sim_periods']},
-                'parameter_operation':computation['parameter_operation'],
-                'numerical_method':'finite-horizon backward induction using the official consumer solver',
-                'inputs':required_inputs,
-                'outputs':['solve() stores T_cycle+1 ConsumerSolution objects in consumer.solution',
+                required_native_options['consumer_options.vFuncBool'] = True
+            computation.update(solution_object=method_quantity,
+                outputs=['solve() stores T_cycle+1 ConsumerSolution objects in consumer.solution',
                     'solution[t].cFunc(mNrm) and vFunc(mNrm), with permanent-income normalization',
                     'simulate() stores each track_vars history as a (T_sim, AgentCount) array',
-                    'scenario-specific values and outcomes aggregated with the adopted population weights'],
-                'execution':'construct the selected consumer with cycles=1, solve(), then set track_vars and call initialize_sim() and simulate() for requested histories; re-solve each changed scenario at the same fitted primitives',
-                'equilibrium_contract':'individual consumption-saving conditional on prices; market clearing uses the existing macro equilibrium owner'}
+                    'scenario-specific values and outcomes aggregated with the adopted population weights'])
         elif respy_simulation:
             simulation_method = numerical.get('simulation_method')
             if simulation_method not in ('n_step_ahead_with_sampling','n_step_ahead_with_data','one_step_ahead'):
@@ -1222,6 +1213,14 @@ def select_method(request):
     # Keep the supplied options intact and expose target-implied changes as a
     # reviewable proposal. Selection never amends or executes the adopted fit.
     selected_options = deepcopy(forward_options)
+    if method == 'consumption_saving':
+        if 'consumer_options' in selected_options:
+            if set(selected_options) != {'consumer_options'}:
+                raise ValueError('HARK selection options must contain the native consumer_options object')
+        else:
+            selected_options = {'consumer_options':deepcopy(forward_options or adopted_spec.get('consumer_options',{}))}
+        if not isinstance(selected_options['consumer_options'],dict):
+            raise ValueError('consumer_options must be an object of native HARK arguments')
     option_changes = []
     if method in ('fixest_ols', 'fixest_ppml', 'sunab') and cluster_columns is not None:
         # fixest accepts one covariance specification. The vcov formula binds
@@ -1250,7 +1249,8 @@ def select_method(request):
                         'vcov':{'CRV1':cluster_columns[0]} if method == 'hdfe' and cluster_columns else 'hetero'}
             supplied = cursor.get(key, defaults.get(field))
             if supplied != value:
-                option_changes.append({'field':'options.'+field,'supplied':supplied,'selected':value})
+                option_changes.append({'field':('' if method=='consumption_saving' else 'options.')+field,
+                    'supplied':supplied,'selected':value})
             cursor[key] = value
     unbound_inputs = []
     if method in DML_METHODS:
@@ -1284,6 +1284,8 @@ def select_method(request):
         unbound_inputs.append('options.columns.fuzzy: actual treatment-receipt column')
     if external_implementation:
         engine = external_implementation['function']
+    elif method == 'consumption_saving':
+        engine = function
     elif method in R_METHODS:
         package, function = R_METHODS[method]; engine = f'{package}::{function}'
     else:
@@ -1329,7 +1331,13 @@ def select_method(request):
     for key in contract_fields:
         if key in adopted_contract and proposed_contract.get(key) != adopted_contract[key]:
             changes.append({'field':key,'adopted':adopted_contract[key],'selected':proposed_contract.get(key)})
-    if adopted_spec and (forward_options != adopted_spec.get('options', {}) or option_changes):
+    if method == 'consumption_saving' and adopted_spec:
+        if selected_options['consumer_options'] != adopted_spec.get('consumer_options',{}):
+            changes.append({'field':'consumer_options','adopted':adopted_spec.get('consumer_options',{}),
+                'selected':selected_options['consumer_options']})
+        if 'income_process' in adopted_spec and adopted_spec['income_process'] != income_process:
+            changes.append({'field':'income_process','adopted':adopted_spec['income_process'],'selected':income_process})
+    elif adopted_spec and (forward_options != adopted_spec.get('options', {}) or option_changes):
         changes.append({'field':'options','adopted':adopted_spec.get('options', {}),'selected':selected_options})
     relation = {'adopted_estimand':adopted_spec.get('estimand'),
                 'requested_estimand':request['estimand'],'selected_method_quantity':method_quantity}
@@ -1594,6 +1602,9 @@ def select_method(request):
             required_fields = owner_fields
         elif resource_id == 'research-macro-extended' and method == 'aiyagari':
             owner_fields = required_fields = {'model','calibration_source','parameters','baseline','scenario','solver'}
+        elif resource_id == 'research-macro-extended' and method == 'consumption_saving':
+            required_fields = {'model','income_process','consumer_options','evaluation','calibration_source'}
+            owner_fields = required_fields | {'scenario','simulation'}
         elif resource_id == 'research-dsge':
             owner_fields = required_fields = {'parameters','observations','horizon','simulation_paths','seed','technology_shock'}
         elif resource_id == 'research-markets':
@@ -1606,11 +1617,24 @@ def select_method(request):
         execution_spec = {key:deepcopy(adopted_spec[key]) for key in owner_fields if key in adopted_spec}
         if resource_id not in ('research-macro','research-dsge'):
             execution_spec['model'] = model
+        if method == 'consumption_saving':
+            execution_spec['income_process'] = income_process
+            execution_spec['consumer_options'] = deepcopy(selected_options['consumer_options'])
+            if computation['requested_operation'] == 'simulate' and 'simulation' not in execution_spec:
+                unbound_inputs.append('simulation: adopted AgentCount, T_sim, seed and track_vars')
+            if computation['requested_operation'] == 'counterfactual' and 'scenario' not in execution_spec:
+                unbound_inputs.append('scenario.consumer_options: adopted changed parameters')
         if resource_id == 'research-dynamic' and 'options' in adopted_spec:
             execution_spec['options'] = deepcopy(selected_options)
             if method == 'replacement' and algorithm == 'smm' and 'smm' not in execution_spec['options']:
                 unbound_inputs.append('options.smm: adopted seed, replications, initial_costs, bounds and tolerance')
         missing_fields = sorted(required_fields - execution_spec.keys())
+        if method == 'consumption_saving':
+            missing_fields.extend('consumer_options.'+key for key in
+                ('T_cycle','CRRA','DiscFac','Rfree','LivPrb','PermGroFac','BoroCnstArt')
+                if key not in execution_spec['consumer_options'])
+            if isinstance(execution_spec.get('evaluation'),dict) and 'mNrm' not in execution_spec['evaluation']:
+                missing_fields.append('evaluation.mNrm')
         if resource_id == 'research-numerics' and 'inputs' in execution_spec:
             if not isinstance(execution_spec['inputs'], dict):
                 raise ValueError('adopted_specification.inputs must be an object')
@@ -2692,6 +2716,20 @@ def _doubleml(spec, data, cluster_columns, input_rows):
                         for key in ('train_clusters','test_clusters'):
                             if not isinstance(fold[key],dict) or set(fold[key]) != set(cluster_columns):
                                 raise ValueError(f'{key} must map each cluster column to its labels')
+                        for col in cluster_columns:
+                            train_labels, test_labels = fold['train_clusters'][col], fold['test_clusters'][col]
+                            if not isinstance(train_labels,list) or not isinstance(test_labels,list):
+                                raise ValueError('cluster labels must be lists')
+                            if (len(set(train_labels)) != len(train_labels) or len(set(test_labels)) != len(test_labels)
+                                    or set(train_labels) & set(test_labels)
+                                    or set(train_labels) | set(test_labels) != set(frame[col])):
+                                raise ValueError(f'each fold must partition the complete {col} cluster labels')
+                        for j,key in enumerate(('train_clusters','test_clusters')):
+                            membership = np.ones(len(frame),dtype=bool)
+                            for col in cluster_columns:
+                                membership &= frame[col].isin(fold[key][col]).to_numpy()
+                            if not np.array_equal(np.sort(row_splits[-1][j]), np.flatnonzero(membership)):
+                                raise ValueError('sample fold IDs must equal the intersection of their declared cluster sets')
                         row_cluster_splits.append(tuple([np.asarray(fold[key][col]) for col in cluster_columns]
                             for key in ('train_clusters','test_clusters')))
                 splits.append(row_splits)
