@@ -732,6 +732,7 @@
       "content_version": "0.56.0",
       "required_resources": [
         "econ-knowledge",
+        "research-numerics",
         "research-causal-dependencies",
         "research-causal-r-dependencies",
         "team-state-helper",
