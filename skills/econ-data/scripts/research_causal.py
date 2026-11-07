@@ -2630,9 +2630,8 @@ cat(toJSON(obj,auto_unbox=TRUE,digits=16,na='null',null='null'))
     return result
 
 
-def case(output):
-    """Generate original seeded data and execute every supported model."""
-    output.mkdir(parents=True,exist_ok=False)
+def case(output, methods=None):
+    """Execute selected original seeded examples with their unchanged specifications."""
     rng=np.random.default_rng(10198)
     n=1200; x=rng.normal(size=n); z=rng.normal(size=n); z2=rng.normal(size=n)
     e=rng.normal(size=n); var=0.5+x*x; treatment=0.9*z+0.6*z2+0.7*e+rng.normal(size=n)
@@ -2651,26 +2650,26 @@ def case(output):
     frame['y_dist']=frame['assigned']+rng.normal(size=n)
     frame['policy_d']=rng.binomial(1,0.5,n); frame['policy_p']=0.5; frame['partition']=np.where(np.arange(n)%2==0,'train','evaluation'); frame['y_policy']=1+x+1.5*x*frame['policy_d']+rng.normal(scale=.5,size=n)
     frame['running']=rng.uniform(-1,1,n); above=(frame['running']>=0); frame['received']=rng.binomial(1,0.15+0.7*above); frame['y_sharp']=1+frame['running']+2*above+rng.normal(scale=.5,size=n); frame['y_local']=1+2*above+rng.normal(scale=.5,size=n); frame['y_fuzzy']=1+frame['running']+2*frame['received']+rng.normal(scale=.5,size=n)
-    frame.to_csv(output/'cross.csv',index=False)
+    datasets={'cross.csv':frame}
     units=200; periods=6
     u=np.repeat(np.arange(units),periods); t=np.tile(np.arange(periods),units)
     px=rng.normal(size=len(u)); alpha=np.repeat(rng.normal(size=units),periods)
     panel=pd.DataFrame({'id':[f'p{i}' for i in range(len(u))],'entity':u,'time':t,'x':px,'y':2*px+alpha+0.3*t+rng.normal(size=len(u))})
-    panel.to_csv(output/'panel.csv',index=False)
+    datasets['panel.csv']=panel
     nd=250; td=10; dx=rng.normal(size=(nd,td)); dy=np.zeros((nd,td)); da=rng.normal(size=nd)
     for j in range(1,td): dy[:,j]=.55*dy[:,j-1]+.7*dx[:,j]+da+rng.normal(size=nd)
-    pd.DataFrame({'id':[f'd{i}' for i in range(nd*td)],'entity':np.repeat(np.arange(nd),td),'time':np.tile(np.arange(td),nd),'x':dx.ravel(),'y':dy.ravel()}).to_csv(output/'dynamic.csv',index=False)
+    datasets['dynamic.csv']=pd.DataFrame({'id':[f'd{i}' for i in range(nd*td)],'entity':np.repeat(np.arange(nd),td),'time':np.tile(np.arange(td),nd),'x':dx.ravel(),'y':dy.ravel()})
     ns=160; spatial_x=rng.normal(size=ns); shock=rng.normal(size=ns); W=np.zeros((ns,ns)); idx=np.arange(ns); W[idx,(idx-1)%ns]=0.5; W[idx,(idx+1)%ns]=0.5
-    spatial_y=np.linalg.solve(np.eye(ns)-.35*W,1+1.7*spatial_x+shock); nt=rng.binomial(1,.5,ns); network_y=1+.5*spatial_x+.8*nt+1.2*(W@nt)+rng.normal(scale=.5,size=ns); pd.DataFrame({'id':[f's{i}' for i in idx],'x':spatial_x,'y':spatial_y,'assigned':nt,'network_y':network_y}).to_csv(output/'spatial.csv',index=False)
+    spatial_y=np.linalg.solve(np.eye(ns)-.35*W,1+1.7*spatial_x+shock); nt=rng.binomial(1,.5,ns); network_y=1+.5*spatial_x+.8*nt+1.2*(W@nt)+rng.normal(scale=.5,size=ns); datasets['spatial.csv']=pd.DataFrame({'id':[f's{i}' for i in idx],'x':spatial_x,'y':spatial_y,'assigned':nt,'network_y':network_y})
     nsc=52; sc_t=np.arange(nsc); donor=rng.normal(size=(nsc,4))+0.02*sc_t[:,None]; true_weights=np.array([.1,.2,.3,.4]); sc_y=donor@true_weights+rng.normal(scale=.08,size=nsc)+2*(sc_t>=40)
-    sc_rows=[{'id':f'c{t}_{u}','entity':f'u{u}','time':t,'y':float(sc_y[t] if u==0 else donor[t,u-1])} for t in sc_t for u in range(5)]; pd.DataFrame(sc_rows).to_csv(output/'synthetic.csv',index=False)
+    sc_rows=[{'id':f'c{t}_{u}','entity':f'u{u}','time':t,'y':float(sc_y[t] if u==0 else donor[t,u-1])} for t in sc_t for u in range(5)]; datasets['synthetic.csv']=pd.DataFrame(sc_rows)
     nn=360; nt=7; cohort_values=np.resize(np.array([0,3,5]),nn); rng.shuffle(cohort_values); did_u=rng.normal(size=nn); did_x=rng.normal(size=nn*nt); did_entity=np.repeat(np.arange(nn),nt); did_time=np.tile(np.arange(1,nt+1),nn); did_g=np.repeat(cohort_values,nt); did_y=did_u[did_entity]+.3*did_time+.4*did_x+1.5*((did_g>0)&(did_time>=did_g))+rng.normal(size=nn*nt)
-    pd.DataFrame({'id':[f'g{i}' for i in range(nn*nt)],'entity':did_entity,'time':did_time,'cohort':did_g,'x':did_x,'y':did_y}).to_csv(output/'staggered.csv',index=False)
+    datasets['staggered.csv']=pd.DataFrame({'id':[f'g{i}' for i in range(nn*nt)],'entity':did_entity,'time':did_time,'cohort':did_g,'x':did_x,'y':did_y})
     ng=70; tg=12; gunit=np.repeat(np.arange(ng),tg); gtime=np.tile(np.arange(1,tg+1),ng); gx=rng.normal(size=ng*tg); galpha=rng.normal(size=ng); gloading=rng.normal(size=ng); gd=((gunit<10)&(gtime>=9)).astype(int); gy=galpha[gunit]+.2*gtime+gloading[gunit]*np.sin(gtime/2)+.4*gx+1.4*gd+rng.normal(scale=.2,size=ng*tg)
-    pd.DataFrame({'id':[f'h{i}' for i in range(ng*tg)],'entity':gunit,'time':gtime,'treated':gd,'x':gx,'y':gy}).to_csv(output/'gsynth.csv',index=False)
+    datasets['gsynth.csv']=pd.DataFrame({'id':[f'h{i}' for i in range(ng*tg)],'entity':gunit,'time':gtime,'treated':gd,'x':gx,'y':gy})
     nm=1200; mb=rng.normal(size=nm); mu=rng.normal(size=nm); md1=rng.binomial(1,.4,nm); md2=rng.binomial(1,.35,nm); dose=rng.binomial(2,.3,nm)*.5; my0=mu+.3*mb+rng.normal(size=nm); my1=mu+.3*mb+.5+1.2*md1+.6*md2+.7*dose+rng.normal(size=nm)
-    mtrows=[{'id':f'm{i}_{t}','entity':i,'time':t,'x':mb[i],'d1':int(md1[i]) if t else 0,'d2':int(md2[i]) if t else 0,'dose':dose[i] if t else 0,'y':my1[i] if t else my0[i]} for i in range(nm) for t in range(2)]; pd.DataFrame(mtrows).to_csv(output/'multitreatment.csv',index=False)
-    pd.DataFrame([{'source':f's{i}','target':f's{j}','weight':0.5} for i in idx for j in ((i-1)%ns,(i+1)%ns)]).to_csv(output/'weights.csv',index=False)
+    mtrows=[{'id':f'm{i}_{t}','entity':i,'time':t,'x':mb[i],'d1':int(md1[i]) if t else 0,'d2':int(md2[i]) if t else 0,'dose':dose[i] if t else 0,'y':my1[i] if t else my0[i]} for i in range(nm) for t in range(2)]; datasets['multitreatment.csv']=pd.DataFrame(mtrows)
+    datasets['weights.csv']=pd.DataFrame([{'source':f's{i}','target':f's{j}','weight':0.5} for i in idx for j in ((i-1)%ns,(i+1)%ns)])
     common={'id':'id','regressors':['x'],'endogenous':[],'instruments':[],
       'population':'seeded simulated units','period':'simulated','unit':'outcome units',
       'estimand':'specified conditional model coefficient','identification':'exogeneity holds by construction',
@@ -2704,8 +2703,19 @@ def case(output):
       'logit':{'data':'cross.csv','outcome':'y_logit','unit':'conditional log odds','estimand':'conditional log odds slope'}}
     targets={'distribution_effect':('assigned',-0.341344746,0.1),'multitreatment_did':('dose',0.7,0.25),'generalized_synth':('overall',1.4,0.3),'staggered_did':('event_p0',1.5,0.35),'synthetic_control':('post',2.0,0.2),'dynamic_panel':('L1.y',0.55,0.2),'tobit':('x',2.0,0.13),'network_spillover':('neighbor_exposure',1.2,0.45),'policy_tree':('policy_value_gain',0.6,0.3),'shift_share':('shift_d',1.5,0.13),'rdd_localrand':('assignment',2.0,0.35),'spatial_lag':('spatial_lag',0.35,0.22),'causal_forest':('sample_ate',1.0,0.3),'hdfe':('x',2.0,0.12),'rdd_sharp':('treatment_effect',2.0,0.4),'rdd_fuzzy':('treatment_effect',2.0,0.6),'rct':('assigned',1.5,0.2),'gls':('x',2.0,0.16),'iv_ar':('d',1.5,0.13),'iv_gmm':('d',1.5,0.13),'panel_fe':('x',2.0,0.12),
              'quantile':('x',2.0,0.13),'poisson':('x',0.4,0.1),'logit':('x',0.8,0.2)}
+    selected=list(specs) if methods is None else methods
+    if (not isinstance(selected,list) or not selected or len(set(selected)) != len(selected)
+            or any(method not in specs for method in selected)):
+        raise ValueError('select distinct supported example methods: '+', '.join(specs))
+    needed_data={specs[method]['data'] for method in selected}
+    needed_data.update(specs[method]['options']['weights'] for method in selected
+        if method in ('spatial_lag','network_spillover'))
+    output.mkdir(parents=True,exist_ok=False)
+    for name in sorted(needed_data):
+        datasets[name].to_csv(output/name,index=False)
     checks={}
-    for method,settings in specs.items():
+    for method in selected:
+        settings=specs[method]
         s={**common,**settings,'method':method}; sp=output/(method+'.json'); state.save(sp,s)
         result=run(s,sp); state.save(output/(method+'-result.json'),result)
         name,truth,tolerance=targets[method]; estimate=result['coefficients'][name]
@@ -2720,9 +2730,10 @@ def main():
     run_parser=sub.add_parser('run'); run_parser.add_argument('spec',type=Path); run_parser.add_argument('--output','-o',required=True,type=Path)
     select_parser=sub.add_parser('select'); select_parser.add_argument('spec',type=Path); select_parser.add_argument('--output','-o',required=True,type=Path)
     case_parser=sub.add_parser('case'); case_parser.add_argument('--output','-o',required=True,type=Path)
+    case_parser.add_argument('--method',action='append',help='Execute only this original seeded example; repeat for multiple methods')
     a=parser.parse_args()
     try:
-        if a.operation=='case': case(a.output)
+        if a.operation=='case': case(a.output,a.method)
         else:
             spec=json.loads(a.spec.read_text(encoding='utf-8'))
             result=select_method(spec) if a.operation=='select' else run(spec,a.spec)
