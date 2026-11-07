@@ -5519,7 +5519,7 @@
       "resource_id": "models-causal",
       "section_id": "all",
       "requires": [
-        "research-causal.all"
+        "data-implementation.estimator-engine-and-algorithm-selection"
       ],
       "conditional_requires": [],
       "optional_examples": []
@@ -5549,7 +5549,7 @@
       "resource_id": "models-markets",
       "section_id": "all",
       "requires": [
-        "research-markets.all"
+        "data-implementation.estimator-engine-and-algorithm-selection"
       ],
       "conditional_requires": [],
       "optional_examples": []
@@ -5578,7 +5578,7 @@
       "resource_id": "models-dynamic",
       "section_id": "all",
       "requires": [
-        "research-dynamic.all"
+        "data-implementation.estimator-engine-and-algorithm-selection"
       ],
       "conditional_requires": [],
       "optional_examples": []
@@ -5609,7 +5609,7 @@
       "resource_id": "models-numerics",
       "section_id": "all",
       "requires": [
-        "research-numerics.all"
+        "data-implementation.estimator-engine-and-algorithm-selection"
       ],
       "conditional_requires": [],
       "optional_examples": []
@@ -5645,7 +5645,7 @@
       "resource_id": "models-macro-extended",
       "section_id": "all",
       "requires": [
-        "research-macro-extended.all"
+        "data-implementation.estimator-engine-and-algorithm-selection"
       ],
       "conditional_requires": [],
       "optional_examples": []
@@ -5666,7 +5666,7 @@
       "resource_id": "models-dsge",
       "section_id": "all",
       "requires": [
-        "research-dsge.all"
+        "data-implementation.estimator-engine-and-algorithm-selection"
       ],
       "conditional_requires": [],
       "optional_examples": []
