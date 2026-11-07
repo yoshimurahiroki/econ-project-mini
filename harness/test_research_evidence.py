@@ -106,6 +106,27 @@ class EvidenceTests(unittest.TestCase):
         self.assertNotIn('fit.confidence_95_lower.effect', registry['statistics'])
         self.assertEqual(registry['items']['fit-coefficients']['metadata']['confidence_level'], 0.90)
 
+        model = {'model_contract': 'MC-choice', 'knowledge_ids': ['CHOICE-01'],
+                 'equations': {'choice': 'a = max(0, b / c)'},
+                 'notation': {'a': 'hours of chosen activity'},
+                 'parameter_roles': {'c': {'role': 'calibrated', 'unit': 'currency per hour squared'}},
+                 'assumptions': ['c > 0'], 'normalization': 'outside-option utility is zero',
+                 'equilibrium_selection': 'unique maximizer', 'horizon': 'one period'}
+        saved['adopted'] = {**model, 'sample_ids': ['individual-1']}
+        spec['sources'][0]['metadata'] = {'welfare_definition': 'net benefit in currency per person'}
+        self.write('saved.json', json.dumps(saved))
+        registry = artifacts.normalize(self.root, spec)
+        self.write('gallery.json', json.dumps(registry))
+        (self.root / 'saved.json').unlink()
+        (self.root / 'code.py').unlink()
+        selected = artifacts.gallery_items(self.root, 'gallery.json', item_ids=['fit-coefficients'])[0]
+        definitions = selected['metadata']['result_definitions']['fit']
+        self.assertEqual({key: definitions[key] for key in model}, model)
+        self.assertEqual(definitions['welfare_definition'], 'net benefit in currency per person')
+        self.assertNotIn('sample_ids', definitions)
+        self.assertEqual(registry['records']['fit']['source_result'], saved)
+        self.assertEqual(selected['source_reference']['keys'], ['items', 'fit-coefficients'])
+
     def test_saved_specialist_blocks_keep_interval_family_and_cell_coordinates(self):
         source = {'display': {'kind': 'iv_confidence_set', 'rows': [
             {'term': 'effect', 'lower': None, 'upper': 0.25, 'lower_unbounded': True, 'upper_unbounded': False},

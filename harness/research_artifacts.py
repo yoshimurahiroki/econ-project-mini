@@ -58,7 +58,9 @@ RESULT_DEFINITION_FIELDS = (
     'anticipation', 'treatment_time', 'treatment_event_time', 'cutoff', 'bandwidth', 'weight_type',
     'weight_normalization', 'covariance_kind', 'official_function', 'effective_options',
     'result_format_version', 'scenario', 'parameter_definition', 'identification', 'reference_lines',
-    'report_role', 'selection_status', 'method_selection')
+    'report_role', 'selection_status', 'method_selection',
+    'model_contract', 'knowledge_ids', 'equations', 'notation', 'parameter_roles',
+    'assumptions', 'normalization', 'equilibrium_selection', 'welfare_definition', 'horizon')
 COMPARISON_FIELDS = (
     'estimand', 'population', 'sample', 'observation_unit', 'assignment_unit',
     'comparison', 'comparison_group', 'treatment_group', 'control_group', 'period',
@@ -96,7 +98,7 @@ def gallery_display_metadata(value):
     """Keep sample membership in the scientific record, outside display metadata."""
     if isinstance(value, dict):
         metadata = {key: gallery_display_metadata(item) for key, item in value.items()
-                    if not (key.endswith('_ids') and key not in ('result_ids', 'specification_ids', 'cohort_ids'))}
+                    if not (key.endswith('_ids') and key not in ('result_ids', 'specification_ids', 'cohort_ids', 'knowledge_ids'))}
         # Official calls retain resolved column vectors in the source result.
         # Exhibits retain their column bindings and scalar options.
         if isinstance(value.get('columns'), dict):

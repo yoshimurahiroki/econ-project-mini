@@ -63,6 +63,8 @@ At registration, `metadata` joins the saved result IDs to `producers` and `resul
 
 Structural solvers can store complete paths inside `scenario`. Keep those calculated arrays in `source_result`; captions use the adopted scenario definition or its saved ID, name and description. Supply additional intervention definitions through the source or display `metadata`. This preserves the complete numerical result and gives each exhibit its economic comparison.
 
+Model-based results carry `model_contract`, `knowledge_ids`, `equations`, `notation`, `parameter_roles`, `assumptions`, `normalization`, `equilibrium_selection`, `welfare_definition` and `horizon` in the same saved definitions. The producer's adopted definitions or the artifact specification's source `metadata` supplies those fields. `parameter_roles` identifies each estimated, calibrated or fixed parameter and its source and unit. Read these selected definitions with their saved quantities to compose the Model, Results and Discussion; match notation and defining conditions across the equation, table, figure and manuscript. The selected item's `source_reference` binds this context to its existing registry version. Knowledge IDs locate their registered derivations; the adopted model and saved result govern the paper's actual claim.
+
 ## Browse compare and edit saved results
 
 ```sh
