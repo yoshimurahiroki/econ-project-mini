@@ -31,7 +31,7 @@ GALLERY_KINDS = ('descriptive', 'sample_composition', 'distribution', 'time_seri
 PLOT_TYPES = ('table', 'bar', 'line', 'scatter', 'step', 'area', 'coefficient', 'event_study', 'density', 'ecdf', 'box',
               'att_gt', 'cohort_event', 'parallel_trends', 'rdd', 'iv_first_stage', 'iv_reduced_form',
               'iv_confidence_set', 'scm', 'scm_gap', 'scm_placebo', 'binned_scatter', 'smd', 'structural', 'geo')
-GALLERY_RENDER_VERSION = 12
+GALLERY_RENDER_VERSION = 13
 DISPLAY_FIELDS = {'title', 'column_order', 'column_labels', 'formats', 'row_order',
                   'sort_by', 'ascending', 'notes', 'plot_type', 'x', 'y', 'lower', 'upper',
                   'series', 'visible_series', 'selected_result_ids', 'x_label', 'y_label',
@@ -92,6 +92,43 @@ def gallery_registry(root, path):
     if not isinstance(registry.get('records'), dict) or not isinstance(registry.get('items', {}), dict):
         raise ValueError('registry records and items must be objects')
     return path, registry
+
+
+def expand_registry(registry):
+    """Restore the public item metadata from the registry's shared definitions."""
+    if 'shared_metadata' not in registry:
+        return registry
+    shared = registry.pop('shared_metadata')
+    for item in registry.get('items', {}).values():
+        reference = item.pop('metadata_ref', None)
+        if reference is not None:
+            if reference not in shared:
+                raise ValueError('unknown shared display metadata: ' + str(reference))
+            item['metadata'] = {**copy.deepcopy(shared[reference]), **item.get('metadata', {})}
+    return registry
+
+
+def save_registry(path, registry):
+    """Store shared result definitions once while preserving each display override."""
+    saved = copy.deepcopy(registry)
+    groups = {}
+    for item in saved.get('items', {}).values():
+        groups.setdefault(tuple(sorted(item['result_ids'])), []).append(item)
+    shared = {}
+    for items in groups.values():
+        if len(items) < 2:
+            continue
+        common = {key: value for key, value in items[0]['metadata'].items()
+                  if all(key in item['metadata'] and item['metadata'][key] == value for item in items[1:])}
+        if common:
+            reference = state.content_hash(common)
+            shared[reference] = common
+            for item in items:
+                item['metadata'] = {key: value for key, value in item['metadata'].items() if key not in common}
+                item['metadata_ref'] = reference
+    if shared:
+        saved['shared_metadata'] = shared
+    state.save(path, saved)
 
 
 def gallery_display_metadata(value):
@@ -676,7 +713,12 @@ def prepare_gallery_items(registry, definitions=None):
         raise ValueError('gallery registration requires a list of display items')
     items = {}
     for definition in definitions:
-        item = copy.deepcopy(definition)
+        item = copy.deepcopy(registry.get('items', {}).get(definition.get('id'), {}))
+        for key, value in definition.items():
+            if key in ('display', 'metadata'):
+                item.setdefault(key, {}).update(copy.deepcopy(value))
+            else:
+                item[key] = copy.deepcopy(value)
         ids = item.get('result_ids', [])
         if not isinstance(ids, list) or not ids:
             raise ValueError('each display must identify its producing saved results')
@@ -1464,7 +1506,7 @@ def gallery_latex(item):
     return '\n'.join(lines) + '\n'
 
 
-def render_gallery_item(root, item, assets):
+def render_gallery_item(root, item, assets, formats=('svg',)):
     """Publish one complete display generation and return its relative paths."""
     root = Path(root).resolve(strict=True)
     validate_gallery_item(item)
@@ -1472,25 +1514,34 @@ def render_gallery_item(root, item, assets):
     if assets.is_absolute():
         assets = assets.relative_to(root)
     assets = root / state.relative(root, assets.as_posix(), exists=False)
+    formats = tuple(dict.fromkeys(formats))
+    if not formats or set(formats) - {'svg', 'png', 'html', 'pdf', 'tex'}:
+        raise ValueError('select display formats from svg, png, html, pdf and tex')
     import matplotlib
     version = state.content_hash({'renderer': GALLERY_RENDER_VERSION, 'matplotlib': matplotlib.__version__,
+                                  'formats': formats,
                                   'item': {key: item[key] for key in ('id', 'title', 'rows', 'columns', 'display', 'metadata')}})[:20]
     destination = assets / (item['id'] + '-' + version)
-    filenames = ['display.svg', 'display.png', 'display.html', 'display.pdf', 'display.tex']
+    filenames = ['display.' + extension for extension in formats]
     if not destination.exists():
         assets.mkdir(parents=True, exist_ok=True)
         with tempfile.TemporaryDirectory(prefix='.display-', dir=assets) as temporary:
             temporary = Path(temporary)
-            figure = gallery_plot(item)
-            for extension in ('svg', 'png', 'pdf'):
-                figure.savefig(temporary / ('display.' + extension), format=extension)
-            (temporary / 'display.html').write_text(gallery_preview(item, (temporary / 'display.svg').read_text(encoding='utf8')), encoding='utf8')
-            (temporary / 'display.tex').write_text(gallery_latex(item), encoding='utf8')
+            figure = gallery_plot(item) if set(formats) & {'svg', 'png', 'pdf', 'html'} else None
+            for extension in formats:
+                if extension in ('svg', 'png', 'pdf'):
+                    figure.savefig(temporary / ('display.' + extension), format=extension)
+                elif extension == 'html':
+                    svg = io.StringIO()
+                    figure.savefig(svg, format='svg')
+                    (temporary / 'display.html').write_text(gallery_preview(item, svg.getvalue()), encoding='utf8')
+                else:
+                    (temporary / 'display.tex').write_text(gallery_latex(item), encoding='utf8')
             os.replace(temporary, destination)
     return [(destination / filename).relative_to(root).as_posix() for filename in filenames]
 
 
-def register_gallery(root, gallery_spec_path, definitions=None, output=None, assets=None):
+def register_gallery(root, gallery_spec_path, definitions=None, output=None, assets=None, *, formats=('svg',)):
     """Add saved display rows/provenance to the existing registry and render them."""
     root = Path(root).resolve(strict=True)
     source, registry = gallery_registry(root, gallery_spec_path)
@@ -1504,9 +1555,12 @@ def register_gallery(root, gallery_spec_path, definitions=None, output=None, ass
             _, registry = gallery_registry(root, source)
         prepared = prepare_gallery_items(registry, definitions)
         for item in prepared.values():
-            item['files'] = render_gallery_item(root, item, assets or target.parent / 'gallery-assets')
+            if formats:
+                item['files'] = render_gallery_item(root, item, assets or target.parent / 'gallery-assets', formats)
+            else:
+                item['files'] = []
         registry.setdefault('items', {}).update(prepared)
-        state.save(target, registry)
+        save_registry(target, registry)
     return {'registry': target.relative_to(root).as_posix(), 'item_ids': list(prepared)}
 
 
@@ -1547,11 +1601,12 @@ def edit_gallery_item(root, gallery_spec_path, item_id, changes, expected_revisi
         validate_gallery_item(item)
         changed = [key for key in changes if item[key] != previous.get(key)]
         if kind == 'display' and changed:
-            item['files'] = render_gallery_item(root, item, path.parent / 'gallery-assets')
+            formats = tuple(dict.fromkeys(Path(name).suffix[1:] for name in item['files'])) or ('svg',)
+            item['files'] = render_gallery_item(root, item, path.parent / 'gallery-assets', formats)
             changed.append('files')
         if changed:
             registry['items'][item_id] = item
-            state.save(path, registry)
+            save_registry(path, registry)
     return {'item': gallery_projection(item), 'edit_kind': kind,
             'changed_references': [{'kind': 'json', 'path': path.relative_to(root).as_posix(),
                                     'keys': ['items', item_id, key]} for key in changed]}
@@ -2045,6 +2100,10 @@ def gallery_main(argv=None):
         if name == 'register':
             command.add_argument('--items', type=Path, help='JSON array of saved display-ready rows and definitions')
             command.add_argument('--assets', type=Path)
+            command.add_argument('--no-render', action='store_true', help='Register saved rows and settings without rendering assets')
+        if name in ('register', 'render'):
+            command.add_argument('--format', action='append', choices=('svg', 'png', 'html', 'pdf', 'tex'),
+                                 help='Render the selected format; repeat for multiple formats (default: svg)')
         if name == 'list':
             command.add_argument('--query', default='')
             command.add_argument('--kind', choices=GALLERY_KINDS)
@@ -2092,7 +2151,10 @@ def gallery_main(argv=None):
             return subprocess.run(command, check=False).returncode
         if args.command == 'register':
             definitions = load(local(args.items)) if args.items else None
-            result = register_gallery(root, path, definitions, args.output, args.assets)
+            if args.no_render and args.format:
+                raise ValueError('--no-render and --format cannot be combined')
+            result = register_gallery(root, path, definitions, args.output, args.assets,
+                                      formats=() if args.no_render else args.format or ('svg',))
         elif args.command == 'edit':
             result = edit_gallery_item(root, path, args.item_id, load(local(args.changes)), args.expected_revision)
         elif args.command == 'render':
@@ -2103,8 +2165,8 @@ def gallery_main(argv=None):
                 _, registry = gallery_registry(root, path)
                 for item_id in selected:
                     item = registry['items'][item_id]
-                    item['files'] = render_gallery_item(root, item, args.assets or path.parent / 'gallery-assets')
-                state.save(path, registry)
+                    item['files'] = render_gallery_item(root, item, args.assets or path.parent / 'gallery-assets', args.format or ('svg',))
+                save_registry(path, registry)
             result = {'registry': path.relative_to(root).as_posix(), 'item_ids': selected}
         elif args.command == 'list':
             filters = {key: getattr(args, key) for key in GALLERY_FILTERS}
@@ -2169,12 +2231,12 @@ def main(argv=None):
             if not a.output or not a.python or not a.pandoc or not a.quarto or any(not Path(x).is_absolute() for x in (a.python,a.pandoc,a.quarto)): raise ValueError('materialize requires output and absolute python, pandoc and quarto paths')
             (root/'.agents'/'cache'/'research-artifacts-tex').mkdir(parents=True,exist_ok=True)
             state.save(a.output,manifest(root,rel,spec,a.python,a.pandoc,a.quarto))
-        elif a.command=='normalize': state.save(a.output,normalize(root,spec,{a.source} if a.source else None))
+        elif a.command=='normalize': save_registry(a.output,normalize(root,spec,{a.source} if a.source else None))
         elif a.command=='merge':
             registry=merge_registries(a.registry)
             for alias,b in spec['bindings'].items():
                 if b['key'] not in registry['statistics'] or registry['statistics'][b['key']]['unit']!=b['unit']: raise ValueError(f'binding {alias} does not match registry')
-            state.save(a.output,registry)
+            save_registry(a.output,registry)
         elif a.command in ('table','figure'):
             registry=merge_registries(a.registry); a.output.write_text(table(spec,registry) if a.command=='table' else figure(spec,registry),encoding='utf8')
         elif a.command=='render-latex':

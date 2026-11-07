@@ -66,7 +66,11 @@ def read_json(raw, context):
     def invalid(value):
         raise EvidenceError(context + ' contains nonfinite JSON: ' + value)
     try:
-        return json.loads(utf8(raw, context), parse_constant=invalid)
+        data = json.loads(utf8(raw, context), parse_constant=invalid)
+        if isinstance(data, dict) and data.get('schema') == 'research-artifact-registry-v1' and 'shared_metadata' in data:
+            from research_artifacts import expand_registry
+            return expand_registry(data)
+        return data
     except json.JSONDecodeError as exc:
         raise EvidenceError(context + ' is invalid JSON') from exc
 

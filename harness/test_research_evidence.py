@@ -118,7 +118,12 @@ class EvidenceTests(unittest.TestCase):
         spec['sources'][0]['metadata'] = {'welfare_definition': 'net benefit in currency per person'}
         self.write('saved.json', json.dumps(saved))
         registry = artifacts.normalize(self.root, spec)
-        self.write('gallery.json', json.dumps(registry))
+        registry['items']['fit-alternative-view'] = copy.deepcopy(registry['items']['fit-coefficients'])
+        registry['items']['fit-alternative-view']['id'] = 'fit-alternative-view'
+        registry['items']['fit-alternative-view']['metadata']['interval_type'] = 'saved-pointwise'
+        artifacts.save_registry(self.root / 'gallery.json', registry)
+        self.assertEqual(artifacts.load(self.root / 'gallery.json'), registry)
+        self.assertIn('shared_metadata', json.loads((self.root / 'gallery.json').read_text()))
         (self.root / 'saved.json').unlink()
         (self.root / 'code.py').unlink()
         selected = artifacts.gallery_items(self.root, 'gallery.json', item_ids=['fit-coefficients'])[0]
@@ -328,6 +333,11 @@ class EvidenceTests(unittest.TestCase):
                                     {'display': {'title': 'Main results'}}, expected_revision=revision)
         saved = json.loads((self.root / 'gallery.json').read_text())
         self.assertEqual(saved['items']['regression']['rows'], rows)
+        self.assertEqual([Path(path).suffix for path in saved['items']['regression']['files']], ['.svg'])
+        files = artifacts.render_gallery_item(self.root, artifacts.load(self.root / 'gallery.json')['items']['regression'],
+                                              'gallery-assets', formats=('pdf', 'tex'))
+        self.assertEqual([Path(path).suffix for path in files], ['.pdf', '.tex'])
+        self.assertTrue(all((self.root / path).stat().st_size > 0 for path in files))
         entries = artifacts.gallery_items(self.root, 'gallery.json')
         self.assertEqual(entries[0]['presentation']['body'][0]['cells'], ['0.000', '2.000'])
         self.assertEqual(entries[0]['presentation']['body'][1]['cells'], ['(0.250)', '(0.250)'])
