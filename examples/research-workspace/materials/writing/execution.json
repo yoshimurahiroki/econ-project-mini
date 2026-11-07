@@ -7,7 +7,7 @@
     "causal-paper": {
       "manuscript": {
         "path": "examples/research-workspace/materials/writing/causal-paper.md",
-        "sha256": "0c877a76788e499ed42f537ffb7e3c8429f7bcb622a12a998f352557e5d04f76"
+        "sha256": "7ca821ec426ce5e03d20c541c952d47c8756bf6e6b0f237e72e1be5d920dd088"
       },
       "result_id": "specialist-did-r01",
       "producing_references": {
@@ -34,8 +34,8 @@
           "registry_key": "specialist-did-r01.coefficient.overall",
           "formatted": "1.6588",
           "unit": "outcome units",
-          "source_occurrences": 5,
-          "rendered_occurrences": 5
+          "source_occurrences": 4,
+          "rendered_occurrences": 4
         },
         {
           "alias": "low",
@@ -58,16 +58,16 @@
           "registry_key": "specialist-did-r01.coefficient.event_p0",
           "formatted": "1.6110",
           "unit": "outcome units",
-          "source_occurrences": 3,
-          "rendered_occurrences": 3
+          "source_occurrences": 2,
+          "rendered_occurrences": 2
         },
         {
           "alias": "p1",
           "registry_key": "specialist-did-r01.coefficient.event_p1",
           "formatted": "1.8491",
           "unit": "outcome units",
-          "source_occurrences": 3,
-          "rendered_occurrences": 3
+          "source_occurrences": 1,
+          "rendered_occurrences": 1
         },
         {
           "alias": "p2",
@@ -98,8 +98,8 @@
           "registry_key": "specialist-did-r01.coefficient.event_m1",
           "formatted": "-0.2648",
           "unit": "outcome units",
-          "source_occurrences": 1,
-          "rendered_occurrences": 1
+          "source_occurrences": 4,
+          "rendered_occurrences": 4
         },
         {
           "alias": "m1low",
@@ -116,9 +116,48 @@
           "unit": "outcome units",
           "source_occurrences": 1,
           "rendered_occurrences": 1
+        },
+        {
+          "alias": "mp",
+          "registry_key": "specialist-did-r01.p_value.event_m1",
+          "formatted": "0.04117",
+          "unit": "probability",
+          "source_occurrences": 1,
+          "rendered_occurrences": 1
         }
       ],
-      "definition_bindings": {}
+      "definition_bindings": {},
+      "diagnostics": {
+        "source": "examples/research-workspace/models/did-result.json",
+        "selected_paths": [
+          [
+            "diagnostics",
+            "pretreatment_test"
+          ],
+          [
+            "diagnostics",
+            "group_time"
+          ],
+          [
+            "diagnostics",
+            "aggregation_components"
+          ],
+          [
+            "diagnostics",
+            "base_period"
+          ]
+        ],
+        "joint_statistic": 7.3359194097693825,
+        "joint_p_value": 0.11917,
+        "joint_restrictions": 4,
+        "pointwise_p_value": 0.04117337752969135
+      },
+      "revision": {
+        "operation": "econ-writing:revise",
+        "reason": "Connect pretreatment nulls, covariance, cohort composition and maintained identification to the paper conclusion.",
+        "source_commit_before_change": "6e1d43b6568a52ee244a1a046cb187944145511f",
+        "estimation_reused": true
+      }
     },
     "growth-paper": {
       "manuscript": {
@@ -564,5 +603,171 @@
       "total_producer_surplus_change": 906.6881677798374,
       "total_social_welfare_change": -2174.7475335922354
     }
+  },
+  "previous_outputs": {
+    "causal-paper-0.59.0": {
+      "manuscript": {
+        "path": "examples/research-workspace/materials/writing/causal-original.md",
+        "sha256": "0c877a76788e499ed42f537ffb7e3c8429f7bcb622a12a998f352557e5d04f76"
+      },
+      "result_id": "specialist-did-r01",
+      "producing_references": {
+        "code": {
+          "path": "examples/research-workspace/models/historical-producers/research_causal-registration.py",
+          "sha256": "eca370a50d3dbfd2dfeab97f9ca4e476b0433b8a006c122fcf2f312878c35638"
+        },
+        "data": {
+          "path": "examples/research-workspace/models/staggered.csv",
+          "sha256": "1a663a02861c2e5686f29f7f84fadf4a56654fd625f6f65cc1c302b99f081b3e"
+        },
+        "result": {
+          "path": "examples/research-workspace/models/did-result.json",
+          "sha256": "ec5a1f6c8ccc32c7de61ca04781e3fa525ba2c3f90838dcd844f4786e76fbfbd"
+        },
+        "specification": {
+          "path": "examples/research-workspace/models/did-spec.json",
+          "sha256": "079364a19e0d4189f61ae2ff1583c59dbb7d85127e621b87f5a6704701ff81d0"
+        }
+      },
+      "bindings": [
+        {
+          "alias": "overall",
+          "registry_key": "specialist-did-r01.coefficient.overall",
+          "formatted": "1.6588",
+          "unit": "outcome units",
+          "source_occurrences": 5,
+          "rendered_occurrences": 5
+        },
+        {
+          "alias": "low",
+          "registry_key": "specialist-did-r01.confidence_95_lower.overall",
+          "formatted": "1.4442",
+          "unit": "outcome units",
+          "source_occurrences": 1,
+          "rendered_occurrences": 1
+        },
+        {
+          "alias": "high",
+          "registry_key": "specialist-did-r01.confidence_95_upper.overall",
+          "formatted": "1.8733",
+          "unit": "outcome units",
+          "source_occurrences": 1,
+          "rendered_occurrences": 1
+        },
+        {
+          "alias": "p0",
+          "registry_key": "specialist-did-r01.coefficient.event_p0",
+          "formatted": "1.6110",
+          "unit": "outcome units",
+          "source_occurrences": 3,
+          "rendered_occurrences": 3
+        },
+        {
+          "alias": "p1",
+          "registry_key": "specialist-did-r01.coefficient.event_p1",
+          "formatted": "1.8491",
+          "unit": "outcome units",
+          "source_occurrences": 3,
+          "rendered_occurrences": 3
+        },
+        {
+          "alias": "p2",
+          "registry_key": "specialist-did-r01.coefficient.event_p2",
+          "formatted": "1.4534",
+          "unit": "outcome units",
+          "source_occurrences": 1,
+          "rendered_occurrences": 1
+        },
+        {
+          "alias": "p3",
+          "registry_key": "specialist-did-r01.coefficient.event_p3",
+          "formatted": "1.8230",
+          "unit": "outcome units",
+          "source_occurrences": 1,
+          "rendered_occurrences": 1
+        },
+        {
+          "alias": "p4",
+          "registry_key": "specialist-did-r01.coefficient.event_p4",
+          "formatted": "1.5573",
+          "unit": "outcome units",
+          "source_occurrences": 1,
+          "rendered_occurrences": 1
+        },
+        {
+          "alias": "m1",
+          "registry_key": "specialist-did-r01.coefficient.event_m1",
+          "formatted": "-0.2648",
+          "unit": "outcome units",
+          "source_occurrences": 1,
+          "rendered_occurrences": 1
+        },
+        {
+          "alias": "m1low",
+          "registry_key": "specialist-did-r01.confidence_95_lower.event_m1",
+          "formatted": "-0.5189",
+          "unit": "outcome units",
+          "source_occurrences": 1,
+          "rendered_occurrences": 1
+        },
+        {
+          "alias": "m1high",
+          "registry_key": "specialist-did-r01.confidence_95_upper.event_m1",
+          "formatted": "-0.0106",
+          "unit": "outcome units",
+          "source_occurrences": 1,
+          "rendered_occurrences": 1
+        }
+      ],
+      "definition_bindings": {}
+    }
+  },
+  "causal_referee_response": {
+    "command": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+      "harness/research_evidence.py",
+      "review",
+      "examples/research-workspace/materials/writing/causal-referee-contract.json",
+      "--root",
+      ".",
+      "--output",
+      "examples/research-workspace/materials/writing/causal-referee-review.json",
+      "--host",
+      ".agents/cache/writing-060/causal-response-host.py",
+      "--rules",
+      ".agents/cache/writing-060/causal-response-rules.json",
+      "--request",
+      "二つの査読指摘に、実際の改稿箇所、保存結果、帰無仮説、集約対象を用いて具体的に回答する。",
+      "--writing-mode",
+      "compose",
+      "--execution-kind",
+      "single-agent-sequential",
+      "--author-id",
+      "native-root",
+      "--response-output",
+      "examples/research-workspace/materials/writing/causal-referee-response.md"
+    ],
+    "returncode": 0,
+    "status": "reviewed",
+    "contract": {
+      "path": "examples/research-workspace/materials/writing/causal-referee-contract.json",
+      "sha256": "2fb44884c0ad69d733926846f23e0647af9c40d4d4a0ef787dcd6fe64a20d48f"
+    },
+    "manuscript": {
+      "path": "examples/research-workspace/materials/writing/causal-paper.md",
+      "sha256": "7ca821ec426ce5e03d20c541c952d47c8756bf6e6b0f237e72e1be5d920dd088"
+    },
+    "output": {
+      "path": "examples/research-workspace/materials/writing/causal-referee-response.md",
+      "sha256": "4f8dc1cdaf033a9280ee041cb64ab887ddc9b11e8f463bd67b1738a7ab3db6bf"
+    },
+    "finding_ids": [
+      "diagnostics-1",
+      "aggregation-2"
+    ],
+    "binding_status": "verified",
+    "event_id": "08e686ec-71de-4d0e-912a-b01787d44a0c",
+    "authoring": "Native conversation composition from two original comments, preserved old manuscript and actual assessed revision.",
+    "transport": "local callback carrying the current native conversation wording"
   }
 }
