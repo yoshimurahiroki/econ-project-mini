@@ -584,6 +584,251 @@ def fit_replacement(data, beta, n, start):
             'original_likelihood_abs_difference': difference}
 
 
+def fit_replacement_mpec(data, beta, n, start, config):
+    """Fit the same reset model with official ruspy MPEC variables and constraints."""
+    import pandas as pd
+    from ruspy.estimation.criterion_function import get_criterion_function
+    identity = official_package('ruspy', '2.0', '414e9f98e3b1cf19544b1ca3b1e544ac5751c1e9')
+    frame = pd.DataFrame({'id': data[:, 0], 'period': data[:, 1]+1,
+                         'state': data[:, 2], 'decision': data[:, 3],
+                         'usage': np.ones(len(data), dtype=int)}).set_index(['id', 'period']).sort_index()
+    init = {'method': 'MPEC', 'model_specifications': {'discount_factor': beta, 'num_states': n,
+                                                    'maint_cost_func': 'linear', 'cost_scale': 1.}}
+    with np.errstate(divide='ignore', invalid='ignore'):
+        functions, transitions = get_criterion_function(init, frame)
+    if not np.array_equal(transitions['x'], [0., 1.]):
+        raise ArithmeticError('official transition differs from the adopted deterministic increment')
+    # EV(s)=V(min(s+1,S-1)). At zero, V(0)=beta*EV(0)+log(1+exp(-R_official)).
+    # Hence R=R_official-beta*(EV(0)-V(0)); this preserves reset-to-zero utility.
+    def reset_cost(x):
+        return x[n] - beta*(1-beta)*x[0] + beta*np.logaddexp(0., -x[n])
+    def reset_cost_gradient(x):
+        out = np.zeros(n+2)
+        out[0] = -beta*(1-beta)
+        out[n] = 1-beta*expit(-x[n])
+        return out
+    bounds = config.get('bounds', [[.001, 4.], [.001, 10.]])
+    bounds = np.asarray(bounds, dtype=float)
+    if (bounds.shape != (2, 2) or not np.isfinite(bounds).all()
+            or (bounds[:, 0] >= bounds[:, 1]).any() or (bounds[:, 0] <= 0).any()
+            or (np.asarray(start) < bounds[:, 0]).any() or (np.asarray(start) > bounds[:, 1]).any()):
+        raise ValueError('MPEC requires positive [maintenance, reset replacement] bounds containing initial costs')
+    initial_value = replacement(beta, start, n)['value']
+    initial = np.r_[initial_value[np.minimum(np.arange(n)+1, n-1)],
+                    start[1]+beta*(initial_value[1]-initial_value[0]), start[0]]
+    constraints = [
+        {'type': 'eq', 'fun': functions['constraint'], 'jac': functions['constraint_derivative']},
+        {'type': 'ineq', 'fun': lambda x: reset_cost(x)-bounds[1, 0], 'jac': reset_cost_gradient},
+        {'type': 'ineq', 'fun': lambda x: bounds[1, 1]-reset_cost(x),
+         'jac': lambda x: -reset_cost_gradient(x)}]
+    optimizer = config.get('optimizer', {'method': 'SLSQP', 'options': {'ftol': 1e-10, 'maxiter': 400}})
+    if optimizer['method'] != 'SLSQP':
+        raise ValueError('official replacement MPEC uses the adopted SLSQP constrained optimizer')
+    fit = minimize(functions['criterion_function'], initial, jac=functions['criterion_derivative'],
+        method='SLSQP', bounds=[(None, None)]*(n+1)+[tuple(bounds[0])], constraints=constraints,
+        options=optimizer.get('options', {}), tol=optimizer.get('tolerance'))
+    if not fit.success:
+        raise ArithmeticError('official replacement MPEC: '+str(fit.message))
+    residuals = np.asarray(functions['constraint'](fit.x))
+    tolerance = float(config.get('constraint_tolerance', 1e-8))
+    if tolerance <= 0 or not np.isfinite(tolerance) or np.max(np.abs(residuals)) > tolerance:
+        raise ArithmeticError('official MPEC EV residual exceeds adopted tolerance')
+    parameters = np.array([fit.x[-1], reset_cost(fit.x)])
+    if (parameters < bounds[:, 0]-tolerance).any() or (parameters > bounds[:, 1]+tolerance).any():
+        raise ArithmeticError('MPEC structural parameters violate adopted bounds')
+    model = replacement(beta, parameters, n)
+    independent = -float(np.log(model['policy'][data[:, 2], data[:, 3]]).sum())
+    difference = abs(independent-float(fit.fun))
+    if difference > max(1e-7, len(data)*tolerance*10):
+        raise ArithmeticError('official MPEC likelihood differs from the original reset model')
+    gradient = np.asarray(functions['criterion_derivative'](fit.x))
+    jacobian = np.asarray(functions['constraint_derivative'](fit.x))
+    native_sensitivity = -np.linalg.solve(jacobian[:, :n], jacobian[:, n:])
+    concentrated_score = gradient[n:] + native_sensitivity.T @ gradient[:n]
+    return {'parameters': parameters.tolist(), 'negative_log_likelihood': float(fit.fun),
+        'success': bool(fit.success), 'iterations': int(fit.nit), 'optimizer_status': int(fit.status),
+        'optimizer_message': str(fit.message), 'optimizer': optimizer, 'bounds': bounds.tolist(),
+        'engine': 'ruspy.estimation.criterion_function.get_criterion_function/MPEC',
+        'ruspy_version': identity['version'], 'ruspy_source_revision': identity['source_revision'],
+        'official_parameters': fit.x[n:].tolist(), 'official_expected_values': fit.x[:n].tolist(),
+        'official_variable_order': [f'EV_{s}' for s in range(n)]+['replacement_cost_official', 'maintenance_cost'],
+        'structural_parameter_order': ['maintenance_cost', 'replacement_cost_reset_to_zero'],
+        'parameter_transformation': 'R=R_official-beta*(1-beta)*EV_0+beta*log(1+exp(-R_official))',
+        'official_ev_residuals': residuals.tolist(), 'official_ev_max_residual': float(np.max(np.abs(residuals))),
+        'original_bellman_residual': model['bellman_residual'],
+        'original_likelihood_abs_difference': difference,
+        'official_original_ev_max_difference': float(np.max(np.abs(fit.x[:n]-model['value'][np.minimum(np.arange(n)+1, n-1)]))),
+        'transition_estimates': transitions['x'].tolist(), 'transition_counts': transitions['trans_count'].tolist(),
+        'inferential_information': {'criterion_gradient': gradient.tolist(), 'ev_constraint_jacobian': jacobian.tolist(),
+            'concentrated_native_cost_score': concentrated_score.tolist(),
+            'observation_keys': data[:, :2].tolist(), 'independent_unit': 'id'},
+        'constraint_tolerance': tolerance}
+
+
+def ruspy_native_run(spec, base):
+    """Estimate the explicitly adopted reset-then-usage model on its native panel."""
+    import pandas as pd
+    from ruspy.estimation.criterion_function import get_criterion_function
+    from ruspy.estimation.estimation_transitions import create_transition_matrix
+    from ruspy.model_code.cost_functions import calc_obs_costs, lin_cost
+    from ruspy.model_code.fix_point_alg import calc_fixp
+    from ruspy.model_code.choice_probabilities import choice_prob_gumbel
+    identity = official_package('ruspy', '2.0', '414e9f98e3b1cf19544b1ca3b1e544ac5751c1e9')
+    options = spec['options']; native = options['ruspy']; data_spec = spec['data']
+    mapping = data_spec['columns']
+    if set(mapping) != {'id', 'period', 'state', 'action', 'usage'} or len(set(mapping.values())) != 5:
+        raise ValueError('reset_then_usage requires unique id, period, state, action and usage columns')
+    path, source = source_file(data_spec['path'], base)
+    frame = pd.read_csv(path).rename(columns={v: k for k, v in mapping.items()})
+    frame = frame[list(mapping)].rename(columns={'action': 'decision'}).set_index(['id', 'period']).sort_index()
+    if frame.empty or not frame.index.is_unique:
+        raise ValueError('native replacement panel requires unique id/period keys')
+    index_values = frame.index.to_frame(index=False).to_numpy(dtype=float)
+    if not np.isfinite(index_values).all() or (index_values < 0).any() or not np.equal(index_values, np.floor(index_values)).all():
+        raise ValueError('native replacement panel keys must be nonnegative integers')
+    model = copy.deepcopy(native['model_specifications'])
+    if model['maint_cost_func'] != 'linear':
+        raise ValueError('the replacement contract uses the native linear maintenance-cost function')
+    beta = float(model['discount_factor']); n = int(model['num_states']); scale = float(model['cost_scale'])
+    if not 0 < beta < 1 or n < 3 or not np.isfinite(scale) or scale <= 0:
+        raise ValueError('invalid native replacement state count, discount or cost scale')
+    for key in ('state', 'decision'):
+        values = pd.to_numeric(frame[key], errors='raise').to_numpy(dtype=float)
+        if not np.isfinite(values).all() or not np.equal(values, np.floor(values)).all():
+            raise ValueError('native states and decisions must be finite integers')
+        frame[key] = values.astype(int)
+    if ((frame.state < 0) | (frame.state >= n)).any() or not frame.decision.isin([0, 1]).all():
+        raise ValueError('native observations must lie in the adopted state/action support')
+    usage = pd.to_numeric(frame.usage, errors='raise').to_numpy(dtype=float)
+    observed_usage = usage[~np.isnan(usage)]
+    if not len(observed_usage) or not np.isfinite(observed_usage).all() or (observed_usage < 0).any() or not np.equal(observed_usage, np.floor(observed_usage)).all():
+        raise ValueError('observed native usage must be nonnegative integers')
+    frame['usage'] = usage
+    sample = frame.loc[(slice(None), slice(1, None)), :]
+    if sample.empty:
+        raise ValueError('official choice likelihood requires observations at period 1 or later')
+    method = options.get('estimation_method', 'nfxp')
+    if method not in ('mpec', 'nfxp'):
+        raise ValueError('native replacement estimation_method must be nfxp or mpec')
+    init = {'method': method.upper(), 'model_specifications': model, 'alg_details': native.get('alg_details', {})}
+    functions, transitions = get_criterion_function(init, frame)
+    transition = create_transition_matrix(n, np.asarray(transitions['x']))
+    start = np.asarray(native['initial_parameters'], dtype=float)
+    bounds = native['bounds']
+    if start.shape != (2,) or not np.isfinite(start).all() or len(bounds) != 2:
+        raise ValueError('native initial_parameters and bounds use [replacement_cost, maintenance_coefficient]')
+    for value, pair in zip(start, bounds):
+        if len(pair) != 2 or (pair[0] is not None and value < pair[0]) or (pair[1] is not None and value > pair[1]):
+            raise ValueError('native initial parameters must satisfy their adopted bounds')
+    optimizer = native['optimizer']
+    if optimizer['method'] != ('SLSQP' if method == 'mpec' else 'L-BFGS-B'):
+        raise ValueError('native MPEC uses SLSQP and native NFXP uses L-BFGS-B')
+    tolerance = float(native.get('constraint_tolerance', 1e-8))
+    if not np.isfinite(tolerance) or tolerance <= 0:
+        raise ValueError('constraint_tolerance must be positive')
+    initial_ev = calc_fixp(transition, calc_obs_costs(n, lin_cost, start, scale), beta,
+                           **native.get('alg_details', {}))[0]
+    if method == 'mpec':
+        initial = np.r_[initial_ev, start]
+        constraints = [{'type': 'eq', 'fun': functions['constraint'], 'jac': functions['constraint_derivative']}]
+        optimization_bounds = [(None, None)]*n + bounds
+    else:
+        initial, constraints, optimization_bounds = start, (), bounds
+    optimization = minimize(functions['criterion_function'], initial, jac=functions['criterion_derivative'],
+        method=optimizer['method'], bounds=optimization_bounds, constraints=constraints,
+        options=optimizer.get('options', {}), tol=optimizer.get('tolerance'))
+    if not optimization.success:
+        raise ArithmeticError('official native '+method.upper()+': '+str(optimization.message))
+    parameters = optimization.x[n:] if method == 'mpec' else optimization.x
+    ev_residuals = functions['constraint'](optimization.x) if method == 'mpec' else None
+    if ev_residuals is not None and np.max(np.abs(ev_residuals)) > tolerance:
+        raise ArithmeticError('official native MPEC violates its original EV constraints')
+    initial_states = frame.groupby(level='id', sort=True).head(1)['state'].to_numpy(dtype=int)
+    def solution(cost_parameters):
+        costs = calc_obs_costs(n, lin_cost, cost_parameters, scale)
+        ev, contractions, newton_steps = calc_fixp(transition, costs, beta, **native.get('alg_details', {}))
+        policy = choice_prob_gumbel(ev, costs, beta)
+        flows = np.column_stack((-costs[:, 0], np.repeat(-costs[0, 1], n)))
+        action_transition = np.stack((transition, np.repeat(transition[[0]], n, axis=0)))
+        values = logsumexp(flows + beta*np.column_stack((ev, np.repeat(ev[0], n))), axis=1)
+        original_rhs = logsumexp(flows + beta*np.einsum('ask,k->sa', action_transition, values), axis=1)
+        residual = float(np.max(np.abs(values-original_rhs)))
+        if residual > tolerance:
+            raise ArithmeticError('native replacement solution violates the original Bellman equation')
+        return {'value': values.tolist(), 'policy': policy.tolist(), 'expected_value': ev.tolist(),
+            'transition': action_transition.tolist(), 'flow': flows.tolist(),
+            'bellman_residual': residual, 'ev_residual': float(np.max(np.abs(transition @ values-ev))),
+            'contractions': int(contractions), 'newton_steps': int(newton_steps),
+            'initial_population_value': float(values[initial_states].mean()),
+            'parameters_native': cost_parameters.tolist()}
+    baseline = solution(parameters)
+    scenario_parameters = parameters.copy()
+    change = float(options['replacement_cost_change'])
+    if not np.isfinite(change):
+        raise ValueError('replacement cost change must be finite')
+    scenario_parameters[0] += change
+    scenario = solution(scenario_parameters)
+    probabilities = np.asarray(baseline['policy'])[sample.state.to_numpy(), sample.decision.to_numpy()]
+    original_likelihood = -float(np.log(probabilities).sum())
+    difference = abs(original_likelihood-float(optimization.fun))
+    if difference > max(1e-7, len(sample)*tolerance*10):
+        raise ArithmeticError('official native criterion differs from the original observation likelihood')
+    inferential = {'independent_unit': 'id', 'observation_keys': sample.index.tolist(),
+        'criterion_gradient': functions['criterion_derivative'](optimization.x),
+        'transition_counts': transitions['trans_count'], 'choice_log_likelihood_contributions': np.log(probabilities)}
+    if method == 'mpec':
+        jacobian = np.asarray(functions['constraint_derivative'](optimization.x))
+        gradient = np.asarray(inferential['criterion_gradient'])
+        sensitivity = -np.linalg.solve(jacobian[:, :n], jacobian[:, n:])
+        inferential.update(ev_constraint_jacobian=jacobian,
+                          concentrated_native_cost_score=gradient[n:]+sensitivity.T@gradient[:n])
+    estimate = {'parameters': [float(parameters[1]*scale), float(parameters[0])],
+        'structural_parameter_order': ['maintenance_cost_per_state', 'replacement_cost_reset_then_usage'],
+        'official_parameters': parameters.tolist(), 'official_parameter_order': ['replacement_cost', 'maintenance_coefficient'],
+        'official_expected_values': optimization.x[:n].tolist() if method == 'mpec' else baseline['expected_value'],
+        'official_variable_order': [f'EV_{s}' for s in range(n)]+['replacement_cost', 'maintenance_coefficient']
+                                 if method == 'mpec' else ['replacement_cost', 'maintenance_coefficient'],
+        'negative_log_likelihood': float(optimization.fun), 'original_likelihood_abs_difference': difference,
+        'success': bool(optimization.success), 'iterations': int(optimization.nit), 'evaluations': int(optimization.nfev),
+        'optimizer_status': int(optimization.status), 'optimizer_message': str(optimization.message),
+        'optimizer': optimizer, 'bounds': bounds, 'initial_parameters': start.tolist(),
+        'engine': 'ruspy.estimation.criterion_function.get_criterion_function/'+method.upper(),
+        'official_ev_residuals': ev_residuals,
+        'official_ev_max_residual': float(np.max(np.abs(ev_residuals))) if ev_residuals is not None else baseline['ev_residual'],
+        'transition_estimates': transitions['x'], 'transition_counts': transitions['trans_count'],
+        'transition_negative_log_likelihood': float(transitions['fun']), 'inferential_information': inferential,
+        'ruspy_version': identity['version'], 'ruspy_source_revision': identity['source_revision']}
+    results = {method: estimate, 'baseline': baseline, 'scenario': scenario}
+    source.update(rows=len(frame), choice_rows=len(sample), columns=mapping,
+                  choice_sample_keys=sample.index.tolist(), initial_states=initial_states.tolist())
+    return native_json({'model': 'replacement', 'adopted': spec.get('adopted', {}), 'scenario': spec.get('scenario', {}),
+        'options': options, 'transition': 'Reset mileage to zero, then draw observed-usage transition; cap at last state',
+        'engine': estimate['engine'], 'fullresults': results, 'displays': replacement_displays(results),
+        'statistics': {'replacement_cost_'+method: {'value': float(parameters[0]), 'unit': 'utility'},
+            'maintenance_cost_per_state_'+method: {'value': float(parameters[1]*scale), 'unit': 'utility per mileage state'},
+            'replacement_bellman_residual': {'value': baseline['bellman_residual'], 'unit': 'utility'},
+            'replacement_baseline_value': {'value': baseline['initial_population_value'], 'unit': 'utility'},
+            'replacement_scenario_value': {'value': scenario['initial_population_value'], 'unit': 'utility'},
+            'replacement_value_change': {'value': scenario['initial_population_value']-baseline['initial_population_value'], 'unit': 'utility'}},
+        'computation': {'requested_operation': 'estimate', 'operations_executed': ['estimate', 'solve', 'counterfactual'],
+                        'parameter_operation': 'estimate', 'estimation_method': method},
+        'parameter_definition': {'structural_order': estimate['structural_parameter_order'],
+            'native_cost_order': estimate['official_parameter_order'], 'maintenance_cost_scale': scale,
+            'native_expected_values': 'EV=P_usage V; replacement continuation uses EV(0)',
+            'replacement_cost': 'Native replacement payoff cost before the common usage draw',
+            'optimization_variables': estimate['official_variable_order']},
+        'normalization': 'Unit-scale EV1 action shocks; Euler constant normalized to zero',
+        'equilibrium_selection': 'Unique discounted single-agent Bellman fixed point',
+        'welfare_definition': {'quantity': 'Mean initial-state inclusive value across observed individuals',
+                               'initial_states': initial_states.tolist(), 'population_weights': 'equal',
+                               'unit': 'utility', 'includes': 'Unit-scale normalized EV1 action shocks'},
+        'horizon': 'infinite', 'solver': 'Official ruspy '+method.upper()+' and calc_fixp',
+        'provenance': {'data': source, 'official_source': identity, 'python': sys.version.split()[0],
+            'numpy': np.__version__, 'pandas': pd.__version__, 'scipy': scipy.__version__,
+            'official_functions': ['get_criterion_function', 'calc_fixp', 'choice_prob_gumbel'],
+            'script_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}})
+
+
 def fit_replacement_smm(data, beta, n, config, source_sha256):
     """Fit replacement costs by matching simulated full-panel action histories."""
     required = {'seed', 'replications', 'initial_costs', 'bounds', 'tolerance'}
@@ -1314,19 +1559,22 @@ def replacement_displays(result):
     """Expose saved replacement estimates, policy curves and value comparisons."""
     contract = {'model_contract': 'MC-replacement-ddc', 'unit': 'see row-specific unit'}
     parameter_rows = []
-    for estimator in ('nfxp', 'ccp', 'smm'):
+    for estimator in ('nfxp', 'mpec', 'ccp', 'smm'):
         if estimator not in result:
             continue
         for i, (parameter, unit) in enumerate((('maintenance_cost', 'utility per mileage state'),
                                                ('replacement_cost', 'utility'))):
             parameter_rows.append({'estimator': estimator, 'parameter': parameter,
                                    'value': result[estimator]['parameters'][i], 'unit': unit})
+    selected = 'mpec' if 'mpec' in result else 'nfxp'
     diagnostic_rows = [
-        {'diagnostic': 'nfxp_negative_log_likelihood', 'value': result['nfxp']['negative_log_likelihood'], 'unit': 'negative log likelihood'},
-        {'diagnostic': 'official_likelihood_abs_difference', 'value': result['nfxp']['original_likelihood_abs_difference'], 'unit': 'log likelihood'},
-        {'diagnostic': 'ccp_rank', 'value': result['ccp']['rank'], 'unit': 'rank'},
-        {'diagnostic': 'ccp_inversion_max_residual', 'value': result['ccp']['inversion_max_residual'], 'unit': 'utility'},
+        {'diagnostic': selected+'_negative_log_likelihood', 'value': result[selected]['negative_log_likelihood'], 'unit': 'negative log likelihood'},
+        {'diagnostic': 'official_likelihood_abs_difference', 'value': result[selected]['original_likelihood_abs_difference'], 'unit': 'log likelihood'},
     ]
+    if 'ccp' in result:
+        diagnostic_rows.extend([
+            {'diagnostic': 'ccp_rank', 'value': result['ccp']['rank'], 'unit': 'rank'},
+            {'diagnostic': 'ccp_inversion_max_residual', 'value': result['ccp']['inversion_max_residual'], 'unit': 'utility'}])
     policy_rows, value_rows = [], []
     for scenario in ('baseline', 'scenario'):
         solution = result[scenario]
@@ -1365,6 +1613,10 @@ def replacement_displays(result):
 def observed_run(spec, base):
     if spec['model'] == 'finite_horizon_choice':
         return respy_run(spec, base)
+    if spec['model'] == 'replacement' and spec['options'].get('replacement_timing', 'reset_to_zero') not in ('reset_to_zero', 'reset_then_usage'):
+        raise ValueError('replacement_timing must be reset_to_zero or reset_then_usage')
+    if spec['model'] == 'replacement' and spec['options'].get('replacement_timing') == 'reset_then_usage':
+        return ruspy_native_run(spec, base)
     mode = spec['model']; options = spec['options']
     if mode == 'capacity_product_game' and 'data' in spec:
         data, source = capacity_panel(spec['data'], base)
@@ -1411,7 +1663,11 @@ def observed_run(spec, base):
             horizon = int(options['finite_horizon'])
             if start.shape != (2,) or not np.isfinite(start).all() or (start <= 0).any() or horizon < 1:
                 raise ValueError('positive initial costs and finite horizon required')
-            estimate = fit_replacement(data, beta, n, start)
+            method = options.get('estimation_method', 'nfxp')
+            if method not in ('nfxp', 'mpec'):
+                raise ValueError('replacement estimation_method must be nfxp or mpec')
+            estimate = (fit_replacement_mpec(data, beta, n, start, options.get('mpec', {}))
+                        if method == 'mpec' else fit_replacement(data, beta, n, start))
             ccp = ccp_fit(data, beta, n)
             costs = np.asarray(estimate['parameters'])
             if costs[1]+change <= 0:
@@ -1422,9 +1678,9 @@ def observed_run(spec, base):
             def clean(m):
                 return {k: v.tolist() if isinstance(v, np.ndarray) else v for k, v in m.items()}
             result = {'baseline': clean(baseline), 'scenario': clean(scenario), 'finite_horizon': clean(finite),
-                      'nfxp': estimate, 'ccp': ccp}
+                      method: estimate, 'ccp': ccp}
             stats = {'replacement_bellman_residual': {'value': baseline['bellman_residual'], 'unit': 'utility'},
-                     'replacement_cost_nfxp': {'value': estimate['parameters'][1], 'unit': 'utility'},
+                     'replacement_cost_'+method: {'value': estimate['parameters'][1], 'unit': 'utility'},
                      'replacement_cost_ccp': {'value': ccp['parameters'][1], 'unit': 'utility'}}
             if 'smm' in options:
                 smm = fit_replacement_smm(data, beta, n, options['smm'], source['sha256'])
@@ -1489,8 +1745,22 @@ def observed_run(spec, base):
             'provenance': {'data': source, 'python': sys.version.split()[0], 'numpy': np.__version__,
                            'scipy': scipy.__version__, 'script_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}}
     if mode == 'replacement':
-        output['engine'] = result['nfxp']['engine']+'; NumPy/SciPy CCP'
+        method = options.get('estimation_method', 'nfxp')
+        output['engine'] = result[method]['engine']+'; NumPy/SciPy CCP'
         output['displays'] = replacement_displays(result)
+        output.update(computation={'requested_operation': 'estimate',
+            'operations_executed': ['estimate', 'solve', 'counterfactual'], 'parameter_operation': 'estimate',
+            'estimation_method': method},
+            parameter_definition={'structural_order': ['maintenance_cost', 'replacement_cost_reset_to_zero'],
+                'native_ruspy_order': ['replacement_cost_official', 'maintenance_cost'],
+                'native_expected_values': 'EV(s)=V(min(s+1,S-1)) under the same reset-to-zero structural value',
+                'replacement_cost_mapping': 'R_official=R+beta*(V(1)-V(0))',
+                'mpec_variables': 'EV and official costs are optimization variables; reported costs use the structural order'},
+            normalization='Unit-scale EV1 action shocks; Euler constant normalized to zero',
+            equilibrium_selection='Unique discounted single-agent Bellman fixed point',
+            welfare_definition='State-specific expected discounted utility including normalized action shocks',
+            horizon={'baseline': 'infinite', 'finite_comparison': int(options['finite_horizon'])},
+            solver='Official ruspy '+method.upper()+'; original reset Bellman recursion')
     return output
 
 
