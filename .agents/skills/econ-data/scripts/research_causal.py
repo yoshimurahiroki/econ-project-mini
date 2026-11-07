@@ -1517,6 +1517,8 @@ def select_method(request):
             dependency_ids = ['research-lifecycle-dependencies']
         elif method == 'dolo_yaml' or method == 'stochastic_rbc' and native_function:
             dependency_ids = ['research-dolo-dependencies']
+        elif method in ('hank_one_asset','stochastic_rbc','aiyagari','consumption_saving'):
+            dependency_ids = ['research-macro-dependencies']
         for resource_id in dependency_ids:
             dependency = resources[resource_id]
             path = dependency['source_path']
