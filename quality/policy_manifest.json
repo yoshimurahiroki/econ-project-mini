@@ -287,7 +287,7 @@
     },
     "resource:models-numerics": {
       "path": "skills/econ-design/references/numerical-models.md",
-      "sha256": "f5db04138c8bf2f3a9dc795072312bd1c9dc1261b2111a6bbae7a38cea6d6466"
+      "sha256": "ca34fc833229017aaf3dca3a0f75157b8f99a4e964647e698a7e3e7074987eba"
     },
     "resource:native-index": {
       "path": "docs/ai/compiled_ai_skills.md",
@@ -419,7 +419,7 @@
     },
     "resource:research-artifacts": {
       "path": "harness/research_artifacts.py",
-      "sha256": "f33e9324af7165f4b3536623b15a0a5206abc7fc01dd32f0e54638e03588de14"
+      "sha256": "a8d5352afb78f1971049e171e28d5457c55223d3c6033ac3d798c79b465193ef"
     },
     "resource:research-case": {
       "path": "skills/econ-data/scripts/research_case.py",
@@ -427,7 +427,7 @@
     },
     "resource:research-causal": {
       "path": "skills/econ-data/scripts/research_causal.py",
-      "sha256": "ecd7dd7394367ed0c65ffa9a74582eda1f73b61e76bc1109f5b14a2e8be49b64"
+      "sha256": "4e2fc819110745fa948226662a87a09bb681074f034f9654edcc28408c52e5d5"
     },
     "resource:research-causal-dependencies": {
       "path": "skills/econ-data/scripts/requirements-causal.txt",
@@ -471,7 +471,7 @@
     },
     "resource:research-evidence": {
       "path": "harness/research_evidence.py",
-      "sha256": "0f409fdfc12c5e5172e78d39ad5b4dbd53ff20b356379b47ab8b2741c5019088"
+      "sha256": "edfb7651bbc06edc5f2528d0e2cb5b7cf00cb11c9f2f4702e0bd9aec54d6530e"
     },
     "resource:research-execution": {
       "path": "harness/research.md",
@@ -515,7 +515,7 @@
     },
     "resource:research-numerics": {
       "path": "skills/econ-data/scripts/research_numerics.py",
-      "sha256": "949c3b5f86c23f2c43fc41ee2f3c9e95d8cc63c540b51cd21539e5e794749285"
+      "sha256": "2485fd859ae7b78545abfda573ae0531b45ae5ad5e038df21776d156b115d27a"
     },
     "resource:research-numerics-dependencies": {
       "path": "skills/econ-data/scripts/requirements-numerics.txt",
@@ -547,7 +547,7 @@
     },
     "resource:result-artifacts": {
       "path": "skills/econ-writing/references/result-artifacts.md",
-      "sha256": "8c3395aeb1ba4d50335f1dc7a1eda9fadff006a9e2ef4b07d118ae43313c883e"
+      "sha256": "1caee2e10453d25126e7ea0be6706f17e374a683dd3aac872a743feb1f51d2c1"
     },
     "resource:review-methods": {
       "path": "skills/econ-review/references/oversight.md",

@@ -287,7 +287,7 @@
     },
     "resource:models-numerics": {
       "path": ".agents/skills/econ-design/references/numerical-models.md",
-      "sha256": "f3be83013a7d49c2cec1849ce94e5c18e725e6efb5f11b4d5f8678ce9bdec288"
+      "sha256": "60eb3ccfd3a626c40b79c02b6e10abd5c07cca6a7db4c3581071540382c1c098"
     },
     "resource:native-index": {
       "path": "docs/ai/compiled_ai_skills.md",
@@ -419,7 +419,7 @@
     },
     "resource:research-artifacts": {
       "path": ".agents/harness/research_artifacts.py",
-      "sha256": "f33e9324af7165f4b3536623b15a0a5206abc7fc01dd32f0e54638e03588de14"
+      "sha256": "a8d5352afb78f1971049e171e28d5457c55223d3c6033ac3d798c79b465193ef"
     },
     "resource:research-case": {
       "path": ".agents/skills/econ-data/scripts/research_case.py",
@@ -427,7 +427,7 @@
     },
     "resource:research-causal": {
       "path": ".agents/skills/econ-data/scripts/research_causal.py",
-      "sha256": "ecd7dd7394367ed0c65ffa9a74582eda1f73b61e76bc1109f5b14a2e8be49b64"
+      "sha256": "4e2fc819110745fa948226662a87a09bb681074f034f9654edcc28408c52e5d5"
     },
     "resource:research-causal-dependencies": {
       "path": ".agents/skills/econ-data/scripts/requirements-causal.txt",
@@ -471,7 +471,7 @@
     },
     "resource:research-evidence": {
       "path": ".agents/harness/research_evidence.py",
-      "sha256": "0f409fdfc12c5e5172e78d39ad5b4dbd53ff20b356379b47ab8b2741c5019088"
+      "sha256": "edfb7651bbc06edc5f2528d0e2cb5b7cf00cb11c9f2f4702e0bd9aec54d6530e"
     },
     "resource:research-execution": {
       "path": ".agents/harness/research.md",
@@ -515,7 +515,7 @@
     },
     "resource:research-numerics": {
       "path": ".agents/skills/econ-data/scripts/research_numerics.py",
-      "sha256": "949c3b5f86c23f2c43fc41ee2f3c9e95d8cc63c540b51cd21539e5e794749285"
+      "sha256": "2485fd859ae7b78545abfda573ae0531b45ae5ad5e038df21776d156b115d27a"
     },
     "resource:research-numerics-dependencies": {
       "path": ".agents/skills/econ-data/scripts/requirements-numerics.txt",
@@ -547,7 +547,7 @@
     },
     "resource:result-artifacts": {
       "path": ".agents/skills/econ-writing/references/result-artifacts.md",
-      "sha256": "acb1e3f9134c5b20747c3f9324ee6ba33a9103c4249600c5cda23a77455681ad"
+      "sha256": "3d454c3f9ec03702aca35d86a8cbfed474c680b5a63221a5b0e192cab455b6b2"
     },
     "resource:review-methods": {
       "path": ".agents/skills/econ-review/references/oversight.md",
