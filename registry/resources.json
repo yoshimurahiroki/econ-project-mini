@@ -983,7 +983,10 @@
       "resource_id": "econ-knowledge",
       "source_path": "skills/econ-knowledge/SKILL.md",
       "resource_kind": "rule",
-      "content_version": "0.55.0"
+      "content_version": "0.55.0",
+      "required_resources": [
+        "knowledge-retrieval"
+      ]
     },
     "knowledge-retrieval": {
       "resource_id": "knowledge-retrieval",
@@ -5817,9 +5820,7 @@
       "rule_id": "econ-knowledge.all",
       "resource_id": "econ-knowledge",
       "section_id": "all",
-      "requires": [
-        "knowledge-retrieval.all"
-      ],
+      "requires": [],
       "conditional_requires": [],
       "optional_examples": []
     },
