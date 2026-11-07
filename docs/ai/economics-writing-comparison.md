@@ -16,6 +16,8 @@ DoubleMLの実行版は[0.11.4の固定commit](https://github.com/DoubleML/doubl
 
 実装先：[causal runner](../../skills/econ-data/scripts/research_causal.py)、[causal model reference](../../skills/econ-design/references/causal-models.md)、[実装指針](../../skills/econ-data/references/implementation.md)。
 
+GRFのselectorから実行仕様へ移る際に、標本重み・cluster列・区間水準が落ちる欠陥を修正した。`weights`と`inference.cluster`を公式`causal_forest`の`sample.weights`・`clusters`へ結び、指定水準を`average_treatment_effect`の推定値・SEから作る区間へ渡す。実際の重み、対象ID、cluster数、native fit、集計対象と推論を同じ結果へ保存する。[GRF 2.6.1の公式関数](https://github.com/grf-labs/grf/blob/5bee99b51471f76cb2d63acbc8a9b0ffec408ba0/r-package/grf/R/causal_forest.R)に対応する依存pinも追加した。
+
 ## モデル、動学、均衡と厚生
 
 | 比較元と実読箇所 | 経済的対象と公式出力 | ERSで採用した実装 |
@@ -87,3 +89,5 @@ Writingの段落host経路は実装と保存形式を更新した。実行記録
 401(k)の保存結果を追跡すると、表示用の`inference: {type: official}`が実行済みの推論全体を上書きしていた。`research_artifacts.py`の登録・表示選択で、同じ区間族・水準の公式推論を保持するよう修正した。再登録した9915世帯の結果は、registry・selection・Writingの結果定義・表示定義へnormal参照、公式score分散、点別95%区間、反復間集約を渡した。数値・表示行・母集団・標本・米ドル単位・期間は元の保存結果と一致し、既存2段落原稿のbinderは`bound`を返した。推定を実行せず、対応する保存済み端点を持たない水準・区間族への表示変更を拒否した。
 
 PyBLP 1.3.0の[Nevo製品データ](https://github.com/jeffgortmaker/pyblp/blob/16536807004b16c24fb40b931531b45b33884e00/pyblp/data/nevo_products.csv)2256観測・94市場でfit保存と再利用を実行した。線形効用は`1 + prices + sugar + mushy`、random coefficientは定数項に固定標準偏差0.2、Monte Carlo積分は15点・seed 726、GMMは一段階とした。企業1と2の合併を、回収した限界費用を保持して計算した。再利用中の`Problem.solve`呼出しは0回で、価格・シェア・利潤・消費者余剰は保存fitの公式result methodsによる別計算と最大1.39×10⁻¹⁶の差だった。利潤勾配の最大絶対値は8.96×10⁻¹⁴で、元の推定結果、パラメータ、積分typeの基準余剰・重みを保持した。
+
+GRFの接続は[AER CASchoolsの公開観測](https://github.com/vincentarelbundock/Rdatasets/blob/cc03c29690889dbe83089f5206e2422db8c3f71f/csv/AER/CASchools.csv)420学校区・45 countyで確認した。処置を生徒数／教員数が20未満の239地区と定義し、生徒数重み、county cluster、treated集計、seed 72608、400 trees、点別90%区間を指定した。R 4.5.3・GRF 2.6.1の公式関数を別に構築した計算と、既存CLIのselect→runが返した推定値・SE・p値・区間端点の最大差は0だった。対象行、正規化重み、cluster数、保存fitと表示定義も一致した。
