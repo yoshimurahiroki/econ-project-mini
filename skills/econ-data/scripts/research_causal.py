@@ -291,7 +291,7 @@ def select_method(request):
             'anticipation periods','outcome and pretreatment covariates','event window and base period',
             'aggregation weights and population at each horizon']
         if pattern == 'two_period' and method == 'staggered_did':
-            required_inputs.append('common adoption cohort and clustervars/bstrap for the adopted cluster-level two-period score')
+            required_inputs.append('common adoption cohort and native inference settings for the adopted two-period score')
         alternatives = [
             {'method':'drdid_panel','difference':'one treated-group pre/post contrast using paired outcomes',
              'estimand':'two-period ATT with treated-population sampling weights',
@@ -345,7 +345,8 @@ def select_method(request):
         method_quantity = ('local complier effect: outcome discontinuity divided by treatment-receipt discontinuity' if fuzzy
             else 'lim E[Y|X=c+] - lim E[Y|X=c-] at the assignment cutoff')
         if fuzzy: conditions += ['nonzero treatment jump','exclusion and local monotonicity']
-        if fuzzy: required_native_options['columns.fuzzy'] = 'adopted treatment-receipt column'
+        if fuzzy and 'fuzzy' in forward_options.get('columns', {}):
+            required_native_options['columns.fuzzy'] = forward_options['columns']['fuzzy']
         required_inputs = ['running variable','cutoff','outcome','bandwidth and polynomial orders','treatment receipt for fuzzy RD']
         alternatives = [{'method':'rdd_localrand','difference':'assignment-based comparison within a fixed window',
             'estimand':'average assignment contrast in the adopted local-randomization window',
@@ -865,11 +866,35 @@ def select_method(request):
         required_native_options['alpha'] = 1 - level if level is not None else forward_options.get('alpha', .05)
     if method == 'iv_ar_robust' and cluster_columns is not None:
         required_native_options['args.cl'] = cluster_columns
+    if method == 'rdrobust_r':
+        if interval_type not in (None, 'pointwise'):
+            raise ValueError('rdrobust supplies pointwise robust bias-corrected intervals for the adopted cutoff target')
+        if level is not None:
+            required_native_options['args.level'] = 100 * level
+        if cluster_columns is not None:
+            if len(cluster_columns) != 1:
+                raise ValueError('rdrobust.cluster requires one adopted independent cluster partition')
+            required_native_options['columns.cluster'] = cluster_columns[0]
+    if method in ('fixest_ols', 'fixest_ppml', 'sunab') and cluster_columns is not None:
+        quoted_columns = ['`' + name.replace('\\', '\\\\').replace('`', '\\`') + '`' for name in cluster_columns]
+        required_native_options['args.vcov'] = '~' + '+'.join(quoted_columns)
+    if method in ('ols_r', 'fixest_ols', 'fixest_ppml', 'negative_binomial_r', 'sunab', 'did2s'):
+        if interval_type not in (None, 'pointwise'):
+            raise ValueError('the selected fitted-model confint interface supplies pointwise intervals')
+        if level is not None:
+            required_native_options['confidence_level'] = level
     # Keep the supplied options intact and expose target-implied changes as a
     # reviewable proposal. Selection never amends or executes the adopted fit.
     selected_options = deepcopy(forward_options)
     option_changes = []
-    if method in ('sunab','grf','staggered_did','did_multiplegt_dyn','nonabs_did','iv_ar','iv_ar_robust','dml_irm','dml_pliv','dml_iivm','finite_horizon_choice','consumption_saving'):
+    if method in ('fixest_ols', 'fixest_ppml', 'sunab') and cluster_columns is not None:
+        # fixest accepts one covariance specification. The vcov formula binds
+        # the adopted clusters without also passing its legacy cluster option.
+        for container in ('args', 'columns'):
+            if 'cluster' in selected_options.get(container, {}):
+                previous = selected_options[container].pop('cluster')
+                option_changes.append({'field':f'options.{container}.cluster','supplied':previous,'selected':None})
+    if method in ('ols_r','fixest_ols','fixest_ppml','negative_binomial_r','sunab','did2s','grf','staggered_did','did_multiplegt_dyn','nonabs_did','iv_ar','iv_ar_robust','rdrobust_r','dml_irm','dml_pliv','dml_iivm','finite_horizon_choice','consumption_saving'):
         for field, value in required_native_options.items():
             cursor = selected_options
             path = field.split('.', 1)
@@ -880,7 +905,7 @@ def select_method(request):
             key = path[-1]
             defaults = {'panel':True,'aggregation.type':'dynamic','aggregation':'period',
                         'aggregation.target.sample':'all','args.normalized':False,
-                        'args.CI':True,'args.alpha':.05,'alpha':.05,
+                        'args.CI':True,'args.alpha':.05,'args.level':95,'alpha':.05,'confidence_level':.95,
                         'alp':.05,'aggregation.alp':forward_options.get('alp',.05),
                         'cband':False,'aggregation.cband':forward_options.get('cband',False),
                         'bstrap':False,'aggregation.bstrap':forward_options.get('bstrap',False),
@@ -896,6 +921,18 @@ def select_method(request):
             unbound_inputs.append('inference.cluster/clusters or options.clustervars')
         elif method == 'iv_ar_robust' and not selected_options.get('args', {}).get('cl'):
             unbound_inputs.append('inference.cluster/clusters or options.args.cl')
+        elif method == 'rdrobust_r' and not (selected_options.get('columns', {}).get('cluster') or
+                selected_options.get('args', {}).get('cluster') is not None):
+            unbound_inputs.append('inference.cluster or options.columns.cluster')
+        elif method in ('fixest_ols', 'fixest_ppml', 'sunab') and cluster_columns is None:
+            native = selected_options.get('args', {})
+            vcov = native.get('vcov')
+            if not (native.get('cluster') or selected_options.get('columns', {}).get('cluster') or
+                    isinstance(vcov, str) and '~' in vcov):
+                unbound_inputs.append('inference.cluster/clusters or an explicit native cluster binding')
+    if method == 'rdrobust_r' and facts.get('discontinuity') == 'fuzzy' and not (
+            selected_options.get('columns', {}).get('fuzzy') or selected_options.get('args', {}).get('fuzzy') is not None):
+        unbound_inputs.append('options.columns.fuzzy: actual treatment-receipt column')
     if external_implementation:
         engine = external_implementation['function']
     elif method in R_METHODS:
@@ -960,6 +997,40 @@ def select_method(request):
         inference_contract['interval_type'] = comparison.get('interval_type',comparison.get('ci_kind',
             inherited_inference.get('interval_type',inherited_inference.get('ci_kind'))))
         inference_contract['official_output_required'] = False
+    if request['dependence'] in ('cluster', 'clustered'):
+        cluster_count = facts.get('cluster_count')
+        treated_cluster_count = facts.get('treated_cluster_count')
+        for name, count, minimum in (('cluster_count', cluster_count, 2),
+                ('treated_cluster_count', treated_cluster_count, 0)):
+            if count is not None and (isinstance(count, bool) or not isinstance(count, int) or count < minimum):
+                raise ValueError(f'conditions.{name} must be an integer >= {minimum}')
+        if cluster_count is not None and treated_cluster_count is not None and treated_cluster_count > cluster_count:
+            raise ValueError('treated_cluster_count cannot exceed cluster_count')
+        inference_contract['cluster_design'] = {
+            'columns':cluster_columns, 'independent_unit':inference_contract['unit'],
+            'declared_cluster_count':cluster_count, 'declared_treated_cluster_count':treated_cluster_count,
+            'common_shocks':facts.get('common_shocks'), 'counts_basis':'declared design; confirm on the fitted sample',
+            'required_conditions':['independence across the specified clusters',
+                'assignment and common shocks represented by the adopted clustering',
+                'cluster size, leverage and treated/control cluster support for the chosen reference distribution']}
+        inference_contract['comparisons'] = []
+        for candidate, supported, model_class, native, source in (
+            ('wild_cluster_bootstrap', method in ('ols_r','fixest_ols','sunab','did2s'),
+             'saved lm or linear fixest fit', {'conf_int':True},
+             'https://s3alfisc.github.io/fwildclusterboot/reference/boottest.fixest.html'),
+            ('club_sandwich', method == 'ols_r', 'saved lm fit with vcovCR.lm support',
+             {'vcov':'CR2','test':'Satterthwaite'},
+             'https://jepusto.github.io/clubSandwich/reference/coef_test.html')):
+            package, function = R_METHODS[candidate]
+            inference_contract['comparisons'].append({
+                'method':candidate,'function':f'{package}::{function}',
+                'entry_point':'skills/econ-data/scripts/research_causal.py run',
+                'model_contract':model_class,'compatible_saved_fit':supported,
+                'excluded_by':[] if supported else ['the selected result does not provide this supported native linear-model fit'],
+                'native_options':native,'source':source,
+                'required_inputs':['saved fit and exact analysis-sample cluster vector','coefficient contrast and null',
+                    'adopted cluster reference model and bootstrap weights/repetitions when used'],
+                'adoption_status':'comparison_preserving_current_inference','executed':False})
     candidate_comparisons = []
     for candidate in alternatives:
         if candidate['method'] == method:
@@ -1057,6 +1128,9 @@ def select_method(request):
         script_path = resource['source_path'] if layout_path == 'source_path' else placements[resource_id][layout_path]
         owner = script_path + ' ' + owner.split(' ', 1)[1]
         implementation['entry_point'] = owner
+    for candidate in inference_contract.get('comparisons', []):
+        causal_path = resources['research-causal']['source_path'] if layout_path == 'source_path' else placements['research-causal'][layout_path]
+        candidate['entry_point'] = causal_path + ' run'
     implementation['dependencies'] = []
     if resource:
         for resource_id in resource.get('required_resources', []):
@@ -1385,6 +1459,7 @@ def _official_r(spec, spec_path):
     }[method]
     optional = {'args','columns','seed','definitions'}
     if method in ('ols_r','fixest_ols','fixest_ppml','negative_binomial_r','sunab','fixes_event_study','iv_ar_robust'): optional.add('fixed_effects')
+    if method in ('ols_r','fixest_ols','fixest_ppml','negative_binomial_r'): optional.add('confidence_level')
     if method == 'sunab': optional |= {'sunab','aggregation','never_treated','confidence_level'}
     if method == 'did2s': optional |= {'event_variable','reference_event_time','confidence_level'}
     if method == 'fixes_event_study': optional |= {'never_treated'}
@@ -1416,7 +1491,7 @@ def _official_r(spec, spec_path):
             raise ValueError('the inspected fixes CS implementation uses unadjusted unit-level comparisons; covariates, sampling weights or higher-level clusters use did::att_gt')
     if method == 'fixes_event_study' and opt['estimator'] == 'sa':
         if spec['regressors'] or 'weights' in opt.get('args',{}) or 'weights' in opt.get('columns',{}):
-            raise ValueError('the inspected fixes SA implementation does not pass covariates or sampling weights to its interaction fit; use fixest::sunab for that specification')
+            raise ValueError('the inspected fixes SA implementation does not pass covariates or sampling weights to its interaction fit; use the sunab formula term in fixest::feols for that specification')
     if method == 'fixes_event_study' and opt['estimator'] in ('bjs','twm','flex'):
         if 'weights' in opt.get('args',{}) or 'weights' in opt.get('columns',{}):
             raise ValueError(f"the inspected fixes {opt['estimator'].upper()} implementation does not pass sampling weights to its fit")
@@ -1501,7 +1576,7 @@ if(method %in% c('ols_r','fixest_ols','fixest_ppml','negative_binomial_r','sunab
       if(!all(c(o$entity,o$time,o$cohort) %in% names(d))) stop('Missing Sun-Abraham panel columns')
       if(anyDuplicated(d[,c(o$entity,o$time)])) stop('Sun-Abraham requires unique entity-time pairs')
       sa <- if(is.null(o$sunab)) list() else o$sunab
-      unknown <- setdiff(names(sa),setdiff(names(formals(fixest::sunab)),c('cohort','period')))
+      unknown <- setdiff(names(sa),setdiff(names(formals(getFromNamespace('sunab','fixest'))),c('cohort','period')))
       if(length(unknown)) stop(paste('Unsupported sunab option:',paste(unknown,collapse=', ')))
       if(isTRUE(sa$no_agg)) stop('Use the saved cohort coefficients for no_agg; this branch reports an adopted aggregate')
       if(isTRUE(sa$att) && !identical(o$aggregation,'att')) stop('sunab att=TRUE requires aggregation=att')
@@ -1805,7 +1880,9 @@ if(method %in% c('ols_r','fixest_ols','fixest_ppml','negative_binomial_r','sunab
   covariance <- matrix(fit$se['Robust',1]^2,1,1,dimnames=list('treatment_effect','treatment_effect'))
   cutoff <- if(is.null(call_args$c)) 0 else call_args$c
   local <- d[[o$running]] >= cutoff-fit$bws['h',1] & d[[o$running]] <= cutoff+fit$bws['h',2]
-  diagnostics <- list(bandwidths=fit$bws,effective_counts=fit$N_h,local_ids=I(ids[local]))
+  diagnostics <- list(bandwidths=fit$bws,effective_counts=fit$N_h,observations=sum(fit$N),side_counts=fit$N,
+    bandwidth_input_ids=I(ids[which(local)]),input_ids=I(ids),input_rows=length(ids),
+    sample_mapping='official rdrobust reports post-preprocessing side counts; fitted row identities are not exported')
   if('plot' %in% names(o)) {
     plot_fun <- getExportedValue('rdrobust','rdplot')
     shared <- intersect(names(call_args),c('weights','covs','subset'))
@@ -1843,6 +1920,7 @@ if(method %in% c('ols_r','fixest_ols','fixest_ppml','negative_binomial_r','sunab
         signature=names(formals(plot_fun)),function_defaults=lapply(formals(plot_fun),function(x) paste(deparse(x),collapse=' '))),
       effective_options=plot_options))
   }
+  ids <- character()
 } else if(method=='club_sandwich') {
   rows <- as.data.frame(fit)
 } else if(method=='wild_cluster_bootstrap') {
@@ -1875,6 +1953,7 @@ if(method %in% c('ols_r','fixest_ols','fixest_ppml','negative_binomial_r','sunab
   diagnostics$cluster_columns <- call_args$cl
   diagnostics$cluster_counts <- setNames(lapply(call_args$cl,function(column) length(unique(d[[column]]))),call_args$cl)
   diagnostics$stages <- stage_fit
+  diagnostics$first_stage_tests <- as.list(stage_fit$F_stat)
   diagnostics$stage_function <- 'ivDiag::ivDiag'
   diagnostics$stage_arguments <- stage_args[setdiff(names(stage_args),'data')]
   for(stage in c('first_stage','reduced_form','2sls')) {
