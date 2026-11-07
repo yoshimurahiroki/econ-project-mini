@@ -491,6 +491,9 @@ class EvidenceTests(unittest.TestCase):
 
         saved = {'statistics': {'effect': {'value': 1.249, 'unit': 'hours'}},
                  'adopted': {'comparison': '地区Aと地区B'},
+                 'diagnostics': {'joint_test': {'statistic': 4.5, 'p_value': 0.105,
+                                               'null': 'both selected pretreatment contrasts equal zero'},
+                                 'sample_ids': ['private-observation-1']},
                  'provenance': {'producer_sha256': self.ref('code.py')['sha256']}}
         self.write('saved.json', json.dumps(saved, ensure_ascii=False))
         registry = artifacts.normalize(self.root, {'sources': [
@@ -499,13 +502,24 @@ class EvidenceTests(unittest.TestCase):
         brief = {'original_request': '保存された地区間比較を文章にする。', 'authority': '保存値と比較を保持する。',
                  'purpose': '地区間比較を伝える。', 'reader': '経済学博士課程のコア科目を履修した読者',
                  'language': 'ja', 'research_results': {'root': str(self.root), 'registry_path': 'registry.json',
-                     'result_ids': ['fit'], 'item_ids': ['fit-statistics']}}
+                     'result_ids': ['fit'], 'item_ids': ['fit-statistics'],
+                     'evidence_paths': {'fit': [['diagnostics', 'joint_test']]}}}
         repo = Path(__file__).resolve().parent.parent
         rules = {'policy_id': 'fixture', 'texts': {key: 'Synthetic callback fixture.' for key in
                  ('CORE', 'PROSE', 'econ-writing', 'prose-guide')}, 'profile': 'fixture',
                  'dictionary': json.loads((repo / 'quality/prose_rules.json').read_text())}
         sources = paragraph.normalize_sources({}, research_results=brief['research_results'])
         source = sources['result:fit']
+        selected_evidence = source['research_result']['evidence']
+        self.assertEqual(selected_evidence[0]['value'], saved['diagnostics']['joint_test'])
+        self.assertEqual(selected_evidence[0]['source_reference']['keys'],
+                         ['records', 'fit', 'source_result', 'diagnostics', 'joint_test'])
+        self.assertEqual(selected_evidence[0]['source_reference']['content_version'],
+                         artifacts.state.content_hash(saved['diagnostics']['joint_test']))
+        self.assertNotIn('private-observation-1', source['text'])
+        with self.assertRaisesRegex(ValueError, 'missing JSON key'):
+            artifacts.composition_context(self.root, 'registry.json', result_ids=['fit'],
+                                          evidence_paths={'fit': [['diagnostics', 'absent']]})
         ref = {'source_id': 'result:fit', 'source_sha256': source['sha256'],
                **selection(source['text'], source['text'])}
         claim = '地区Aと地区Bの労働時間差は1.249時間である。'
@@ -550,6 +564,7 @@ class EvidenceTests(unittest.TestCase):
             seen.append(task)
             self.assertEqual(payload['sources']['result:fit']['research_result']['statistics']['fit.effect'],
                              {'value': 1.249, 'unit': 'hours'})
+            self.assertEqual(payload['sources']['result:fit']['research_result']['evidence'], selected_evidence)
             self.assertEqual(payload['sources']['display:fit-statistics']['display_item']['rows'],
                              registry['items']['fit-statistics']['rows'])
             if task['operation'] == 'writing:architect':

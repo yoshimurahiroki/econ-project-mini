@@ -394,7 +394,8 @@ def gallery_items(root, gallery_spec_path, query='', filters=None, *, item_ids=N
     return items
 
 
-def composition_context(root, registry_path, *, result_ids, item_ids=(), gallery_path=None):
+def composition_context(root, registry_path, *, result_ids, item_ids=(), gallery_path=None,
+                        evidence_paths=None):
     """Select saved quantities and displays as sources for the existing writing host."""
     import argument
 
@@ -407,6 +408,9 @@ def composition_context(root, registry_path, *, result_ids, item_ids=(), gallery
     if (not isinstance(item_ids, (list, tuple)) or any(not isinstance(iid, str) or not iid for iid in item_ids)
             or len(set(item_ids)) != len(item_ids)):
         raise ValueError('composition requires distinct gallery item IDs')
+    evidence_paths = {} if evidence_paths is None else evidence_paths
+    if not isinstance(evidence_paths, dict) or set(evidence_paths) - set(result_ids):
+        raise ValueError('evidence_paths must map selected result IDs to source-result key paths')
     metadata = gallery_metadata(registry, result_ids)
     sources = {}
     for rid in result_ids:
@@ -426,6 +430,22 @@ def composition_context(root, registry_path, *, result_ids, item_ids=(), gallery
                      'keys': ['records', rid], 'content_version': state.content_hash(record)}
         result = {'result_id': rid, 'statistics': statistics, 'quantity_origins': quantities,
                   'definitions': definitions, 'producer': producer, 'source_reference': reference}
+        if rid in evidence_paths:
+            paths = evidence_paths[rid]
+            if not isinstance(paths, list) or not paths:
+                raise ValueError('evidence_paths requires a nonempty list for ' + rid)
+            selected_evidence = []
+            seen = set()
+            for keys in paths:
+                value = evidence.lookup(record.get('source_result'), keys, 'composition evidence ' + rid)
+                if tuple(keys) in seen:
+                    raise ValueError('duplicate composition evidence path for ' + rid)
+                seen.add(tuple(keys))
+                selected_evidence.append({'keys': list(keys), 'value': copy.deepcopy(value),
+                    'source_reference': {'kind': 'json', 'path': reference['path'],
+                        'keys': ['records', rid, 'source_result', *keys],
+                        'content_version': state.content_hash(value)}})
+            result['evidence'] = selected_evidence
         sources['result:' + rid] = {'text': json.dumps(result, ensure_ascii=False, indent=2, allow_nan=False),
                                    'origin_id': rid, 'location': reference['path'], 'research_result': result}
     selected = gallery_items(root, gallery_path or path, item_ids=list(item_ids)) if item_ids else []
