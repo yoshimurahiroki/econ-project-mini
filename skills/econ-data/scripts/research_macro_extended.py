@@ -462,7 +462,7 @@ def solve_aiyagari(spec):
         ('distribution', distribution_rows, 'Stationary joint asset and income distribution', True),
         ('welfare', welfare_rows, 'Stationary expected lifetime welfare', False),
         ('diagnostics', diagnostic_rows, 'Original-equation and grid diagnostics', False)):
-        columns = [('scenario', 'Scenario'), ('asset', 'Current assets'), ('income', 'Labor efficiency'), ('value', title), ('unit', 'Unit')] if curve else [('scenario', 'Scenario'), ('statistic', 'Statistic'), ('value', 'Value'), ('unit', 'Unit')]
+        columns = [('scenario', 'Scenario'), ('asset', 'Current assets'), ('income_state', 'Income state'), ('income', 'Labor efficiency'), ('series', 'Series'), ('value', title), ('unit', 'Unit')] if curve else [('scenario', 'Scenario'), ('statistic', 'Statistic'), ('value', 'Value'), ('unit', 'Unit')]
         displays[name] = {'kind': 'structural' if curve else 'table', 'title': title, 'rows': rows,
             'columns': [{'key': key, 'label': label, 'unit': ''} for key, label in columns],
             'metadata': {**common, 'report_role': 'model_fit' if name == 'diagnostics' else 'counterfactual',
