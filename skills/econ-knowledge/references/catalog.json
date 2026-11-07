@@ -1,9 +1,9 @@
 {
   "schema_version": 2,
   "title": "経済学知識ライブラリ",
-  "version": "2.3.64",
+  "version": "2.3.65",
   "language": "ja",
-  "date": "2026-11-06",
+  "date": "2026-11-07",
   "chapter_count": 35,
   "unit_count": 256,
   "worked_example_unit_count": 39,
@@ -31766,10 +31766,16 @@
       "implementation": [
         {
           "path": "skills/econ-data/scripts/research_macro.py",
-          "symbol": "solve"
+          "symbol": "solve",
+          "command": "solve"
         }
       ],
-      "checks": [],
+      "checks": [
+        {
+          "path": "skills/econ-data/scripts/research_macro.py",
+          "symbol": "_solve_path"
+        }
+      ],
       "results": [],
       "counterfactual_inputs": [
         "scenario"
@@ -31791,7 +31797,11 @@
           "unit": "STRUCT-06",
           "anchor": "struct-06"
         }
-      ]
+      ],
+      "selection_binding": {
+        "design": "structural",
+        "structural_model": "finite_horizon_growth"
+      }
     },
     {
       "id": "MC-replacement-ddc",
@@ -31878,7 +31888,8 @@
       "implementation": [
         {
           "path": "skills/econ-data/scripts/research_dynamic.py",
-          "symbol": "replacement"
+          "symbol": "replacement",
+          "command": "run"
         },
         {
           "path": "skills/econ-data/scripts/research_dynamic.py",
@@ -31922,7 +31933,11 @@
           "unit": "STRUCT-04",
           "anchor": "struct-04"
         }
-      ]
+      ],
+      "selection_binding": {
+        "design": "structural",
+        "structural_model": "replacement"
+      }
     },
     {
       "id": "MC-pyblp-bertrand",
@@ -32058,7 +32073,8 @@
       "implementation": [
         {
           "path": "skills/econ-data/scripts/research_markets.py",
-          "symbol": "blp"
+          "symbol": "blp",
+          "command": "run"
         },
         {
           "module": "pyblp",
@@ -32097,7 +32113,11 @@
           "unit": "DEMAND-03",
           "anchor": "demand-03"
         }
-      ]
+      ],
+      "selection_binding": {
+        "design": "structural",
+        "structural_model": "blp"
+      }
     },
     {
       "id": "MC-cournot-fcff",
@@ -32359,7 +32379,8 @@
       "implementation": [
         {
           "path": "skills/econ-data/scripts/research_dsge.py",
-          "symbol": "solve"
+          "symbol": "solve",
+          "command": "run"
         }
       ],
       "checks": [],
@@ -33891,7 +33912,11 @@
           "unit": "HET-01",
           "anchor": "het-01"
         }
-      ]
+      ],
+      "selection_binding": {
+        "design": "structural",
+        "structural_model": "consumption_saving"
+      }
     },
     {
       "id": "MC-respy-finite-choice",
@@ -34028,7 +34053,11 @@
           "unit": "STRUCT-02",
           "anchor": "struct-02"
         }
-      ]
+      ],
+      "selection_binding": {
+        "design": "structural",
+        "structural_model": "finite_horizon_choice"
+      }
     },
     {
       "id": "MC-lifecycle-regimes",
@@ -34149,7 +34178,11 @@
           "unit": "DYN-02",
           "anchor": "dyn-02"
         }
-      ]
+      ],
+      "selection_binding": {
+        "design": "structural",
+        "structural_model": "lifecycle_choice"
+      }
     }
   ],
   "source_repository": {

@@ -7,6 +7,7 @@ from __future__ import annotations
 import argparse
 from copy import deepcopy
 import hashlib
+import importlib.util
 import json
 import sys
 from pathlib import Path
@@ -63,7 +64,7 @@ def select_method(request):
     required = {'question','estimand','identification','design','outcome_scale','data_structure','treatment_pattern','dependence'}
     contract_fields = ('population','comparison_group','observation_unit','assignment_unit','inference_unit',
                        'unit','period','assignment','weights','inference',
-                       'economic_model','target','conditions','comparison','numerical')
+                       'economic_model','target','conditions','comparison','numerical','model_contract_id')
     optional = {'adopted_method','adopted_specification','options','score','structural_model','implementation',
                 'data','id','outcome','regressors','endogenous','instruments',*contract_fields}
     if not isinstance(request, dict) or not required <= request.keys() or set(request)-required-optional:
@@ -73,6 +74,27 @@ def select_method(request):
     adopted_spec = request.get('adopted_specification', {})
     if not isinstance(adopted_spec, dict):
         raise ValueError('adopted_specification must be an existing specification object')
+    resources = json.loads((ROOT / ('RESOURCES.json' if FLAT_EXPORT else 'registry/resources.json')).read_text())['resources']
+    placements = json.loads((ROOT / ('PLACEMENTS.json' if FLAT_EXPORT else 'registry/placements.json')).read_text())['resources']
+    layout_path = 'export_alias' if FLAT_EXPORT else 'deployment_path' if ROOT.name == '.agents' else 'source_path'
+    model_contract = None
+    knowledge_plan = None
+    contract_binding = None
+    contract_id = request.get('model_contract_id', adopted_spec.get('model_contract_id'))
+    if contract_id is not None:
+        if not isinstance(contract_id, str) or not contract_id.startswith('MC-'):
+            raise ValueError('model_contract_id must name a canonical MC- contract')
+        rid = 'knowledge-retrieval'
+        knowledge_relative = resources[rid]['source_path'] if layout_path == 'source_path' else placements[rid][layout_path]
+        knowledge_path = (ROOT.parent if ROOT.name == '.agents' else ROOT) / knowledge_relative
+        module_spec = importlib.util.spec_from_file_location('selected_model_knowledge', knowledge_path)
+        knowledge = importlib.util.module_from_spec(module_spec)
+        module_spec.loader.exec_module(knowledge)
+        reader = knowledge.Reader(knowledge.BASE)
+        model_contract = reader.contract(contract_id)
+        knowledge_plan = reader.plan([contract_id])
+        knowledge_plan.pop('contracts')
+        contract_binding = model_contract.get('selection_binding')
     for key in ('economic_model','target','conditions','comparison','numerical'):
         if not isinstance(request.get(key, adopted_spec.get(key,{})), dict):
             raise ValueError(f'{key} must be a structured object')
@@ -174,6 +196,20 @@ def select_method(request):
                         ('outcome_scale',request['outcome_scale'])):
         if name in facts and facts[name] != value:
             raise ValueError(f'conditions.{name} must match the explicit {name}')
+    if model_contract is not None:
+        if contract_binding is None:
+            return {'result_format_version':1, 'status':'implementation_required',
+                'question':request['question'], 'estimand':request['estimand'],
+                'identification':request['identification'], 'method':None, 'engine':None, 'entry_point':None,
+                'design_contract':proposed_contract, 'adopted_specification':adopted_spec,
+                'method_selection':{'model_contract':model_contract, 'knowledge_plan':knowledge_plan,
+                    'compatibility':{'status':model_contract['selection_status'],
+                        'reason':'This contract has no binding to the existing method selector.',
+                        'selected_method':None},
+                    'official_implementation':{'execution_mode':'none', 'execution_specification':None}},
+                'executed':False}
+        if design != contract_binding['design']:
+            raise ValueError(f'{contract_id} requires design={contract_binding["design"]}; received {design}')
     owner = 'skills/econ-data/scripts/research_causal.py run'
     conditions = []
     required_inputs = []
@@ -515,13 +551,21 @@ def select_method(request):
         model = request.get('structural_model')
         if not model and adopted == 'finite_horizon_choice' and numerical.get('operation') in ('simulate','counterfactual'):
             model = adopted
-        if not model:
-            model = {'differentiated_products':'blp','replacement':'replacement','dynamic_game':'dynamic_game'}.get(facts.get('market_structure'))
-        if not model:
-            model = {'representative_household_growth':'finite_horizon_growth',
+        condition_model = {'differentiated_products':'blp','replacement':'replacement','dynamic_game':'dynamic_game'}.get(facts.get('market_structure'))
+        economic_object_model = {'representative_household_growth':'finite_horizon_growth',
                 'household_consumption_saving':'consumption_saving',
                 'individual_dynamic_choice':'finite_horizon_choice' if target_kind == 'structural_parameter' else 'lifecycle_choice',
                 'employment_retirement_regimes':'lifecycle_choice'}.get(facts.get('economic_object'))
+        if condition_model and economic_object_model and condition_model != economic_object_model:
+            raise ValueError('market_structure and economic_object identify different structural models')
+        condition_model = condition_model or economic_object_model
+        if contract_binding:
+            bound_model = contract_binding['structural_model']
+            if any(value is not None and value != bound_model for value in (model, condition_model)):
+                raise ValueError(f'{contract_id} binds structural_model={bound_model}; declared economic model differs')
+            model = bound_model
+        elif not model:
+            model = condition_model
         if model in ('blp','auction','auction_fit','search','bargaining','platform','matching'):
             method = model; owner = 'skills/econ-data/scripts/research_markets.py run'
         elif model in ('replacement','latent_replacement','discrete_entry','dynamic_adoption_blp','continuous_time_entry','capacity_product_game'):
@@ -1111,18 +1155,40 @@ def select_method(request):
         'adoption_status':'proposal_retaining_adopted_specification' if changes else 'selected_for_requested_target'}
     if computation is not None:
         selection['computation'] = computation
+    if model_contract is not None:
+        selection['model_contract'] = model_contract
+        selection['knowledge_plan'] = knowledge_plan
+        selection['compatibility'] = {'status':'compatible_declared_specification',
+            'basis':'existing selector restrictions on the declared model, target, conditions and numerical method',
+            'selected_method':method, 'structural_model':model,
+            'supported_targets':sorted(accepted_targets), 'requested_target':target_kind,
+            'numerical_method':algorithm, 'conditions_to_establish':conditions,
+            'data_inspected':False, 'executed':False}
     implementation = selection['official_implementation']
     # Reuse the registered dependency owners; requirements remain their sole
     # version authority and can be passed to the research harness runtime.
     dependency_path = owner.split(' ', 1)[0]
     if method in ('dml_irm', 'dml_pliv', 'dml_iivm'):
         dependency_path = 'skills/econ-data/scripts/research.py'
-    resources = json.loads((ROOT / ('RESOURCES.json' if FLAT_EXPORT else 'registry/resources.json')).read_text())['resources']
-    placements = json.loads((ROOT / ('PLACEMENTS.json' if FLAT_EXPORT else 'registry/placements.json')).read_text())['resources']
     resource = next((r for rid, r in resources.items() if dependency_path in
         (r['source_path'], placements[rid]['deployment_path'], placements[rid]['export_alias'])), None)
-    layout_path = 'export_alias' if FLAT_EXPORT else 'deployment_path' if ROOT.name == '.agents' else 'source_path'
     is_causal_runner = owner == 'skills/econ-data/scripts/research_causal.py run'
+    if model_contract is not None:
+        if external_implementation:
+            called_functions = set(engine.split(' + '))
+            matched_bindings = [entry for entry in model_contract['implementation']
+                if entry.get('module') and entry['module']+'.'+entry['symbol'] in called_functions]
+            matched_functions = {entry['module']+'.'+entry['symbol'] for entry in matched_bindings}
+            if matched_functions != called_functions:
+                raise ValueError(f'{contract_id} does not bind the selected official functions: {engine}')
+        else:
+            matched_bindings = [entry for entry in model_contract['implementation']
+                if resource and entry.get('resource_id') == resource['resource_id']
+                and entry.get('command') == owner.split(' ',1)[1]]
+            if not matched_bindings:
+                raise ValueError(f'{contract_id} does not bind the selected execution owner: {owner}')
+        implementation['model_contract_id'] = contract_id
+        implementation['contract_bindings'] = matched_bindings
     if resource and not external_implementation:
         resource_id = resource['resource_id']
         script_path = resource['source_path'] if layout_path == 'source_path' else placements[resource_id][layout_path]
@@ -1157,6 +1223,41 @@ def select_method(request):
             'specification':execution_spec, 'missing_fields':missing_fields,
             'unbound_inputs':unbound_inputs, 'adoption_required':bool(changes),
             'command':['python',*owner.split(' '),'SPEC.json','--output','RESULT.json']}
+    elif resource and external_implementation is None and resource['resource_id'] in (
+            'research-macro', 'research-markets', 'research-dynamic'):
+        # Project a matching adopted specification into its existing owner's
+        # public input. Numerical validation stays in that owner.
+        resource_id = resource['resource_id']
+        if resource_id == 'research-macro':
+            owner_fields = {'alpha','beta','delta','initial_capital','terminal_capital','baseline','scenario',
+                'population','period','unit','sources','tolerance'}
+            required_fields = owner_fields
+        elif resource_id == 'research-markets':
+            owner_fields = required_fields = {'model','baseline','scenario','unit','sources'}
+        else:
+            required_fields = {'model','options'}
+            owner_fields = required_fields | {'data','adopted','scenario'}
+            if method in ('replacement','latent_replacement','discrete_entry','dynamic_adoption_blp'):
+                required_fields = required_fields | {'data'}
+        execution_spec = {key:deepcopy(adopted_spec[key]) for key in owner_fields if key in adopted_spec}
+        if resource_id != 'research-macro':
+            execution_spec['model'] = model
+        if resource_id == 'research-dynamic' and 'options' in adopted_spec:
+            execution_spec['options'] = deepcopy(selected_options)
+            if method == 'replacement' and algorithm == 'smm' and 'smm' not in execution_spec['options']:
+                unbound_inputs.append('options.smm: adopted seed, replications, initial_costs, bounds and tolerance')
+        missing_fields = sorted(required_fields - execution_spec.keys())
+        implementation['execution_specification'] = {
+            'status':'inputs_required' if missing_fields or unbound_inputs else 'specified',
+            'specification':execution_spec, 'missing_fields':missing_fields,
+            'unbound_inputs':unbound_inputs, 'adoption_required':bool(changes),
+            'schema_owner':{'resource_id':resource_id, 'entry_point':implementation['entry_point']},
+            'validation':'The selected owner validates numerical inputs when its command executes.',
+            'command':['python',*owner.split(' '),'SPEC.json','--output','RESULT.json']}
+        if method == 'replacement':
+            implementation['execution_components'] = ['nfxp','ccp','baseline and scenario policy solution','finite-horizon solution']
+            if 'smm' in execution_spec.get('options', {}):
+                implementation['execution_components'].append('smm')
     return {'result_format_version':1,'status':'design_change' if changes else 'selected','question':request['question'],
         'estimand':request['estimand'],'identification':request['identification'],
         'method':method,'engine':engine,'entry_point':owner,'determining_conditions':conditions,

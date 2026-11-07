@@ -1,5 +1,5 @@
 {
-  "catalog_sha256": "4e3b0c966c5bb94c5765e4dbea2e90d5dcf740b5ec9ef14ddf48ae64337d6fd8",
+  "catalog_sha256": "c0844ec732c05bc07c5b2666c10af8e4de8463bf3c11319b283c7571eb386d00",
   "chapters": {
     "chapters/01-mathematics.md": "73d962357ecd347e34359d8a973e80fcecfbf755251ae1ab4d1ad13dfc8ba46a",
     "chapters/02-probability-statistics.md": "57fa00ebec9aec9af6459a944d283052a9c80f0d76ae30cb37b4a300109b1958",
@@ -222,7 +222,7 @@
     },
     "model-contracts.json": {
       "path": "model-contracts.json",
-      "sha256": "3c1ae4d4ff1e1fcac1ea8a39b0ad4c62cefe195c20373ea4a7b8fcd7496d95fb"
+      "sha256": "ba1cadb85de2f7b4969d0d96c0f4c441e9d00a1d592b0e70d4c7384c782e43e2"
     },
     "relations.json": {
       "path": "relations.json",
