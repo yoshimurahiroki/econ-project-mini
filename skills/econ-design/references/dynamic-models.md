@@ -1,6 +1,6 @@
 # Executable dynamic models
 
-`research_dynamic.py` implements replacement, persistent-type replacement, discrete and continuous-time entry games, capacity and product choice, and dynamic durable adoption. Its saved JSON binds the model, adopted inputs, intervention, options, full numerical results, software versions and named statistics. Run the adopted specification with `python research_dynamic.py run SPEC.json --output RESULT.json`. Install `requirements-dynamic.txt` into the selected research environment. Declare the script, specification and environment as inputs to the existing research DAG.
+`research_dynamic.py` implements finite-horizon respy estimation and simulation, replacement, persistent-type replacement, discrete and continuous-time entry games, capacity and product choice, and dynamic durable adoption. Its saved JSON binds the model, adopted inputs, intervention, options, full numerical results, software versions and named statistics. Run the adopted specification with `python research_dynamic.py run SPEC.json --output RESULT.json`. Install `requirements-dynamic.txt` into the selected research environment. The respy branch uses its separate Python 3.11 `requirements-respy.txt` closure: the pinned official source uses pandas `DataFrame.append`, NumPy `np.bool` and estimagic 0.4.3 utility functions. Declare the selected script, specification and environment as inputs to the existing research DAG.
 
 ## Official finite-horizon and lifecycle selection
 
@@ -51,6 +51,46 @@ Lifecycle policy values condition on the adopted exogenous paths. Welfare requir
 Versioned official sources: [HARK 0.17.2 consumer classes](https://github.com/econ-ark/HARK/blob/269085077b84cb50feb49d0cd54bbf4da5fa3199/HARK/ConsumptionSaving/ConsIndShockModel.py), [respy 2.1.1 simulated moments](https://github.com/OpenSourceEconomics/respy/blob/91e8a193fb7d5cf7212c15e50ae43f810bb9b1eb/respy/method_of_simulated_moments.py), [respy mean log likelihood](https://github.com/OpenSourceEconomics/respy/blob/91e8a193fb7d5cf7212c15e50ae43f810bb9b1eb/respy/likelihood.py), [pylcm model construction, solution and simulation](https://github.com/OpenSourceEconomics/pylcm/blob/0fb55673b0be4eb52d270b2585047faa38c4e930/src/lcm/model.py), and [pylcm assets/health, work and retirement example](https://github.com/OpenSourceEconomics/pylcm/blob/0fb55673b0be4eb52d270b2585047faa38c4e930/src/lcm_examples/precautionary_savings_health.py).
 
 The existing knowledge planner accepts `MC-hark-consumption-saving`, `MC-respy-finite-choice`, `MC-lifecycle-regimes` and `MC-replacement-ddc` directly. Use `knowledge.py plan CONTRACT_ID --read` to obtain each model's selection, equations, identifying observations, numerical diagnostics and prerequisites. `DYN-02` compares the retirement regimes and continuous saving choices with a solved two-period switching threshold. `STRUCT-03` distinguishes respy's finite-horizon normal-shock integration from the stationary extreme-value replacement likelihood. `HET-01` maps exogenous-price consumption policies to HARK and the additional market-clearing calculation to `HET-02`. The contract's `availability` identifies the existing runner, numerical example or pinned external API; adopted parameters and actual execution remain in the research result.
+
+## Execute and reuse a respy fit
+
+The existing `run` command dispatches `model="finite_horizon_choice"` to `respy_run`. Its `operation` is `estimate`, `simulate` or `counterfactual`. `params` is either `{"path":"params.csv"}` or a record array with `category`, `name` and `value`; additional native parameter columns are retained. `options` is the official structural options dictionary. `adopted` retains the economic specification, identifying observations and normalizations. CSV paths resolve against the specification directory. `data.path` names the observed native dataframe, with `Identifier` and `Period` columns; optional `data.columns` maps native names to actual CSV headers. Missing wage observations remain missing.
+
+For estimation, supply:
+
+```json
+{
+  "model": "finite_horizon_choice",
+  "operation": "estimate",
+  "params": {"path": "params.csv"},
+  "options": {"n_periods": 5},
+  "adopted": {"source": "adopted economic specification and revision"},
+  "data": {"path": "observations.csv"},
+  "estimation": {
+    "method": "maximum_likelihood",
+    "free_parameters": [["wage_fishing", "exp_fishing"]],
+    "bounds": [[0.1, 0.5]],
+    "optimizer": {"method": "L-BFGS-B", "options": {"ftol": 1e-11, "maxiter": 100}}
+  },
+  "inference": {"method": "retain_inputs", "independent_unit": "Identifier", "derivative_step": 0.00001}
+}
+```
+
+Complete `options` with the adopted native choice/state definitions, covariates, seeds and integration counts. The official defaults are materialized in the saved result. `free_parameters` fixes the optimization order and every other parameter stays fixed. `bounds` has the same order. Supported bounded SciPy methods are `L-BFGS-B`, `Powell`, `Nelder-Mead` and `SLSQP`; `optimizer.options` and optional `optimizer.tolerance` reach `scipy.optimize.minimize`. ML minimizes the negative native mean individual log likelihood. The saved criterion retains that native mean, individual contributions and comparison rows. Optimizer termination has its own field.
+
+For `estimation.method="smm"`, supply `moments.module`, a local Python file containing the adopted moment functions, and `moments.calc_moments`, their function name, ordered list of names or named dictionary. Apply the same functions to observed and simulated data. `moments.replace_nans` supplies a corresponding function name/list/dictionary or `null`. `moments.weighting_matrix` is the explicit symmetric positive-semidefinite matrix in `respy.get_flat_moments` order. Optional `moments.n_simulation_periods` reaches the native factory; the pinned simulator's effective horizon remains `options.n_periods`.
+
+The runner calls `respy.get_moment_errors_func(..., return_scalar=False)` and minimizes its `value`. It saves native moment errors, empirical and simulated moments, comparison rows, ordering and `W`. It compares the final returned value to the original `e.T @ W @ e`. It saves native `root_contributions` only for diagonal `W`. General symmetric `W`, including negative off-diagonal entries, uses the official scalar value. Optional distinct `moments.simulation_seeds` evaluate additional independent simulations at the fitted parameters, saving replicate moments, their standard deviation and the standard error of their mean. These draws do not change the criterion used for estimation.
+
+`fit` retains the native parameter dataframe, effective structural options, adopted specification, observed dataframe, exact source hashes, optimizer return and inference inputs. `inference.method="retain_inputs"` preserves the independent unit and observed sample mapping. With an explicit positive `derivative_step`, ML also retains individual scores and SMM retains the ordered moment-error Jacobian from central differences inside the adopted bounds. A statistical covariance is calculated by the adopted inference operation from these inputs; optimizer convergence and simulation dispersion retain separate roles.
+
+For saved-model simulation, supply `fit_path` pointing to the prior result JSON and `simulation.method`. The runner reconstructs the saved parameter dataframe and calls `respy.get_simulate_func` directly. Sampling starts from the native initial distributions. `n_step_ahead_with_data` uses the retained or explicitly supplied data and requires all observed initial states with consecutive zero-based IDs at Period 0. `one_step_ahead` retains its conditional prediction interpretation. `simulation.n_simulation_periods` accepts `null` or the saved decision horizon; select shorter displayed periods from the saved output.
+
+For a policy counterfactual, use `operation="counterfactual"` and `scenario.parameter_changes`, an array of `{category,name,value}` records for adopted `wage_` or `nonpec_` utility parameters. All other parameter coordinates, structural options, initial distributions, discounting, shocks and transitions remain fixed. Both scenarios call the native simulator with the saved seeds. The result saves complete native histories and scenario parameters, compares initial-state dataframes and base-draw SHA-256 values, and records the preserved parameter block and transition/shock definitions under `fullresults.counterfactual_invariants`.
+
+Optional `welfare` requires `discounting` and `population_weights`. `discounting="exponential"` aggregates each person's chosen native `Flow_Utility` with their discount factor over the complete horizon and requires native `Present_Bias=1`. `quasi_hyperbolic_initial_self` additionally applies the initial self's present-bias parameter to future flows. `population_weights` is `"equal"`, a vector in sorted Identifier order, or an object keyed by every Identifier. Weights normalize to one. The native finite-horizon terminal continuation value is zero. The result saves individual discounted utility, population weights, baseline/scenario welfare and their difference. It uses the realized chosen flow including reward shocks; wage measurement error and continuation value are not added to those flows.
+
+Top-level `computation`, `parameter_definition`, `normalization`, `equilibrium_selection`, `horizon`, `solver` and `welfare_definition` accompany the standard `statistics`, `displays` and `provenance`. Tables use saved parameter rows, criterion/welfare statistics and simulated period-choice shares. `fit_path` reuses parameters and performs no estimation. Each invocation gives the native state-space cache its own temporary location while preserving the structural options.
 
 ## Observed data and executable specifications
 

@@ -6,6 +6,7 @@ Use ``run SPEC --output RESULT`` with the adopted inputs.
 from __future__ import annotations
 
 import argparse
+import copy
 import csv
 import hashlib
 import importlib.util
@@ -23,6 +24,467 @@ from scipy.optimize import minimize, minimize_scalar, root
 from scipy.special import expit, logsumexp, softmax
 from scipy.sparse import csr_matrix, eye
 from scipy.linalg import expm
+
+
+def official_package(name, version, revision):
+    """Bind the producing installed distribution to its adopted source revision."""
+    import importlib.metadata
+    import subprocess
+    from urllib.parse import unquote, urlparse
+    distribution = importlib.metadata.distribution(name)
+    direct = distribution.read_text('direct_url.json')
+    source = json.loads(direct) if direct else {}
+    actual = source.get('vcs_info', {}).get('commit_id')
+    if source.get('url', '').startswith('file:'):
+        directory = Path(unquote(urlparse(source['url']).path))
+        check = subprocess.run(['git', '-C', str(directory), 'rev-parse', 'HEAD'],
+                               capture_output=True, text=True)
+        actual = check.stdout.strip() if check.returncode == 0 else None
+    if distribution.version != version or actual != revision:
+        raise ValueError(f'{name} {version} at official revision {revision} is required')
+    return {'package': name, 'version': distribution.version, 'source_revision': actual,
+            'direct_url': source}
+
+
+def native_json(value):
+    """Retain native coordinates and missing observations in the common JSON result."""
+    import pandas as pd
+    if isinstance(value, pd.DataFrame):
+        return {'kind': 'dataframe', 'index_names': list(value.index.names),
+                'index': native_json(value.index.tolist()), 'columns': native_json(value.columns.tolist()),
+                'data': native_json(value.to_numpy().tolist())}
+    if isinstance(value, pd.Series):
+        return {'kind': 'series', 'index_names': list(value.index.names),
+                'index': native_json(value.index.tolist()), 'name': native_json(value.name),
+                'data': native_json(value.tolist())}
+    if isinstance(value, dict):
+        return {str(k): native_json(v) for k, v in value.items()}
+    if isinstance(value, (list, tuple, np.ndarray)):
+        return [native_json(v) for v in value]
+    if isinstance(value, np.generic):
+        return native_json(value.item())
+    if isinstance(value, Path):
+        return str(value)
+    if value is None or value is pd.NA or (isinstance(value, float) and np.isnan(value)):
+        return None
+    if isinstance(value, float) and not np.isfinite(value):
+        raise ArithmeticError('native result contains an infinite value')
+    return value
+
+
+def restore_frame(value):
+    import pandas as pd
+    names = value['index_names']
+    index = (pd.MultiIndex.from_tuples([tuple(x) for x in value['index']], names=names)
+             if len(names) > 1 else pd.Index(value['index'], name=names[0]))
+    return pd.DataFrame(value['data'], index=index, columns=value['columns'])
+
+
+def source_file(value, base):
+    path = Path(value)
+    path = path if path.is_absolute() else base / path
+    path = path.resolve()
+    return path, {'path': str(path), 'sha256': hashlib.sha256(path.read_bytes()).hexdigest()}
+
+
+def respy_data(data_spec, base):
+    import pandas as pd
+    path, source = source_file(data_spec['path'], base)
+    frame = pd.read_csv(path)
+    if data_spec.get('columns'):
+        frame = frame.rename(columns={v: k for k, v in data_spec['columns'].items()})
+    frame = frame.set_index(['Identifier', 'Period']).sort_index()
+    if frame.empty or not frame.index.is_unique:
+        raise ValueError('respy observations require unique Identifier/Period keys')
+    keys = frame.index.to_frame(index=False).to_numpy()
+    if not np.isfinite(keys).all() or not np.equal(keys, np.floor(keys)).all() or (keys < 0).any():
+        raise ValueError('Identifier and Period must be nonnegative integers')
+    source.update(rows=len(frame), columns=list(frame.columns), index_names=list(frame.index.names))
+    return frame, source
+
+
+def respy_callbacks(config, base, observed):
+    """Load the adopted moment definitions; preserve their native nesting and labels."""
+    path, source = source_file(config['module'], base)
+    module_spec = importlib.util.spec_from_file_location('adopted_respy_moments', path)
+    module = importlib.util.module_from_spec(module_spec)
+    module_spec.loader.exec_module(module)
+    def resolve(value):
+        if value is None:
+            return None
+        if isinstance(value, list):
+            return [resolve(x) for x in value]
+        if isinstance(value, dict):
+            return {k: resolve(v) for k, v in value.items()}
+        function = getattr(module, value)
+        if not callable(function):
+            raise TypeError('moment definitions must be callable')
+        return function
+    def apply(functions):
+        if isinstance(functions, list):
+            return [apply(x) for x in functions]
+        if isinstance(functions, dict):
+            return {k: apply(v) for k, v in functions.items()}
+        return functions(observed.copy())
+    calculate = resolve(config['calc_moments'])
+    return calculate, resolve(config.get('replace_nans')), apply(calculate), source
+
+
+def respy_welfare(frame, config, method, horizon):
+    """Aggregate chosen native flow utilities for the adopted initial population."""
+    if method == 'one_step_ahead':
+        raise ValueError('lifecycle welfare requires n-step simulation')
+    discounting = config['discounting']
+    if discounting not in ('exponential', 'quasi_hyperbolic_initial_self'):
+        raise ValueError('welfare.discounting must name exponential or quasi_hyperbolic_initial_self')
+    rows = []
+    for identifier, panel in frame.groupby(level='Identifier', sort=True):
+        periods = panel.index.get_level_values('Period').to_numpy()
+        if not np.array_equal(periods, np.arange(horizon)):
+            raise ValueError('welfare requires the complete simulated decision horizon')
+        delta = panel['Discount_Rate'].to_numpy(dtype=float)
+        present_bias = panel['Present_Bias'].to_numpy(dtype=float)
+        if not np.equal(delta, delta[0]).all() or not np.equal(present_bias, present_bias[0]).all():
+            raise ValueError('welfare requires the declared constant individual discount parameters')
+        if discounting == 'exponential' and present_bias[0] != 1:
+            raise ValueError('present-biased choices require an explicit welfare discounting definition')
+        columns = {c[len('Flow_Utility_'):].lower(): c for c in panel.columns if c.startswith('Flow_Utility_')}
+        flows = np.array([row[columns[str(row['Choice']).lower()]] for _, row in panel.iterrows()], dtype=float)
+        factors = delta[0] ** periods
+        if discounting == 'quasi_hyperbolic_initial_self':
+            factors[periods > 0] *= present_bias[0]
+        rows.append({'identifier': int(identifier), 'discounted_utility': float(factors @ flows)})
+    weights = config['population_weights']
+    if weights == 'equal':
+        weights = np.ones(len(rows)) / len(rows)
+    elif isinstance(weights, dict):
+        if set(weights) != {str(r['identifier']) for r in rows}:
+            raise ValueError('welfare weights must match every simulated identifier')
+        weights = np.array([weights[str(r['identifier'])] for r in rows], dtype=float)
+    else:
+        weights = np.asarray(weights, dtype=float)
+    if weights.shape != (len(rows),) or not np.isfinite(weights).all() or (weights < 0).any() or weights.sum() <= 0:
+        raise ValueError('invalid welfare population weights')
+    weights = weights / weights.sum()
+    for row, weight in zip(rows, weights):
+        row['population_weight'] = float(weight)
+    if config.get('terminal_value', 0) != 0:
+        raise ValueError('respy finite-horizon welfare uses its zero terminal continuation value')
+    return {'value': float(weights @ [r['discounted_utility'] for r in rows]),
+            'unit': config.get('unit', 'utility'), 'individuals': rows,
+            'definition': 'Population-weighted sum of chosen Flow_Utility over the full decision horizon',
+            'discounting': discounting, 'terminal_value': 0, 'horizon': horizon}
+
+
+def respy_run(spec, base):
+    """Estimate and reuse the adopted finite-horizon model through official respy."""
+    import pandas as pd
+    import respy
+    from respy.config import DEFAULT_OPTIONS
+    from respy.pre_processing.model_processing import process_params_and_options
+    from respy.shared import create_state_space_columns, rename_labels_from_internal
+    identity = official_package('respy', '2.1.1', '91e8a193fb7d5cf7212c15e50ae43f810bb9b1eb')
+    operation = spec['operation']
+    if operation not in ('estimate', 'simulate', 'counterfactual'):
+        raise ValueError('respy operation must be estimate, simulate or counterfactual')
+    sources = {}
+    if 'fit_path' in spec:
+        if operation == 'estimate':
+            raise ValueError('fit_path reuses a fit; a new estimate requires explicit params and options')
+        path, sources['fit'] = source_file(spec['fit_path'], base)
+        saved = json.loads(path.read_text())
+        if saved.get('model') != 'finite_horizon_choice':
+            raise ValueError('fit_path must identify a finite_horizon_choice result')
+        fit = copy.deepcopy(saved['fit'])
+        params = restore_frame(fit['params'])
+        options = copy.deepcopy(fit['options'])
+        adopted = copy.deepcopy(fit['adopted'])
+        for key, expected in (('options', options), ('adopted', adopted)):
+            if key in spec and spec[key] != expected:
+                raise ValueError(f'{key} must preserve the saved fit')
+        if 'params' in spec:
+            raise ValueError('fit_path already supplies the saved parameters')
+        observed = restore_frame(fit['observed_data']) if fit.get('observed_data') else None
+        sources.update(fit.get('sources', {}))
+    else:
+        parameter_input = spec['params']
+        if isinstance(parameter_input, dict) and 'path' in parameter_input:
+            path, sources['params'] = source_file(parameter_input['path'], base)
+            params = pd.read_csv(path).set_index(['category', 'name'])
+        else:
+            params = pd.DataFrame(parameter_input).set_index(['category', 'name'])
+        options = {**copy.deepcopy(DEFAULT_OPTIONS), **copy.deepcopy(spec['options'])}
+        adopted = copy.deepcopy(spec['adopted'])
+        observed = None
+        fit = {'parameter_status': spec.get('parameter_status', 'fixed'), 'adopted': adopted}
+    if not params.index.is_unique or 'value' not in params or not np.isfinite(params['value'].to_numpy(dtype=float)).all():
+        raise ValueError('respy parameters require unique category/name and finite values')
+    if 'data' in spec:
+        observed, sources['data'] = respy_data(spec['data'], base)
+    if operation == 'estimate' and observed is None:
+        raise ValueError('respy estimation requires adopted observed data')
+    if operation == 'estimate' and spec.get('inference', {}).get('method', 'retain_inputs') != 'retain_inputs':
+        raise ValueError('this operation retains inference inputs; select the adopted covariance through its inference owner')
+    horizon = int(options['n_periods'])
+    if horizon < 1:
+        raise ValueError('n_periods must be positive')
+    # Each invocation owns its native disk cache. It is an execution location, not a primitive.
+    with tempfile.TemporaryDirectory(prefix='ers-respy-') as cache:
+        native_options = copy.deepcopy(options)
+        native_options['cache_path'] = cache
+        statistics, parameter_rows, diagnostics = {}, [], []
+        free = [tuple(x) for x in fit.get('free_parameters', [])]
+        if operation == 'estimate':
+            estimation = spec['estimation']
+            method = estimation['method']
+            free = [tuple(x) for x in estimation['free_parameters']]
+            if not free or len(free) != len(set(free)) or any(x not in params.index for x in free):
+                raise ValueError('free_parameters must identify distinct adopted parameter coordinates')
+            bounds = estimation['bounds']
+            if len(bounds) != len(free) or any(len(x) != 2 for x in bounds):
+                raise ValueError('bounds must match free_parameters')
+            initial = params.loc[free, 'value'].to_numpy(dtype=float)
+            for x, (lo, hi) in zip(initial, bounds):
+                if (lo is not None and x < lo) or (hi is not None and x > hi) or (lo is not None and hi is not None and lo >= hi):
+                    raise ValueError('initial parameters must lie in adopted bounds')
+            optimizer = estimation['optimizer']
+            if optimizer['method'] not in ('L-BFGS-B', 'Powell', 'Nelder-Mead', 'SLSQP'):
+                raise ValueError('select a supported bounded scipy optimizer')
+            def parameter_frame(values):
+                candidate = params.copy(deep=True)
+                candidate.loc[free, 'value'] = values
+                return candidate
+            sign = -1. if method == 'maximum_likelihood' else 1.
+            if method == 'maximum_likelihood':
+                criterion = respy.get_log_like_func(params, native_options, observed, return_scalar=False)
+                criterion_definition = 'Mean individual log likelihood; the optimizer minimizes its negative'
+                empirical = weighting = None
+            elif method == 'smm':
+                moments = spec['moments']
+                calculate, replace, empirical, sources['moments'] = respy_callbacks(moments, base, observed)
+                flat = respy.get_flat_moments(empirical)
+                weighting = np.asarray(moments['weighting_matrix'], dtype=float)
+                if (weighting.shape != (len(flat), len(flat)) or not np.isfinite(weighting).all()
+                        or not np.allclose(weighting, weighting.T, rtol=0, atol=1e-12)
+                        or np.linalg.eigvalsh(weighting).min() < -1e-12):
+                    raise ValueError('SMM weighting matrix must be symmetric positive semidefinite in moment order')
+                if not flat.index.is_unique or not np.isfinite(flat.to_numpy()).all():
+                    raise ValueError('empirical moments must have unique labels and finite values')
+                criterion = respy.get_moment_errors_func(params, native_options, calculate, replace,
+                    empirical, weighting_matrix=weighting,
+                    n_simulation_periods=moments.get('n_simulation_periods'), return_scalar=False)
+                criterion_definition = 'e.T @ W @ e, with e = empirical moments - simulated moments'
+            else:
+                raise ValueError('estimation.method must be maximum_likelihood or smm')
+            def evaluate(values):
+                # The native root output takes an elementwise square root of W. Only value
+                # defines the general-W objective; roots are retained solely for diagonal W.
+                with np.errstate(invalid='ignore'):
+                    result = criterion(parameter_frame(values))
+                if not np.isfinite(result['value']):
+                    raise ArithmeticError('official respy criterion is nonfinite')
+                return result
+            optimization = minimize(lambda x: sign * float(evaluate(x)['value']), initial,
+                bounds=bounds, method=optimizer['method'], options=optimizer.get('options', {}),
+                tol=optimizer.get('tolerance'))
+            if not optimization.success:
+                raise ArithmeticError('respy optimization: ' + str(optimization.message))
+            final = evaluate(optimization.x)
+            params.loc[free, 'value'] = optimization.x
+            raw_criterion = {k: v for k, v in final.items() if k != 'root_contributions'}
+            if method == 'smm' and np.array_equal(weighting, np.diag(np.diag(weighting))):
+                raw_criterion['root_contributions'] = final['root_contributions']
+            inferential = {'independent_unit': spec.get('inference', {}).get('independent_unit', 'Identifier'),
+                'procedure': copy.deepcopy(spec.get('inference', {'method': 'retain_inputs'})),
+                'sample_ids': observed.index.get_level_values('Identifier').unique().tolist(),
+                'sample_keys': observed.index.tolist(), 'free_parameter_order': free,
+                'draw_settings': {k: options[k] for k in options if 'seed' in k or 'draws' in k}}
+            if method == 'maximum_likelihood':
+                inferential['individual_log_likelihood_contributions'] = final['contributions']
+                statistics['respy_mean_log_likelihood'] = {'value': float(final['value']), 'unit': 'mean log likelihood'}
+            else:
+                errors = final['moment_errors']
+                if list(errors.index) != list(flat.index) or not np.isfinite(errors.to_numpy()).all():
+                    raise ArithmeticError('official moment order or finiteness differs from adopted moments')
+                difference = abs(float(errors.to_numpy() @ weighting @ errors.to_numpy()) - float(final['value']))
+                if difference > max(1e-10, abs(float(final['value'])) * 1e-12):
+                    raise ArithmeticError('official SMM value differs from the adopted weighted criterion')
+                inferential.update(moment_order=flat.index.tolist(), weighting_matrix=weighting,
+                                   empirical_moments=empirical, moment_errors=errors)
+                statistics['respy_smm_criterion'] = {'value': float(final['value']), 'unit': 'weighted squared moment error'}
+            derivative_step = spec.get('inference', {}).get('derivative_step')
+            if derivative_step is not None:
+                step = np.broadcast_to(np.asarray(derivative_step, dtype=float), optimization.x.shape)
+                if not np.isfinite(step).all() or (step <= 0).any():
+                    raise ValueError('inference derivative steps must be positive')
+                columns = []
+                target = 'contributions' if method == 'maximum_likelihood' else 'moment_errors'
+                for j, h in enumerate(step):
+                    plus, minus = optimization.x.copy(), optimization.x.copy()
+                    plus[j] += h; minus[j] -= h
+                    lo, hi = bounds[j]
+                    if (lo is not None and minus[j] < lo) or (hi is not None and plus[j] > hi):
+                        raise ValueError('central inference differences must remain inside the adopted bounds')
+                    columns.append((np.asarray(evaluate(plus)[target]) - np.asarray(evaluate(minus)[target])) / (2*h))
+                inferential['derivative_step'] = step
+                inferential['individual_score' if method == 'maximum_likelihood' else 'moment_error_jacobian'] = np.column_stack(columns)
+            simulation_error = {'component': 'simulated_likelihood' if method == 'maximum_likelihood' else 'simulated_moments',
+                'criterion_seed': options['estimation_seed'] if method == 'maximum_likelihood' else options['simulation_seed'],
+                'solution_seed': options['solution_seed'], 'independent_replications': 1}
+            if method == 'smm' and spec['moments'].get('simulation_seeds'):
+                seeds = spec['moments']['simulation_seeds']
+                if len(set(seeds)) != len(seeds) or len(seeds) < 2:
+                    raise ValueError('simulation_seeds requires at least two distinct seeds')
+                replicas = []
+                for seed in seeds:
+                    repeated_options = {**native_options, 'simulation_seed': int(seed)}
+                    repeated = respy.get_moment_errors_func(params, repeated_options, calculate, replace,
+                        empirical, weighting_matrix=weighting, n_simulation_periods=spec['moments'].get('n_simulation_periods'),
+                        return_scalar=False)
+                    with np.errstate(invalid='ignore'):
+                        value = repeated(params)
+                    replicas.append(respy.get_flat_moments(value['simulated_moments']).reindex(flat.index).to_numpy())
+                replica_values = np.asarray(replicas)
+                if not np.isfinite(replica_values).all():
+                    raise ArithmeticError('simulation replication contains nonfinite moments')
+                simulation_error.update(seeds=seeds, independent_replications=len(seeds),
+                    moment_order=flat.index.tolist(), replicated_simulated_moments=replica_values,
+                    standard_deviation=replica_values.std(axis=0, ddof=1),
+                    mean_standard_error=replica_values.std(axis=0, ddof=1)/np.sqrt(len(seeds)))
+            fit.update(parameter_status='estimated', estimation_method=method, free_parameters=free,
+                bounds=bounds, criterion_definition=criterion_definition, criterion=raw_criterion,
+                optimization={'method': optimizer['method'], 'options': optimizer.get('options', {}),
+                    'tolerance': optimizer.get('tolerance'), 'initial_parameters': initial,
+                    'parameters': optimization.x, 'objective': float(optimization.fun),
+                    'success': bool(optimization.success), 'status': int(optimization.status),
+                    'message': str(optimization.message), 'iterations': int(optimization.nit),
+                    'evaluations': int(optimization.nfev)},
+                inferential_information=inferential, simulation_error=simulation_error)
+        fit.update(params=native_json(params), options=options, adopted=adopted,
+                   observed_data=native_json(observed) if observed is not None else None, sources=sources,
+                   official_source=identity)
+        simulations, policy_rows = {}, []
+        invariants = {}
+        simulation_config = spec.get('simulation')
+        if operation in ('simulate', 'counterfactual') and simulation_config is None:
+            raise ValueError('simulation.method is required')
+        if simulation_config is not None:
+            method = simulation_config['method']
+            if method not in ('n_step_ahead_with_sampling', 'n_step_ahead_with_data', 'one_step_ahead'):
+                raise ValueError('unsupported native simulation method')
+            if method != 'n_step_ahead_with_sampling' and observed is None:
+                raise ValueError('the selected simulation method requires data')
+            requested_periods = simulation_config.get('n_simulation_periods')
+            if requested_periods is not None and requested_periods != horizon:
+                raise ValueError('the pinned respy simulator uses n_periods; retain that horizon and select display periods afterward')
+            native_parameters, _ = process_params_and_options(params, native_options)
+            state_columns = [rename_labels_from_internal(x) for x in create_state_space_columns(native_parameters)]
+            if method == 'n_step_ahead_with_data':
+                initial = observed.loc[observed.index.get_level_values('Period') == 0]
+                ids = initial.index.get_level_values('Identifier').to_numpy()
+                if not np.array_equal(ids, np.arange(len(initial))) or len(initial) != observed.index.get_level_values('Identifier').nunique():
+                    raise ValueError('n-step data simulation requires consecutive zero-based IDs at Period 0')
+                required = [c for c in state_columns if c not in ('Identifier', 'Period', 'Type')]
+                if any(c not in initial for c in required) or initial[required].isna().any().any():
+                    raise ValueError('n-step data simulation requires all adopted initial observed states')
+            scenarios = [('baseline', params)]
+            if operation == 'counterfactual':
+                changed = params.copy(deep=True)
+                changes = spec['scenario']['parameter_changes']
+                if not changes:
+                    raise ValueError('counterfactual requires adopted utility parameter changes')
+                for change in changes:
+                    coordinate = (change['category'], change['name'])
+                    if coordinate not in params.index or not coordinate[0].startswith(('wage_', 'nonpec_')):
+                        raise ValueError('counterfactual parameter changes must name wage/nonpec utility parameters')
+                    if not np.isfinite(change['value']):
+                        raise ValueError('counterfactual parameter values must be finite')
+                    changed.loc[coordinate, 'value'] = change['value']
+                scenarios.append(('scenario', changed))
+            for scenario_name, scenario_params in scenarios:
+                simulator = respy.get_simulate_func(scenario_params, native_options, method=method,
+                    df=observed, n_simulation_periods=requested_periods)
+                frame = simulator(scenario_params)
+                statistics['respy_'+scenario_name+'_simulation_rows'] = {'value': len(frame), 'unit': 'person periods'}
+                statistics['respy_'+scenario_name+'_simulation_individuals'] = {
+                    'value': int(frame.index.get_level_values('Identifier').nunique()), 'unit': 'individuals'}
+                for (period, choice), share in frame.groupby(level='Period')['Choice'].value_counts(normalize=True).items():
+                    policy_rows.append({'scenario': scenario_name, 'period': int(period), 'choice': str(choice),
+                                        'value': float(share), 'unit': 'simulated choice share'})
+                initial_frame = frame.loc[frame.index.get_level_values('Period') == 0,
+                    [c for c in state_columns if c in frame]]
+                simulation = {'data': native_json(frame), 'params': native_json(scenario_params),
+                    'method': method, 'requested_n_simulation_periods': requested_periods,
+                    'effective_n_simulation_periods': int(frame.index.get_level_values('Period').max()+1),
+                    'individuals': int(frame.index.get_level_values('Identifier').nunique()),
+                    'initial_states': native_json(initial_frame),
+                    'base_draws_sha256': {key: hashlib.sha256(simulator.keywords[key].tobytes()).hexdigest()
+                                         for key in ('base_draws_sim', 'base_draws_wage')}}
+                if spec.get('welfare'):
+                    simulation['welfare'] = respy_welfare(frame, spec['welfare'], method, horizon)
+                    statistics['respy_'+scenario_name+'_welfare'] = {
+                        'value': simulation['welfare']['value'], 'unit': simulation['welfare']['unit']}
+                simulations[scenario_name] = simulation
+            if operation == 'counterfactual':
+                for key in ('initial_states', 'base_draws_sha256'):
+                    if simulations['baseline'][key] != simulations['scenario'][key]:
+                        raise ArithmeticError('counterfactual must preserve the initial population and scenario draws')
+                invariants = {'initial_states_equal': True, 'simulation_base_draws_equal': True,
+                    'structural_options_equal': True,
+                    'unchanged_parameters': native_json(params.loc[
+                        [x for x in params.index if x[0].startswith(('wage_', 'nonpec_')) is False]]),
+                    'transition_definition': adopted.get('transitions', 'Native respy options and state-transition parameters'),
+                    'shock_definition': adopted.get('shocks', 'Native shock parameters and fixed seeded normal base draws')}
+                if spec.get('welfare'):
+                    statistics['respy_welfare_change'] = {
+                        'value': simulations['scenario']['welfare']['value'] - simulations['baseline']['welfare']['value'],
+                        'unit': simulations['baseline']['welfare']['unit']}
+        for coordinate, row in params.iterrows():
+            role = 'estimated' if coordinate in free else fit['parameter_status'] if not free else 'fixed'
+            parameter_rows.append({'category': coordinate[0], 'parameter': coordinate[1],
+                                   'value': float(row['value']), 'role': role})
+        for key, value in statistics.items():
+            diagnostics.append({'quantity': key, **value})
+        displays = {
+            'parameters': {'kind': 'table', 'title': 'Finite-horizon structural parameters', 'rows': parameter_rows,
+                'columns': [{'key': x, 'label': x.replace('_', ' ').title(), 'unit': ''}
+                            for x in ('category', 'parameter', 'value', 'role')],
+                'metadata': {'model_contract': 'MC-respy-finite-choice', 'report_role': 'parameters'},
+                'display': {'plot_type': 'table'}},
+            'model_fit': {'kind': 'table', 'title': 'Criterion and scenario welfare', 'rows': diagnostics,
+                'columns': [{'key': x, 'label': x.title(), 'unit': ''} for x in ('quantity', 'value', 'unit')],
+                'metadata': {'model_contract': 'MC-respy-finite-choice', 'report_role': 'model_fit'},
+                'display': {'plot_type': 'table'}}}
+        if policy_rows:
+            displays['choice_shares'] = {'kind': 'structural', 'title': 'Simulated choices by period', 'rows': policy_rows,
+                'columns': [{'key': x, 'label': x.title(), 'unit': ''} for x in ('scenario', 'period', 'choice', 'value', 'unit')],
+                'metadata': {'model_contract': 'MC-respy-finite-choice', 'report_role': 'counterfactual',
+                             'unit': 'simulated choice share'}, 'display': {'plot_type': 'table'}}
+        executed = ['solve', operation]
+        if simulations and 'simulate' not in executed:
+            executed.insert(1, 'simulate')
+        return native_json({'model': 'finite_horizon_choice', 'operation': operation, 'adopted': adopted,
+            'scenario': spec.get('scenario', {}), 'options': options,
+            'computation': {'requested_operation': operation, 'operations_executed': executed,
+                'parameter_operation': 'estimate' if operation == 'estimate' else 'reuse_'+fit['parameter_status']},
+            'parameter_definition': {'coordinates': ['category', 'name'], 'free_parameters': free,
+                'structural_parameters': 'Native utility, transition, shock and discount parameter dataframe',
+                'optimization': 'Numerical minimization return; structural parameters retain native coordinates',
+                'inference': 'Saved likelihood contributions or ordered moments and W; optional derivatives',
+                'simulation_error': 'Independent-seed moment dispersion at the saved parameter vector'},
+            'normalization': adopted.get('normalization', adopted.get('normalizations', 'Native params and options')),
+            'equilibrium_selection': 'Individual finite-horizon backward induction at the adopted exogenous primitives',
+            'welfare_definition': spec.get('welfare', adopted.get('welfare', {})),
+            'horizon': horizon, 'solver': 'respy backward induction with adopted simulation integration',
+            'engine': 'respy', 'fit': fit, 'fullresults': {'simulations': simulations,
+                                                       'counterfactual_invariants': invariants},
+            'statistics': statistics, 'displays': displays,
+            'provenance': {'official_source': identity, 'sources': sources, 'python': sys.version.split()[0],
+                'numpy': np.__version__, 'pandas': pd.__version__, 'scipy': scipy.__version__,
+                'official_functions': (['get_log_like_func' if fit.get('estimation_method') == 'maximum_likelihood'
+                    else 'get_moment_errors_func'] if operation == 'estimate' else [])
+                    + (['get_simulate_func'] if simulations else []),
+                'script_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}})
 
 
 def _transition(n):
@@ -901,6 +1363,8 @@ def replacement_displays(result):
 
 
 def observed_run(spec, base):
+    if spec['model'] == 'finite_horizon_choice':
+        return respy_run(spec, base)
     mode = spec['model']; options = spec['options']
     if mode == 'capacity_product_game' and 'data' in spec:
         data, source = capacity_panel(spec['data'], base)
