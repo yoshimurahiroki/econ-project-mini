@@ -288,6 +288,9 @@ def blp(s):
     out = {'beta':arr(result.beta),'sigma':arr(result.sigma),'rho':arr(result.rho),'gamma':arr(result.gamma),
            'parameter_labels': {name: [str(label) for label in getattr(result, name+'_labels')]
                                 for name in ('beta', 'sigma', 'rho', 'gamma')},
+           'parameter_status': {name: np.where(
+               np.equal(*getattr(result, name+'_bounds')), 'fixed', 'estimated').tolist()
+               for name in ('beta', 'sigma', 'rho', 'gamma')},
            'versions': {'pyblp': pyblp.__version__},
            'standard_errors': {'beta':arr(result.beta_se), 'sigma':arr(result.sigma_se), 'rho':arr(result.rho_se), 'gamma':arr(result.gamma_se)},
            'objective':float(result.objective),'gradient_norm':(float(result.projected_gradient_norm) if np.isfinite(result.projected_gradient_norm).all() else None),
@@ -364,13 +367,14 @@ def blp_displays(result, specification, unit):
     for group in ('beta', 'sigma', 'rho', 'gamma'):
         values = np.asarray(result[group])
         errors = np.asarray(result['standard_errors'][group], dtype=object)
+        status = np.asarray(result['parameter_status'][group])
         labels = result['parameter_labels'][group]
         for index in np.ndindex(values.shape):
             if group == 'sigma' and index[1] > index[0]:
                 continue
             label = ', '.join(labels[i] for i in index) if group == 'sigma' else labels[index[0]]
             parameter_rows.append({'parameter': f'{group}[{label}]', 'value': values[index].item(),
-                                   'std_error': errors[index],
+                                   'status': status[index].item(), 'std_error': errors[index],
                                    'unit': ('correlation' if group == 'rho' else
                                             'cost per regressor unit' if group == 'gamma' else
                                             'utility per regressor unit')})
@@ -408,9 +412,9 @@ def blp_displays(result, specification, unit):
     return {
         'parameters': {'kind': 'table', 'title': 'Demand and supply parameters', 'rows': parameter_rows,
                        'columns': [{'key': key, 'label': label, 'unit': ''} for key, label in
-                                   (('parameter', 'Parameter'), ('value', 'Estimate'), ('std_error', 'Standard error'), ('unit', 'Unit'))],
+                                   (('parameter', 'Parameter'), ('status', 'Status'), ('value', 'Value'), ('std_error', 'Standard error'), ('unit', 'Unit'))],
                        'metadata': {**contract, 'report_role': 'parameters',
-                                    'inference': 'Official ProblemResults standard errors; fixed parameters retain their saved values'},
+                                    'inference': 'Official ProblemResults bounds identify fixed parameters; standard errors retain the official saved values'},
                        'display': {'plot_type': 'table', 'formats': {'value': '.4f', 'std_error': '.4f'}}},
         'model_fit': {'kind': 'table', 'title': 'Demand fit and equilibrium diagnostics', 'rows': diagnostic_rows,
                       'columns': [{'key': key, 'label': label, 'unit': ''} for key, label in
