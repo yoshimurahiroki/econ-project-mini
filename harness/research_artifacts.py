@@ -128,7 +128,7 @@ def save_registry(path, registry):
                 item['metadata_ref'] = reference
     if shared:
         saved['shared_metadata'] = shared
-    state.save(path, saved)
+    state.save(path, saved, indent=None)
 
 
 def gallery_display_metadata(value):
@@ -1506,7 +1506,7 @@ def gallery_latex(item):
     return '\n'.join(lines) + '\n'
 
 
-def render_gallery_item(root, item, assets, formats=('svg',)):
+def render_gallery_item(root, item, assets, formats=('png',)):
     """Publish one complete display generation and return its relative paths."""
     root = Path(root).resolve(strict=True)
     validate_gallery_item(item)
@@ -1541,7 +1541,7 @@ def render_gallery_item(root, item, assets, formats=('svg',)):
     return [(destination / filename).relative_to(root).as_posix() for filename in filenames]
 
 
-def register_gallery(root, gallery_spec_path, definitions=None, output=None, assets=None, *, formats=('svg',)):
+def register_gallery(root, gallery_spec_path, definitions=None, output=None, assets=None, *, formats=('png',)):
     """Add saved display rows/provenance to the existing registry and render them."""
     root = Path(root).resolve(strict=True)
     source, registry = gallery_registry(root, gallery_spec_path)
@@ -1601,7 +1601,7 @@ def edit_gallery_item(root, gallery_spec_path, item_id, changes, expected_revisi
         validate_gallery_item(item)
         changed = [key for key in changes if item[key] != previous.get(key)]
         if kind == 'display' and changed:
-            formats = tuple(dict.fromkeys(Path(name).suffix[1:] for name in item['files'])) or ('svg',)
+            formats = tuple(dict.fromkeys(Path(name).suffix[1:] for name in item['files'])) or ('png',)
             item['files'] = render_gallery_item(root, item, path.parent / 'gallery-assets', formats)
             changed.append('files')
         if changed:
@@ -2103,7 +2103,7 @@ def gallery_main(argv=None):
             command.add_argument('--no-render', action='store_true', help='Register saved rows and settings without rendering assets')
         if name in ('register', 'render'):
             command.add_argument('--format', action='append', choices=('svg', 'png', 'html', 'pdf', 'tex'),
-                                 help='Render the selected format; repeat for multiple formats (default: svg)')
+                                 help='Render the selected format; repeat for multiple formats (default: png)')
         if name == 'list':
             command.add_argument('--query', default='')
             command.add_argument('--kind', choices=GALLERY_KINDS)
@@ -2154,7 +2154,7 @@ def gallery_main(argv=None):
             if args.no_render and args.format:
                 raise ValueError('--no-render and --format cannot be combined')
             result = register_gallery(root, path, definitions, args.output, args.assets,
-                                      formats=() if args.no_render else args.format or ('svg',))
+                                      formats=() if args.no_render else args.format or ('png',))
         elif args.command == 'edit':
             result = edit_gallery_item(root, path, args.item_id, load(local(args.changes)), args.expected_revision)
         elif args.command == 'render':
@@ -2165,7 +2165,7 @@ def gallery_main(argv=None):
                 _, registry = gallery_registry(root, path)
                 for item_id in selected:
                     item = registry['items'][item_id]
-                    item['files'] = render_gallery_item(root, item, args.assets or path.parent / 'gallery-assets', args.format or ('svg',))
+                    item['files'] = render_gallery_item(root, item, args.assets or path.parent / 'gallery-assets', args.format or ('png',))
                 save_registry(path, registry)
             result = {'registry': path.relative_to(root).as_posix(), 'item_ids': selected}
         elif args.command == 'list':

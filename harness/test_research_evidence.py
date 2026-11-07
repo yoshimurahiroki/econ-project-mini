@@ -333,7 +333,7 @@ class EvidenceTests(unittest.TestCase):
                                     {'display': {'title': 'Main results'}}, expected_revision=revision)
         saved = json.loads((self.root / 'gallery.json').read_text())
         self.assertEqual(saved['items']['regression']['rows'], rows)
-        self.assertEqual([Path(path).suffix for path in saved['items']['regression']['files']], ['.svg'])
+        self.assertEqual([Path(path).suffix for path in saved['items']['regression']['files']], ['.png'])
         files = artifacts.render_gallery_item(self.root, artifacts.load(self.root / 'gallery.json')['items']['regression'],
                                               'gallery-assets', formats=('pdf', 'tex'))
         self.assertEqual([Path(path).suffix for path in files], ['.pdf', '.tex'])
@@ -460,6 +460,11 @@ class EvidenceTests(unittest.TestCase):
         common = ['--root', str(self.root), '--spec', str(self.root / 'artifacts.json')]
         registry_path = self.root / 'registry.json'
         self.assertEqual(artifacts.main(['normalize', *common, '--output', str(registry_path)]), 0)
+        registry = artifacts.load(registry_path)
+        registry['items']['fit-equation-view'] = copy.deepcopy(registry['items']['fit-statistics'])
+        registry['items']['fit-equation-view']['id'] = 'fit-equation-view'
+        artifacts.save_registry(registry_path, registry)
+        self.assertIn('shared_metadata', json.loads(registry_path.read_text()))
         registry_bytes = registry_path.read_bytes()
         for name in templates:
             manuscript = self.root / (name + '-rendered.qmd')
@@ -483,6 +488,25 @@ class EvidenceTests(unittest.TestCase):
             self.assertEqual(evidence.bind(contract, self.root)['status'], 'verified')
         self.assertEqual(registry_path.read_bytes(), registry_bytes)
         self.assertEqual((self.root / 'saved.json').read_bytes(), source_bytes)
+
+        import research
+        stage = {'inputs': ['article.qmd'], 'render': {'template': 'article.qmd', 'output': 'article',
+                 'statistics': {'effect': {'stage': 'fit', 'output': 'registry',
+                     'key': ['statistics', 'fit.effect'], 'unit': 'hours', 'format': '.2f'}},
+                 'definitions': {name: {'stage': 'fit', 'output': 'registry', 'key': value['key']}
+                                 for name, value in spec['definitions'].items()}}}
+        native = self.root / 'native.qmd'
+        research.render(self.root, stage, {'article': native}, {('fit', 'registry'): registry_path})
+        self.assertEqual(native.read_text(), comparison + '\n1.25\n' + equation + '\n1.25')
+        reference = {'kind': 'json', 'id': 'comparison', 'path': 'registry.json',
+                     'keys': spec['definitions']['comparison']['key'], 'relation': 'supports',
+                     'basis': 'Saved comparison defining the manuscript quantity',
+                     'version': evidence.state.content_hash({'value': comparison,
+                         'references': {'fit': registry['records']['fit']['references']}})}
+        references, _, changes = evidence.state._project_references(
+            self.root, {}, {}, {'nodes': [{'node_id': 'comparison', 'references': [reference]}]})
+        self.assertEqual(references[0]['status'], 'current')
+        self.assertEqual(changes, {})
 
         invalid = copy.deepcopy(spec)
         invalid['definitions'].pop('comparison')
