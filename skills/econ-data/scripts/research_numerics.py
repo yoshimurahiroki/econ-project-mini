@@ -495,7 +495,8 @@ def run(spec):
             raise ValueError('unit must name the common payoff or currency unit')
         model = spec['model']; unit = spec['unit']
         functions = {'correlated_equilibrium': correlated_equilibrium, 'tu_shapley_core': tu_shapley_core,
-                     'interbank_clearing': clearing_payments, 'multitask_incentives': multitask_incentives}
+                     'interbank_clearing': clearing_payments, 'multitask_incentives': multitask_incentives,
+                     'state_price_bounds': state_price_bounds}
         if not isinstance(model, str) or model not in functions:
             raise ValueError('model must be one of ' + ', '.join(functions))
         function = functions[model]
@@ -539,6 +540,19 @@ def run(spec):
             for name in ('fixed_point_residual', 'resource_residual'):
                 statistics[name] = stat(result[name], unit)
             selection = 'greatest clearing fixed point from nominal payments under equal-priority pro-rata repayment'
+        elif model == 'state_price_bounds':
+            contract, knowledge = 'MC-state-price-bounds', 'ASSET-01'
+            engine = 'scipy.optimize.linprog(method=highs)'
+            equations = ['X.T@q=p; q>0',
+                'L=min_{q>=0,X.T@q=p} h@q; U=max_{q>=0,X.T@q=p} h@q',
+                'L=max_{X@theta<=h} p@theta; U=min_{X@theta>=h} p@theta',
+                'price_set=(L,U) for unspanned h; price_set={p@theta} when X@theta=h']
+            statistics = {name: stat(result[name], unit+' today') for name in
+                ('lower_bound', 'upper_bound', 'pricing_residual', 'lower_duality_gap', 'upper_duality_gap')}
+            statistics.update({name: stat(result[name], unit+' at payoff date') for name in
+                ('subhedge_violation', 'superhedge_violation', 'replication_residual')})
+            statistics['state_price_violation'] = stat(result['state_price_violation'], unit+' today per state payoff unit')
+            selection = 'strictly positive state prices; open price interval for an unspanned claim and unique replication price for a spanned claim'
         else:
             contract, knowledge = 'MC-multitask-incentives', 'CONTRACT-07'
             engine = 'research_numerics.multitask_incentives'

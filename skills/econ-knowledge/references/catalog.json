@@ -33906,6 +33906,10 @@
     },
     {
       "id": "MC-state-price-bounds",
+      "selection_binding": {
+        "design": "structural",
+        "structural_model": "state_price_bounds"
+      },
       "owner": "ASSET-01",
       "units": [
         "ASSET-01"
@@ -33996,7 +34000,8 @@
       "implementation": [
         {
           "path": "skills/econ-data/scripts/research_numerics.py",
-          "symbol": "state_price_bounds"
+          "symbol": "state_price_bounds",
+          "command": "run"
         }
       ],
       "checks": [

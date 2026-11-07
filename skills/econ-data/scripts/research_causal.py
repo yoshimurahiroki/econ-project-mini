@@ -109,7 +109,8 @@ def select_method(request):
                 'exclusion','monotonicity','continuity','common_treatment_block',
                 'equilibrium_counterfactual','independent_units','no_interference',
                 'aggregate_shocks','stationary_equilibrium','nominal_rigidity',
-                'complete_information','transferable_utility','coalition_externalities'):
+                'complete_information','transferable_utility','coalition_externalities',
+                'free_trading','all_states_possible'):
         if key in facts and not isinstance(facts[key], bool):
             raise ValueError(f'conditions.{key} must be boolean')
     target_kind = target.get('kind')
@@ -117,7 +118,7 @@ def select_method(request):
         'conditional_mean','count_distribution','group_time_att','event_time_att',
         'treatment_path_effect','dose_response','local_effect','confidence_set',
         'treated_trajectory','treated_block_att','structural_parameter','equilibrium',
-        'welfare','allocation','sensitivity','density_discontinuity','power'}
+        'welfare','allocation','price_bounds','sensitivity','density_discontinuity','power'}
     if target_kind is not None and target_kind not in allowed_targets:
         raise ValueError(f'target.kind must be one of {sorted(allowed_targets)}')
     if any(not isinstance(s.get('options', {}), dict) for s in (request, adopted_spec)):
@@ -564,6 +565,7 @@ def select_method(request):
                 'transferable_utility_game':'tu_shapley_core',
                 'interbank_liabilities':'interbank_clearing',
                 'quantity_quality_effort':'multitask_incentives',
+                'finite_state_claim':'state_price_bounds',
                 'individual_dynamic_choice':'finite_horizon_choice' if target_kind == 'structural_parameter' else 'lifecycle_choice',
                 'employment_retirement_regimes':'lifecycle_choice'}.get(facts.get('economic_object'))
         if condition_model and economic_object_model and condition_model != economic_object_model:
@@ -588,13 +590,13 @@ def select_method(request):
             method = model; owner = 'skills/econ-data/scripts/research_macro_extended.py run'
         elif model == 'stochastic_rbc':
             method = model; owner = 'skills/econ-data/scripts/research_dsge.py run'
-        elif model in ('correlated_equilibrium','tu_shapley_core','interbank_clearing','multitask_incentives'):
+        elif model in ('correlated_equilibrium','tu_shapley_core','interbank_clearing','multitask_incentives','state_price_bounds'):
             method = model; owner = 'skills/econ-data/scripts/research_numerics.py run'
             numerical_kernel = 'clearing_payments' if model == 'interbank_clearing' else model
         elif model in ('finite_horizon_choice','lifecycle_choice','consumption_saving','hank_one_asset','dolo_yaml'):
             method = model
         else:
-            raise ValueError('structural_model must name a documented market, dynamic, macro, finite-game, clearing, multitask or declared Dolo model')
+            raise ValueError('structural_model must name a documented market, dynamic, macro, finite-game, clearing, multitask, state-price or declared Dolo model')
         conditions = ['adopted primitives, timing, moments and excluded variation', 'normalizations and equilibrium selection', 'counterfactual re-solves affected endogenous choices']
         method_quantity = ('identified utility/cost parameters and scenario-specific equilibrium prices, choices and welfare' if model == 'blp'
             else 'identified payoff/transition parameters and the re-solved policy or equilibrium under the adopted intervention')
@@ -617,7 +619,7 @@ def select_method(request):
             'stochastic_rbc':('time_iteration','linearized_euler') if request.get('implementation') == 'dolo' else ('linearized_euler','time_iteration'),
             'dolo_yaml':('time_iteration',), 'correlated_equilibrium':('linear_program',),
             'tu_shapley_core':('exact_enumeration',), 'interbank_clearing':('greatest_fixed_point',),
-            'multitask_incentives':('kkt',)}
+            'multitask_incentives':('kkt',), 'state_price_bounds':('linear_program',)}
         solution_model = model in ('finite_horizon_growth','consumption_saving','lifecycle_choice',
             'aiyagari','hank_one_asset','stochastic_rbc','dolo_yaml') or respy_simulation or numerical_kernel is not None
         numerical_key = 'solution_method' if solution_model else 'estimation_method'
@@ -711,6 +713,14 @@ def select_method(request):
                     'one simultaneous clearing period with equal-priority pro-rata repayment and limited liability',
                     'greatest fixed point selected by iteration from nominal payments',
                     'outside payments plus equity equal external assets at the adopted residual tolerance']
+            elif model == 'state_price_bounds':
+                if facts.get('free_trading') is False or facts.get('all_states_possible') is False:
+                    raise ValueError('state-price bounds require freely traded assets and every supplied state to be possible')
+                method_quantity = 'no-arbitrage claim-price bounds, endpoint inclusion and the subhedge, superhedge or replicating portfolio'
+                conditions = ['finite possible states and freely traded assets with unrestricted portfolio holdings',
+                    'at least one traded asset pays strictly positively in every state',
+                    'existing asset prices admit strictly positive state prices',
+                    'an unspanned claim has an open price interval; a replicated claim has its unique replication price']
             else:
                 method_quantity = 'quantity and quality effort and both principal and agent payoffs at the supplied contract'
                 conditions = ['fixed nonnegative salary, quantity reward and private quality benefit',
@@ -1079,6 +1089,7 @@ def select_method(request):
         'dolo_yaml':{'equilibrium'},
         'correlated_equilibrium':{'equilibrium','welfare'}, 'tu_shapley_core':{'allocation'},
         'interbank_clearing':{'equilibrium'}, 'multitask_incentives':{'policy_value'},
+        'state_price_bounds':{'price_bounds'},
         'smm':{'structural_parameter'},'maximum_likelihood':{'structural_parameter'}}
     accepted_targets = compatible.get(method, {'structural_parameter','equilibrium','welfare'} if design=='structural' else None)
     if target_kind is not None and accepted_targets is not None and target_kind not in accepted_targets:
@@ -1241,6 +1252,7 @@ def select_method(request):
                   'tu_shapley_core':'research_numerics.tu_shapley_core',
                   'interbank_clearing':'research_numerics.clearing_payments',
                   'multitask_incentives':'research_numerics.multitask_incentives',
+                  'state_price_bounds':'research_numerics.state_price_bounds + scipy.optimize.linprog',
                   'bargaining':'research_markets.bargain','dynamic_game':'equity_io.dynamic_game'}.get(method)
         if engine is None:
             engine = 'research_dynamic.observed_run' if owner.startswith('skills/econ-data/scripts/research_dynamic.py') else 'research_markets.'+method
@@ -1288,6 +1300,8 @@ def select_method(request):
         if numerical_kernel is not None:
             inference_contract['procedure'] = 'original feasibility, obedience, allocation, clearing or KKT residuals'
             inference_contract['parameter_operation'] = computation['parameter_operation']
+            if method == 'state_price_bounds':
+                inference_contract['procedure'] = 'original state-price equations, hedge inequalities, primal-dual gaps and replication residual'
         if method in ('aiyagari','hank_one_asset','stochastic_rbc','dolo_yaml'):
             inference_contract['procedure'] = 'original economic-equation residuals and the adopted grid, horizon and integration comparisons'
             inference_contract['parameter_operation'] = computation['parameter_operation']
