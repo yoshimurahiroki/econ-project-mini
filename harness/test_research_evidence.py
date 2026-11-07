@@ -199,6 +199,24 @@ class EvidenceTests(unittest.TestCase):
         self.assertNotIn('sample_ids', cell)
         self.assertIsNone(items['saved-group_time']['metadata']['interval_type'])
         self.assertEqual(items['saved-group_time-cohort-event']['metadata']['display_source']['key'], ['diagnostics', 'group_time'])
+        registry = {'schema': 'research-artifact-registry-v1', 'records': {'saved': {'source_result': source}},
+                    'statistics': {}, 'items': items}
+        items['saved-subset'] = {**copy.deepcopy(outcomes), 'id': 'saved-subset', 'rows': outcomes['rows'][:1]}
+        artifacts.save_registry(self.root / 'gallery.json', registry)
+        stored = json.loads((self.root / 'gallery.json').read_text())
+        self.assertIn('rows_ref', stored['items']['saved-displays-outcomes'])
+        self.assertNotIn('rows', stored['items']['saved-displays-outcomes'])
+        self.assertEqual(stored['items']['saved-subset']['rows'], outcomes['rows'][:1])
+        self.assertEqual(artifacts.load(self.root / 'gallery.json'), registry)
+        registry['items'] = {'saved-displays-outcomes': outcomes}
+        artifacts.save_registry(self.root / 'single.json', registry)
+        self.assertEqual(artifacts.load(self.root / 'single.json'), registry)
+        selected = artifacts.gallery_items(self.root, 'single.json')[0]
+        self.assertEqual(selected['rows'], outcomes['rows'])
+        stored = json.loads((self.root / 'single.json').read_text())
+        stored['items']['saved-displays-outcomes']['rows_ref']['key'] = ['displays', 'absent']
+        with self.assertRaisesRegex(ValueError, 'missing JSON key'):
+            artifacts.expand_registry(stored)
 
     def test_comparison_retains_definitions_within_one_display(self):
         definitions = {'estimand': 'ATT(g,t)', 'population': 'eligible people', 'sample': 'sample-v1',

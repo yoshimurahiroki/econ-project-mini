@@ -94,25 +94,50 @@ def gallery_registry(root, path):
     return path, registry
 
 
+def gallery_source_rows(registry, reference):
+    """Read a display block retained inside the same saved scientific result."""
+    if not isinstance(reference, dict) or set(reference) != {'result_id', 'key'}:
+        raise ValueError('display row reference requires result_id and key')
+    result_id, keys = reference['result_id'], reference['key']
+    if not isinstance(result_id, str) or not isinstance(keys, list):
+        raise ValueError('display row reference requires a result ID and JSON key path')
+    block = evidence.lookup(registry, ['records', result_id, 'source_result', *keys], 'display row reference')
+    if not isinstance(block, dict) or 'rows' not in block:
+        return None
+    rows = block['rows']
+    if not isinstance(rows, list) or any(not isinstance(row, dict) for row in rows):
+        raise ValueError('saved display rows must be an array of objects')
+    return [{'result_id': result_id, **copy.deepcopy(row)} for row in rows]
+
+
 def expand_registry(registry):
-    """Restore the public item metadata from the registry's shared definitions."""
-    if 'shared_metadata' not in registry:
-        return registry
-    shared = registry.pop('shared_metadata')
+    """Restore public display metadata and rows from this registry's saved values."""
+    shared = registry.pop('shared_metadata', {})
     for item in registry.get('items', {}).values():
         reference = item.pop('metadata_ref', None)
         if reference is not None:
             if reference not in shared:
                 raise ValueError('unknown shared display metadata: ' + str(reference))
             item['metadata'] = {**copy.deepcopy(shared[reference]), **item.get('metadata', {})}
+        reference = item.pop('rows_ref', None)
+        if reference is not None:
+            rows = gallery_source_rows(registry, reference)
+            if rows is None or 'rows' in item or item['result_ids'] != [reference['result_id']]:
+                raise ValueError('display row reference must identify its saved result rows')
+            item['rows'] = rows
     return registry
 
 
 def save_registry(path, registry):
-    """Store shared result definitions once while preserving each display override."""
-    saved = copy.deepcopy(registry)
+    """Store shared definitions and identical source rows once, preserving overrides."""
+    saved = expand_registry(copy.deepcopy(registry))
     groups = {}
     for item in saved.get('items', {}).values():
+        reference = item.get('metadata', {}).get('display_source')
+        if (reference and item['result_ids'] == [reference.get('result_id')]
+                and gallery_source_rows(saved, reference) == item.get('rows')):
+            item['rows_ref'] = copy.deepcopy(reference)
+            del item['rows']
         groups.setdefault(tuple(sorted(item['result_ids'])), []).append(item)
     shared = {}
     for items in groups.values():

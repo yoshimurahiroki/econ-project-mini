@@ -65,7 +65,7 @@ def utf8(raw, context):
 def read_json(raw, context):
     try:
         data = state.gate.parse_json(raw)
-        if isinstance(data, dict) and data.get('schema') == 'research-artifact-registry-v1' and 'shared_metadata' in data:
+        if isinstance(data, dict) and data.get('schema') == 'research-artifact-registry-v1':
             from research_artifacts import expand_registry
             return expand_registry(data)
         return data
