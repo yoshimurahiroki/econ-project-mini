@@ -17,7 +17,7 @@ import tempfile
 
 import numpy as np
 import scipy
-from scipy import optimize, sparse
+from scipy import integrate, optimize, sparse
 from scipy.special import expit
 
 
@@ -342,8 +342,9 @@ def clearing_payments(liabilities, outside_liabilities, external_assets, toleran
 
 
 def finite_policy_sir(initial, beta, gamma, schedule, infection_cost=1., control_cost=0., terminal_cost=0.,
-                      rtol=1e-9, atol=1e-11, max_step=np.inf):
+                      rtol=1e-9, atol=1e-11, max_step=None):
     """Integrate piecewise-constant contact controls and price infections and control."""
+    max_step = np.inf if max_step is None else max_step
     y0 = np.asarray(initial, dtype=float)
     if y0.shape != (3,) or not np.isfinite(y0).all() or np.any(y0 < 0) or y0.sum() <= 0:
         raise ValueError('initial S, I and R must be finite, nonnegative and have positive total')
@@ -438,17 +439,27 @@ def run(spec):
     if not isinstance(spec, dict) or set(spec) != {'model', 'inputs', 'unit'} or not isinstance(spec['inputs'], dict):
         raise ValueError('model run requires model, inputs object and unit')
     if not isinstance(spec['unit'], str) or not spec['unit'].strip():
-        raise ValueError('unit must name the common payoff or currency unit')
+        raise ValueError('unit must name the payoff, currency or queue time unit')
     model = spec['model']; unit = spec['unit']
     functions = {'correlated_equilibrium': correlated_equilibrium, 'tu_shapley_core': tu_shapley_core,
                  'interbank_clearing': clearing_payments, 'multitask_incentives': multitask_incentives,
-                 'state_price_bounds': state_price_bounds}
+                 'state_price_bounds': state_price_bounds, 'binary_logit': moment_map,
+                 'finite_policy_sir': finite_policy_sir, 'queue_capacity': queue_capacity,
+                 'decision_rights': decision_rights}
     if not isinstance(model, str) or model not in functions:
         raise ValueError('model must be one of ' + ', '.join(functions))
     function = functions[model]
     arguments = inspect.signature(function).bind(**spec['inputs'])
     arguments.apply_defaults()
-    result = function(**arguments.arguments)
+    if model == 'binary_logit':
+        theta = np.asarray(arguments.arguments['theta'], dtype=float)
+        x = np.asarray(arguments.arguments['x'], dtype=float)
+        if theta.shape != (2,) or x.ndim != 1 or not x.size or not np.isfinite(theta).all() or not np.isfinite(x).all():
+            raise ValueError('binary_logit requires finite intercept/slope theta and a nonempty one-dimensional x')
+        result = {'moment_map': moment_map(theta, x).tolist(),
+                  'moment_jacobian': moment_jacobian(theta, x).tolist()}
+    else:
+        result = function(**arguments.arguments)
     stat = lambda value, measure: {'value': float(value), 'unit': measure}
     statistics = {}
     if model == 'correlated_equilibrium':
@@ -499,7 +510,7 @@ def run(spec):
             ('subhedge_violation', 'superhedge_violation', 'replication_residual')})
         statistics['state_price_violation'] = stat(result['state_price_violation'], unit+' today per state payoff unit')
         selection = 'strictly positive state prices; open price interval for an unspanned claim and unique replication price for a spanned claim'
-    else:
+    elif model == 'multitask_incentives':
         contract, knowledge = 'MC-multitask-incentives', 'CONTRACT-07'
         engine = 'research_numerics.multitask_incentives'
         equations = ['max_x,y>=0 U_A=a+b*x+m*y-(x*x+y*y+2*rho*x*y)/2',
@@ -509,6 +520,52 @@ def run(spec):
         statistics.update({name: stat(result[name], unit) for name in ('principal_payoff', 'agent_payoff')})
         statistics['kkt_residual'] = stat(result['kkt_residual'], unit+' per normalized effort')
         selection = 'unique nonnegative agent best response at the supplied contract and strictly convex effort cost'
+    elif model == 'binary_logit':
+        contract, knowledge = 'MC-binary-logit', 'STRUCT-01'
+        engine = 'research_numerics.moment_map + research_numerics.moment_jacobian'
+        equations = ['p_i=expit(theta_0+theta_1*x_i)',
+            'm(theta)=mean_i (p_i,x_i*p_i)',
+            'G(theta)=mean_i p_i*(1-p_i)*[[1,x_i],[x_i,x_i*x_i]]']
+        statistics = {'mean_choice_probability': stat(result['moment_map'][0], 'probability'),
+            'covariate_choice_moment': stat(result['moment_map'][1], 'dimensionless covariate times probability')}
+        for i, row in enumerate(result['moment_jacobian']):
+            for j, value in enumerate(row):
+                statistics[f'moment_{i}_derivative_theta_{j}'] = stat(value, 'moment per dimensionless parameter')
+        selection = 'evaluate supplied intercept and slope at equally weighted covariates with unit logit scale and zero base-action utility'
+    elif model == 'finite_policy_sir':
+        contract, knowledge = 'MC-sir-finite-policy', 'HEALTH-08'
+        engine = 'scipy.integrate.solve_ivp'
+        equations = ['N=S_0+I_0+R_0; incidence=beta*(1-u)*S*I/N',
+            'dS/dt=-incidence; dI/dt=incidence-gamma*I; dR/dt=gamma*I; dC/dt=incidence',
+            'loss=infection_cost*C_T+integral control_cost*u(t)^2 dt+terminal_cost*I_T',
+            'S+I+R=N; S+C=S_0']
+        statistics = {name: stat(result[name], 'persons') for name in
+            ('new_infections', 'terminal_infected', 'mass_residual', 'infection_flow_residual', 'minimum_state')}
+        statistics.update({name: stat(result[name], unit) for name in
+            ('infection_loss', 'control_loss', 'terminal_loss', 'total_loss')})
+        selection = 'evaluate the supplied finite contact-reduction schedule and its terminal infected population'
+    elif model == 'queue_capacity':
+        contract, knowledge = 'MC-queue-capacity', 'MATH-09'
+        engine = 'research_numerics.queue_capacity'
+        equations = ['rho=lambda/mu<1; pi_n=(1-rho)*rho^n',
+            'W=1/(mu-lambda); L=lambda*W; Wq=rho*W; Lq=lambda*Wq']
+        statistics = {'utilization': stat(result['utilization'], 'ratio')}
+        statistics.update({name: stat(result[name], unit) for name in ('W', 'Wq')})
+        statistics.update({name: stat(result[name], 'events') for name in ('L', 'Lq')})
+        selection = 'stationary first-come-first-served M/M/1 queue with independent Poisson arrivals and exponential service'
+    else:
+        contract, knowledge = 'MC-decision-rights', 'CONTRACT-08'
+        engine = 'research_numerics.decision_rights'
+        equations = (['E=clip(B*(1-alpha*e)/kP,0,1); e=clip(b*(1-E)/kA,0,1)',
+            'U_P=B*(E+(1-E)*alpha*e)-kP*E^2/2; U_A=b*(beta*E+(1-E)*e)-kA*e^2/2']
+            if arguments.arguments['holder'] == 'principal' else
+            ['E=clip(B*(1-e)/kP,0,1); e=clip(b*(1-beta*E)/kA,0,1)',
+            'U_P=B*(alpha*e+(1-e)*E)-kP*E^2/2; U_A=b*(e+(1-e)*beta*E)-kA*e^2/2'])
+        equations.append('kP*kA>B*b*max(alpha,beta)')
+        statistics = {name: stat(result[name], 'unit-interval information effort') for name in
+            ('E', 'e', 'best_response_residual')}
+        statistics.update({name: stat(result[name], unit) for name in ('principal_payoff', 'agent_payoff')})
+        selection = 'unique simultaneous information-effort equilibrium at the supplied decision-right holder under contracting best responses'
     return {'result_format_version': 1, 'model': model, 'specification': spec,
         'effective_inputs': dict(arguments.arguments), 'engine': engine, 'unit': unit,
         'model_contract': contract, 'knowledge_ids': [knowledge], 'equations': equations,
