@@ -148,7 +148,7 @@ def solve(spec):
                                 (("scenario", "Scenario"), ("value", "Welfare"), ("unit", "Unit"))],
                     "rows": [{"scenario": name, "value": allocation["welfare"], "unit": "discounted log consumption"}
                              for name, allocation in (("baseline", baseline), ("scenario", scenario))],
-                    "metadata": {**model_metadata, "report_role": "counterfactual", "estimand": "Sum of beta^t log(c_t) over the stated horizon"},
+                    "metadata": {**model_metadata, "report_role": "welfare", "estimand": "Sum of beta^t log(c_t) over the stated horizon"},
                     "display": {"plot_type": "bar", "x": "scenario", "y": "value"}}}
     return {"model": "finite-horizon deterministic household growth", "engine": "scipy.optimize.minimize/SLSQP",
             "versions": {"python": sys.version.split()[0], "numpy": np.__version__, "scipy": scipy.__version__},

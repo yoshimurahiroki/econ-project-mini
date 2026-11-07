@@ -419,7 +419,7 @@ def blp_displays(result, specification, unit):
         'welfare': {'kind': 'counterfactual', 'title': 'Market welfare', 'rows': welfare_rows,
                     'columns': [{'key': key, 'label': label, 'unit': ''} for key, label in
                                 (('scenario', 'Scenario'), ('market', 'Market'), ('quantity', 'Quantity'), ('value', 'Value'), ('unit', 'Unit'))],
-                    'metadata': {**contract, 'report_role': 'counterfactual', 'population': 'Potential consumers within each market'},
+                    'metadata': {**contract, 'report_role': 'welfare', 'population': 'Potential consumers within each market'},
                     'display': {'plot_type': 'bar', 'x': 'market', 'y': 'value', 'series': 'scenario', 'facet': 'quantity'}}}
 
 
