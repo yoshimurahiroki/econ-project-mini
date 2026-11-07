@@ -54,6 +54,8 @@ For requested claim coverage or referee revision, use the [same evidence contrac
 
 Select the question, answer and decisive evidence from the established study or source materials. Give prominence to results that change the mechanism, action ranking, allocation or economic magnitude. Retain a non-effect, subgroup contrast or behavioral response when omitting it changes that interpretation. Build the explanatory relation before drafting a compressed Abstract, slide or summary. For a whole paper, consult [paper guidance](references/paper-workflow.md) for the required section architecture; load a specialist section only when the request uses it. Complete the common process in the resulting artifact.
 
+Bind each result-based section to its saved quantities and economic definitions through the [existing renderer](../../harness/research.md). Numerical `statistics` bindings retain the adopted unit and format; `definitions` bindings insert the selected comparison, period, equation or other saved text exactly. Use the same headline result and defining conditions across Title, Abstract, Introduction, Results and Conclusion. Keep each section's actual dependencies in its existing stage so editing one section preserves the other completed sections and saved calculations.
+
 ## Revise
 
 Start from the author's original text and the requested scope. Recover its intended propositions and source-supported relations, then repair information selection, logical order and paragraph connections before surface wording. Reconstruct unclear Japanese as a complete spoken explanation and shorten only after the reader can follow it. Preserve suitable original phrasing and apply the common review to the revised text with the context needed to assess its connections.
