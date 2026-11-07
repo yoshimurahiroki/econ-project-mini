@@ -56,7 +56,7 @@ RESULT_DEFINITION_FIELDS = (
     'inference_unit', 'treatment_history', 'time_structure', 'cohort',
     'aggregation', 'aggregation_weights', 'cohort_contributions', 'base_period',
     'anticipation', 'treatment_time', 'treatment_event_time', 'cutoff', 'bandwidth', 'weight_type',
-    'weight_normalization', 'covariance_kind', 'official_function', 'effective_options',
+    'weight_normalization', 'covariance_kind', 'covariance_type', 'instruments', 'official_function', 'effective_options',
     'result_format_version', 'scenario', 'parameter_definition', 'identification', 'reference_lines',
     'report_role', 'selection_status', 'method_selection',
     'model_contract', 'knowledge_ids', 'equations', 'notation', 'parameter_roles',
