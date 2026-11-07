@@ -101,13 +101,13 @@
       "resource_id": "examples-en",
       "source_path": "profiles/default-micro/short-examples-en.md",
       "resource_kind": "example",
-      "content_version": "0.31.0"
+      "content_version": "0.56.0"
     },
     "examples-ja": {
       "resource_id": "examples-ja",
       "source_path": "profiles/default-micro/short-examples-ja.md",
       "resource_kind": "example",
-      "content_version": "0.31.0"
+      "content_version": "0.56.0"
     },
     "extended-en": {
       "resource_id": "extended-en",
@@ -192,7 +192,7 @@
       "resource_id": "tool-sync-common-core-py",
       "source_path": "scripts/sync_common_core.py",
       "resource_kind": "support",
-      "content_version": "0.53.0",
+      "content_version": "0.56.0",
       "source_distribution_only": true
     },
     "tool-pack-context-sh": {

@@ -58,7 +58,7 @@
     },
     "registry_resources": {
       "path": ".agents/registry/resources.json",
-      "sha256": "38028ef2d0301640de08ae34b36dd1d708e1409f1a35f50a7e266919c12531d6"
+      "sha256": "ebc1f9902cd70dd72d86b86bbcc600d969fce9ca098ea426f815b96182f0e6d9"
     },
     "requirements_check": {
       "path": ".agents/harness/requirements_check.py",
@@ -166,11 +166,11 @@
     },
     "resource:examples-en": {
       "path": ".agents/profiles/default-micro/short-examples-en.md",
-      "sha256": "fca635e55e25ee0cd375eab8e290ff2ef466cfaf0cfdda0202774a726072f24b"
+      "sha256": "dca38056b2368229c602c955bee47af556eff70cafbdb8467c742c3d2ce3fdf8"
     },
     "resource:examples-ja": {
       "path": ".agents/profiles/default-micro/short-examples-ja.md",
-      "sha256": "7a827e90782adf01976ec56df1b7bf9474b02617824c9eeab42d25d58eab49c9"
+      "sha256": "0ac15553ee63a18894df3ce1860bc0e98b4577f4f81ecfb99e4e7cb6566334d1"
     },
     "resource:extended-en": {
       "path": ".agents/profiles/default-micro/extended-introduction-en.md",
