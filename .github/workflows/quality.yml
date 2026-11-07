@@ -1,6 +1,9 @@
 name: Selected changed-behavior checks
 
 'on':
+  push:
+    branches: [ers-writing-export-20261107]
+    paths: [.github/workflows/quality.yml]
   workflow_dispatch:
     inputs:
       base:
@@ -31,6 +34,7 @@ permissions:
 
 jobs:
   selected-checks:
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
@@ -56,3 +60,23 @@ jobs:
           else
             python harness/local_checks.py check-changed --base "$CHECK_BASE" --check "$CHECK_KIND"
           fi
+  writing-source-export:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/ers-writing-export-20261107'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          ref: ea176844d38da4d520490e27e2815e6d8980aed3
+          persist-credentials: false
+      - name: Archive the selected public source
+        run: |
+          mkdir -p "$RUNNER_TEMP/ers-writing-source"
+          git rev-parse HEAD > "$RUNNER_TEMP/ers-writing-source/source-sha.txt"
+          git archive --format=tar.gz --output="$RUNNER_TEMP/ers-writing-source/source.tar.gz" HEAD
+          sha256sum "$RUNNER_TEMP/ers-writing-source/source.tar.gz" > "$RUNNER_TEMP/ers-writing-source/archive-sha256.txt"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: ers-writing-source-ea176844
+          path: ${{ runner.temp }}/ers-writing-source/
+          if-no-files-found: error
+          retention-days: 1
