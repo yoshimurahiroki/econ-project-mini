@@ -22,7 +22,6 @@ wheel = "*"
 ripgrep = "*"
 ruff = "*"
 mypy = "*"
-pytest = "*"
 
 # Jupyter Notebook / JupyterLab infrastructure
 jupyterlab = "*"
