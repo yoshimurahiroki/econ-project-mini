@@ -63,6 +63,8 @@ DoubleMLの実行版は[0.11.4の固定commit](https://github.com/DoubleML/doubl
 
 ハーネスでは正本のregistryと既存export producerを所有元とし、entries、skill内bundle、`.agents`を生成する。要件の再読込、生成物の反復全走査、テスト専用CI・Makefile起動、テストログからの成功率採点、ホスト設定を変えないcapability評価を撤去した。実行・権限・保存・配布に必要な境界処理と、実際の結果を読む通常経路を維持した。
 
+追加比較として[pytaskの実行判定](https://github.com/pytask-dev/pytask/blob/938532dd58d3fa0630b823edc1fb50f769d9208a/src/_pytask/execute.py)と[skip処理](https://github.com/pytask-dev/pytask/blob/938532dd58d3fa0630b823edc1fb50f769d9208a/src/_pytask/skipping.py)を読んだ。各タスクの入力・生成物・sourceの変更を判定し、保存状態が一致する計算を再利用する。ERSの`harness/research.py`も消費結果の版、実行仕様、runtimeと完了状態から既存計算を再利用する。この所有箇所を維持し、`codex_hooks.py`に残っていた復元判定用の状態hash保存・関連タスク走査・到達不能なPostToolUse分岐を削除した。SessionStartは元の依頼・適用規則・権限を復元し、通常readの反復callbackは追加本文を返さない。実依頼を入力したresume・compact経路で復元とcompaction状態の更新を確認した。
+
 ## 追加専門手法の採否
 
 StatsPAIの[同一固定版](https://github.com/brycewang-stanford/StatsPAI/tree/0c04f715d7463ef2d7048dcda9e656d992c2c59a)で、以下の計算本体を読んだ。
