@@ -569,11 +569,19 @@ def select_method(request):
                 'capacity_constrained_quantity_competition':'cournot',
                 'binary_logit_moments':'binary_logit','finite_policy_sir':'finite_policy_sir',
                 'queue_capacity':'queue_capacity','decision_rights':'decision_rights',
-                'individual_dynamic_choice':'finite_horizon_choice' if target_kind == 'structural_parameter' else 'lifecycle_choice',
                 'employment_retirement_regimes':'lifecycle_choice'}.get(facts.get('economic_object'))
+        if facts.get('economic_object') == 'individual_dynamic_choice':
+            # The adopted state/action domain governs estimation and welfare
+            # simulation through the same model.
+            economic_object_model = (model or
+                (contract_binding['structural_model'] if contract_binding else None) or adopted)
+            if economic_object_model not in ('finite_horizon_choice', 'lifecycle_choice', 'consumption_saving'):
+                raise ValueError('individual_dynamic_choice requires the adopted structural_model or model_contract_id for its state/action domain')
         if condition_model and economic_object_model and condition_model != economic_object_model:
             raise ValueError('market_structure and economic_object identify different structural models')
         condition_model = condition_model or economic_object_model
+        if model and condition_model and model != condition_model:
+            raise ValueError('structural_model and declared economic conditions identify different models')
         if contract_binding:
             bound_model = contract_binding['structural_model']
             if any(value is not None and value != bound_model for value in (model, condition_model)):
