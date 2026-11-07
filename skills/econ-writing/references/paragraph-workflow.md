@@ -54,6 +54,20 @@ Use the smallest existing check that can change a material acceptance decision u
 
 Use `harness/paragraph.py` and `harness/argument.py` for requested versioned composition and argument operations. Actual final artifacts and authorized destination returns establish delivery.
 
+To begin from saved results, add `research_results` to the existing writing brief:
+
+```json
+"research_results": {
+  "root": "/absolute/project/root",
+  "registry_path": "examples/research-workspace/saved-results.json",
+  "result_ids": ["specialist-growth-r01"],
+  "gallery_path": "examples/research-workspace/gallery.json",
+  "item_ids": ["specialist-growth-r01-displays-welfare"]
+}
+```
+
+The existing `design` command resolves this selection through `research_artifacts.composition_context`. Its architecture and specification callbacks receive named quantities, units, adopted definitions, producing references and the selected display rows. The returned `sources` contain `result:<ID>` and `display:<ID>` entries with exact text hashes, structured content and original quantity keys or row indices. Pass the design output's `blueprint`, `specifications`, `sources` and `design_records` into the existing `ParagraphRun.create` input. The writer then develops the evidence-to-claim explanation above; completed paragraphs retain these same sources for later section design. An initial sources file can contain `{}` when the brief supplies the selected results.
+
 To design a requested section from completed body paragraphs, use the existing `design` entry with the saved run and explicit paragraph IDs:
 
 ```bash

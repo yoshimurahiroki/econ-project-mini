@@ -113,6 +113,8 @@ class EvidenceTests(unittest.TestCase):
                  'assumptions': ['c > 0'], 'normalization': 'outside-option utility is zero',
                  'equilibrium_selection': 'unique maximizer', 'horizon': 'one period'}
         saved['adopted'] = {**model, 'sample_ids': ['individual-1']}
+        saved['effective_options'] = {'raw_records': [{'private_row': index} for index in range(50)]}
+        saved['run_id'] = 'saved-fit-run'
         spec['sources'][0]['metadata'] = {'welfare_definition': 'net benefit in currency per person'}
         self.write('saved.json', json.dumps(saved))
         registry = artifacts.normalize(self.root, spec)
@@ -126,6 +128,21 @@ class EvidenceTests(unittest.TestCase):
         self.assertNotIn('sample_ids', definitions)
         self.assertEqual(registry['records']['fit']['source_result'], saved)
         self.assertEqual(selected['source_reference']['keys'], ['items', 'fit-coefficients'])
+        context = artifacts.composition_context(self.root, 'gallery.json', result_ids=['fit'],
+                                               item_ids=['fit-coefficients'])
+        result = context['sources']['result:fit']['research_result']
+        self.assertEqual(result['statistics']['fit.coefficient.effect'], {'value': 0.0, 'unit': 'hours'})
+        self.assertEqual(result['quantity_origins']['fit.coefficient.effect']['source_key'], ['coefficients', 'effect'])
+        self.assertEqual({key: result['definitions'][key] for key in model}, model)
+        self.assertEqual(result['producer']['run_id'], 'saved-fit-run')
+        self.assertEqual(result['producer']['references'], registry['records']['fit']['references'])
+        self.assertNotIn('raw_records', json.dumps(context))
+        self.assertNotIn('source_result', json.dumps(context))
+        display = context['sources']['display:fit-coefficients']['display_item']
+        self.assertEqual(display['rows'], selected['rows'])
+        self.assertEqual(display['row_indices'], selected['row_indices'])
+        self.assertEqual(display['source_reference'], selected['source_reference'])
+        self.assertEqual(json.loads(context['sources']['result:fit']['text']), result)
 
     def test_saved_specialist_blocks_keep_interval_family_and_cell_coordinates(self):
         source = {'display': {'kind': 'iv_confidence_set', 'rows': [
@@ -196,6 +213,26 @@ class EvidenceTests(unittest.TestCase):
         self.assertEqual(compared['comparison_contract']['unrecorded_fields'], {})
         self.assertFalse(compared['comparison_contract']['analysis_executed'])
         self.assertEqual(compared['items'][0]['source_reference']['keys'], ['items', 'effects'])
+        registry['items']['effects']['display']['row_order'] = [1, 0]
+        for row in registry['items']['effects']['rows']:
+            row['unit'] = 'hours'
+        self.write('gallery.json', json.dumps(registry))
+        context = artifacts.composition_context(self.root, 'gallery.json', result_ids=['b', 'a'], item_ids=['effects'])
+        self.assertEqual(list(context['sources']), ['result:b', 'result:a', 'display:effects'])
+        display = context['sources']['display:effects']['display_item']
+        self.assertEqual(display['row_indices'], [1, 0])
+        self.assertEqual([row['estimate'] for row in display['rows']], [2.0, 1.0])
+        context = artifacts.composition_context(self.root, 'gallery.json', result_ids=['a'], item_ids=['effects'])
+        display = context['sources']['display:effects']['display_item']
+        self.assertEqual(display['result_ids'], ['a'])
+        self.assertEqual(display['row_indices'], [0])
+        self.assertEqual(display['rows'], [{'estimate': 1.0, 'result_id': 'a', 'unit': 'hours'}])
+        self.assertEqual(list(display['metadata']['result_definitions']), ['a'])
+        registry['items']['effects']['metadata']['producers']['a']['run_id'] = 'another-run'
+        self.write('different.json', json.dumps(registry))
+        with self.assertRaisesRegex(ValueError, 'producer differ'):
+            artifacts.composition_context(self.root, 'gallery.json', result_ids=['a'], item_ids=['effects'],
+                                          gallery_path='different.json')
 
     def test_selected_theory_displays_preserve_regions_paths_and_point_labels(self):
         columns = [{'key': key, 'label': key, 'unit': ''}
@@ -446,6 +483,138 @@ class EvidenceTests(unittest.TestCase):
             registry['records']['fit']['source_result']['adopted']['equations']['resource'] = value
             with self.assertRaisesRegex(ValueError, 'saved nonempty text'):
                 artifacts.render(self.root, spec, registry, 'article.qmd', None, None)
+
+
+    def test_saved_results_reach_design_draft_and_completed_body(self):
+        from unittest.mock import patch
+        import argument
+
+        saved = {'statistics': {'effect': {'value': 1.249, 'unit': 'hours'}},
+                 'adopted': {'comparison': '地区Aと地区B'},
+                 'provenance': {'producer_sha256': self.ref('code.py')['sha256']}}
+        self.write('saved.json', json.dumps(saved, ensure_ascii=False))
+        registry = artifacts.normalize(self.root, {'sources': [
+            {'id': 'fit', 'result': 'saved.json', 'code': 'code.py'}], 'bindings': {}})
+        self.write('registry.json', json.dumps(registry, ensure_ascii=False))
+        brief = {'original_request': '保存された地区間比較を文章にする。', 'authority': '保存値と比較を保持する。',
+                 'purpose': '地区間比較を伝える。', 'reader': '経済学博士課程のコア科目を履修した読者',
+                 'language': 'ja', 'research_results': {'root': str(self.root), 'registry_path': 'registry.json',
+                     'result_ids': ['fit'], 'item_ids': ['fit-statistics']}}
+        repo = Path(__file__).resolve().parent.parent
+        rules = {'policy_id': 'fixture', 'texts': {key: 'Synthetic callback fixture.' for key in
+                 ('CORE', 'PROSE', 'econ-writing', 'prose-guide')}, 'profile': 'fixture',
+                 'dictionary': json.loads((repo / 'quality/prose_rules.json').read_text())}
+        sources = paragraph.normalize_sources({}, research_results=brief['research_results'])
+        source = sources['result:fit']
+        ref = {'source_id': 'result:fit', 'source_sha256': source['sha256'],
+               **selection(source['text'], source['text'])}
+        claim = '地区Aと地区Bの労働時間差は1.249時間である。'
+        graph = {'schema_version': 1, 'version': '1', 'central_question': '地区間の労働時間差はいくらか。',
+                 'central_answer': claim, 'root_ids': ['effect'], 'groups': [], 'dependencies': [],
+                 'source_ids': list(sources), 'source_manifest': {sid: row['sha256'] for sid, row in sources.items()},
+                 'nodes': [{'node_id': 'effect', 'parent_id': None, 'child_ids': [], 'claim': claim,
+                            'question': '地区間の労働時間差はいくらか。', 'next_questions': [],
+                            'logical_role': 'result', 'inference_form': 'atomic', 'abstraction_level': 0,
+                            'scope': {}, 'source_refs': [ref], 'section_id': 'results', 'paragraph_ids': ['p'],
+                            'reasoning': '保存された比較と単位を使う。',
+                            'order': {'basis': 'inference', 'position': 0, 'rationale': '比較から結果を述べる。'}}]}
+        blueprint = {'schema_version': 1, 'version': '1', 'purpose': brief['purpose'], 'reader': brief['reader'],
+                     'central_question': graph['central_question'], 'central_answer': claim, 'contribution': claim,
+                     'completion_conditions': ['保存数量を伝える。'], 'argument_structure': graph,
+                     'sections': [{'section_id': 'results', 'role': 'result', 'claim': claim}],
+                     'paragraphs': [{'paragraph_id': 'p', 'section_id': 'results', 'central_proposition': claim,
+                                     'role': 'result', 'depends_on': [], 'source_ids': list(sources), 'scope': {}}],
+                     'definitions': saved['adopted'], 'quantities': saved['statistics'], 'conditions': [],
+                     'writing_rules': [], 'prohibited_rules': []}
+        spec = {'paragraph_id': 'p', 'section_id': 'results', 'blueprint_version': '1',
+                'role': {'purpose': brief['purpose'], 'contribution_to_global_argument': claim},
+                'central_proposition': {'claim': claim, 'logical_status': 'saved result'},
+                'required_content': [{'proposition_id': 'effect', 'exact_content': claim, 'source_id': 'result:fit',
+                                      'source_location': selection(source['text'], source['text']),
+                                      'evidence_type': 'saved result', 'required_reasoning': '保存された比較と単位を使う。'}],
+                'logical_structure': dict.fromkeys(('opening', 'development', 'mechanism', 'implication'), claim),
+                'relationships': {'preceding_paragraph': None, 'inherited_information': [],
+                                  'following_paragraph': None, 'information_to_pass_forward': claim},
+                'terminology': {'adopted_definitions': saved['adopted'], 'fixed_quantities': saved['statistics'],
+                                'required_terms': []},
+                'scope': {'included': claim, 'excluded': [], 'content_change_authority': brief['authority']},
+                'writing': {'language': 'ja', 'profile': 'fixture', 'paragraph_rules': [], 'prohibited_functions': [],
+                            'instruction_packet': paragraph.PRIMARY_RULE + paragraph.JAPANESE_RULE,
+                            'source_references': list(sources)},
+                'completion': {'mandatory_claims': ['effect'], 'evidence_correspondence': True,
+                               'logical_coherence': True, 'prose_compliance': True, 'local_review': True},
+                **argument.paragraph_argument(graph, 'effect')}
+        events, seen = {}, []
+        def host(task):
+            payload = task['payload']
+            seen.append(task)
+            self.assertEqual(payload['sources']['result:fit']['research_result']['statistics']['fit.effect'],
+                             {'value': 1.249, 'unit': 'hours'})
+            self.assertEqual(payload['sources']['display:fit-statistics']['display_item']['rows'],
+                             registry['items']['fit-statistics']['rows'])
+            if task['operation'] == 'writing:architect':
+                result = {'blueprint': blueprint}
+            elif task['operation'] == 'writing:specify':
+                result = {'specifications': [spec]}
+            elif task['operation'] == 'argument.review':
+                result = {'checks': [{'check_id': key, 'verdict': 'pass', 'assessment': 'Synthetic saved result correspondence.',
+                                      'node_ids': ['effect'], 'source_refs': [ref]}
+                                     for key in argument.SEMANTIC_CHECKS], 'findings': []}
+            elif task['operation'] == 'writing:paragraph':
+                quantity = payload['sources']['result:fit']['research_result']['statistics']['fit.effect']['value']
+                result = {'paragraph_id': 'p', 'text': f'地区Aと地区Bの労働時間差は{quantity}時間である。',
+                          'binding': payload['binding']}
+            else:
+                self.assertEqual(task['operation'], 'writing:paragraph-review')
+                span = selection(claim, claim)
+                result = {'paragraph_id': 'p', 'text_sha256': paragraph.sha(claim), 'spec_sha256': paragraph.content_hash(spec),
+                          'binding': payload['binding'], 'findings': [], 'occurrence_judgments': [],
+                          'checks': [{'check_id': key, 'verdict': 'pass', 'assessment': 'Synthetic saved result correspondence.',
+                                      'spans': [span]} for key in paragraph.LOCAL_CHECKS],
+                          'claim_evidence': [{'proposition_id': 'effect', 'assessment': 'Exact saved comparison.',
+                              'source_id': 'result:fit', 'source_sha256': source['sha256'], 'target': span,
+                              'source': selection(source['text'], source['text'])}],
+                          'reasoning': [{'proposition_id': 'effect', 'assessment': 'Exact saved comparison.',
+                              'required_reasoning': spec['required_content'][0]['required_reasoning'], 'target': span}],
+                          'quantity_evidence': [{'source_id': 'result:fit', 'source_sha256': source['sha256'],
+                              'assessment': 'Exact saved quantity.', 'target': selection(claim, '1.249'),
+                              'source': selection(source['text'], '1.249')}]}
+            original = json.dumps(result, ensure_ascii=False)
+            event_id = 'fixture-' + str(len(events))
+            returned = {'worker_id': 'fixture', 'event_id': event_id, 'input_sha256': task['input_sha256'],
+                        'return_text': original, 'execution_kind': 'single-agent-sequential', 'turn_ref': event_id}
+            events[event_id] = {**returned, 'return_sha256': paragraph.sha(original), 'status': 'completed'}
+            return returned
+
+        for name, value in [('brief', brief), ('sources', {}), ('rules', rules)]:
+            self.write(name + '.json', json.dumps(value, ensure_ascii=False))
+        with patch.object(paragraph, 'load_host_adapter', return_value=(host, events.__getitem__)):
+            self.assertEqual(paragraph.main(['design', '--brief', str(self.root / 'brief.json'), '--sources', str(self.root / 'sources.json'),
+                '--rules', str(self.root / 'rules.json'), '--host', str(self.root / 'host.py'), '--author-id', 'fixture',
+                '--execution-kind', 'single-agent-sequential', '--output', str(self.root / 'design.json')]), 0)
+        designed = json.loads((self.root / 'design.json').read_text())
+        self.assertEqual(designed['sources'], sources)
+        for mode in ('compose', 'revise'):
+            run = paragraph.ParagraphRun.create(run_id=mode, request=brief['original_request'], authority=brief['authority'],
+                author_id='fixture', operation='econ-writing:' + mode, rules=rules, execution_kind='single-agent-sequential',
+                original_paragraphs={'p': '著者が書いた元の段落。'} if mode == 'revise' else None, **designed)
+            self.assertTrue(run.review_argument(host, events.__getitem__)['valid'])
+            self.assertEqual(run.write(host, events.__getitem__), ['p'])
+            if mode == 'revise':
+                self.assertEqual(seen[-1]['payload']['original_text'], '著者が書いた元の段落。')
+            self.assertTrue(run.review('p', host, events.__getitem__)['result']['passed'])
+            run.save(self.root / 'paragraph-state.json')
+            loaded = paragraph.ParagraphRun.load(self.root / 'paragraph-state.json', resume=False)
+            context = loaded.composition_context(['p'])
+            self.assertEqual(context['paragraphs']['p']['text'], claim)
+            self.assertEqual(context['sources'], sources)
+            reused = paragraph.generate_blueprint(brief, sources, rules, host, events.__getitem__, completed_run=loaded,
+                paragraph_ids=['p'], execution_kind='single-agent-sequential', author_id='fixture')
+            paragraph.generate_specifications(reused['blueprint'], reused['sources'], rules, host, events.__getitem__,
+                request=brief['original_request'], authority=brief['authority'], brief=brief, completed_run=loaded,
+                paragraph_ids=['p'], execution_kind='single-agent-sequential', author_id='fixture')
+            self.assertEqual(seen[-2]['payload']['completed_body'], context)
+            self.assertEqual(seen[-1]['payload']['completed_body'], context)
 
 
 class EvidenceReviewTests(unittest.TestCase):
