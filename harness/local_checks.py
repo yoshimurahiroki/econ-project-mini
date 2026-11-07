@@ -860,7 +860,7 @@ def scan(artifacts, dictionary, inspection=None):
 
 def recheck_inputs(expected):
     for path, expected_hash in expected.items():
-        require(sha(file_snapshot(path)) == expected_hash, 'input changed during staging: ' + path)
+        require(file_snapshot(path).sha256 == expected_hash, 'input changed during staging: ' + path)
 
 def atomic_publish(staging, output):
     """Install a staged local directory atomically without replacing its destination."""
@@ -910,7 +910,8 @@ def release(artifacts, output, input_hashes=None, validate_inputs=None):
                     write_content(stream, data)
                     stream.flush()
                     os.fsync(stream.fileno())
-            require(sha(file_snapshot(target)) == sha(data), 'output byte verification failed')
+            expected_hash = data.sha256 if isinstance(data, FileSnapshot) else sha(data)
+            require(file_snapshot(target).sha256 == expected_hash, 'output byte verification failed')
         if input_hashes is not None:
             recheck_inputs(input_hashes)
         if validate_inputs is not None:

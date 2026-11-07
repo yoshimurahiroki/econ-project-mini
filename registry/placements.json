@@ -546,11 +546,6 @@
       "deployment_path": ".agents/skills/econ-design/references/numerical-models.md",
       "export_alias": "numerical-models.md"
     },
-    "research-julia": {
-      "resource_id": "research-julia",
-      "deployment_path": ".agents/skills/econ-data/scripts/research_numerics.jl",
-      "export_alias": "research_numerics.jl"
-    },
     "research-macro-dependencies": {
       "resource_id": "research-macro-dependencies",
       "deployment_path": ".agents/skills/econ-data/scripts/requirements-macro.txt",

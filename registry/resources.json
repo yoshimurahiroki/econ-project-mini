@@ -776,9 +776,7 @@
       "content_version": "0.37.0",
       "required_resources": [
         "research-numerics-dependencies",
-        "equity-io",
-        "research-dynamic",
-        "research-julia"
+        "local-checks"
       ]
     },
     "models-numerics": {
@@ -789,12 +787,6 @@
       "required_resources": [
         "research-numerics"
       ]
-    },
-    "research-julia": {
-      "resource_id": "research-julia",
-      "source_path": "skills/econ-data/scripts/research_numerics.jl",
-      "resource_kind": "support",
-      "content_version": "0.20.0"
     },
     "research-macro-dependencies": {
       "resource_id": "research-macro-dependencies",
@@ -2584,11 +2576,6 @@
       }
     },
     "models-numerics": {
-      "all": {
-        "whole_resource": true
-      }
-    },
-    "research-julia": {
       "all": {
         "whole_resource": true
       }
@@ -5521,9 +5508,7 @@
       "section_id": "all",
       "requires": [
         "research-numerics-dependencies.all",
-        "equity-io.all",
-        "research-dynamic.all",
-        "research-julia.all"
+        "local-checks.all"
       ],
       "conditional_requires": [],
       "optional_examples": []
@@ -5535,14 +5520,6 @@
       "requires": [
         "data-implementation.estimator-engine-and-algorithm-selection"
       ],
-      "conditional_requires": [],
-      "optional_examples": []
-    },
-    "research-julia.all": {
-      "rule_id": "research-julia.all",
-      "resource_id": "research-julia",
-      "section_id": "all",
-      "requires": [],
       "conditional_requires": [],
       "optional_examples": []
     },

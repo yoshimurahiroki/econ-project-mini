@@ -12,8 +12,6 @@ import re
 import sys
 import shutil
 import subprocess
-import random
-import csv
 import tempfile
 from pathlib import Path
 
@@ -2104,63 +2102,6 @@ def manifest(root,spec_path,spec,python,pandoc,quarto):
     return {'pipeline':spec['pipeline'],'stages':stages}
 
 
-def example(root,output,python,pandoc,quarto):
-    """Execute a seeded IV and search example and prepare its real DAG."""
-    if any(not x or not Path(x).is_absolute() for x in (python,pandoc,quarto)): raise ValueError('example requires absolute Python, Pandoc and Quarto paths')
-    out=Path(output); out=(out if out.is_absolute() else root/out).resolve()
-    rel=out.relative_to(root).as_posix()
-    causal=next((p for p in (root/'skills/econ-data/scripts/research_causal.py',root/'research_causal.py') if p.is_file()),None)
-    markets=next((p for p in (root/'skills/econ-data/scripts/research_markets.py',root/'research_markets.py') if p.is_file()),None)
-    if causal is None or markets is None: raise ValueError('example needs the installed causal and market model scripts')
-    out.mkdir(parents=True,exist_ok=False)
-    rng=random.Random(20261101)
-    with (out/'sample.csv').open('w',newline='',encoding='utf8') as stream:
-        writer=csv.writer(stream); writer.writerow(['id','x','d','z','z2','y'])
-        for i in range(1200):
-            x,z,z2,error,noise=(rng.gauss(0,1) for _ in range(5)); d=.8*z+.7*z2+.6*error+noise; writer.writerow([str(i),x,d,z,z2,1+1.5*d+.5*x+error])
-    iv={'method':'iv_gmm','data':'sample.csv','id':'id','outcome':'y','regressors':['x'],'endogenous':['d'],'instruments':['z','z2'],'population':'seeded simulated units','period':'simulation','unit':'outcome units','estimand':'effect of endogenous treatment','identification':'independent excluded instruments and independent units','assignment':'independent simulated units','inference':{'type':'robust'},'options':{}}
-    search={'model':'search','baseline':{'offers':3,'search_cost':.08,'outside_option':0.0},'scenario':{'offers':3,'search_cost':.02,'outside_option':0.0},'unit':'model units','sources':[{'kind':'synthetic','description':'Uniform offers and full recall'}]}
-    state.save(out/'iv-spec.json',iv); state.save(out/'search-spec.json',search)
-    env=os.environ.copy(); env.update({'OPENBLAS_NUM_THREADS':'1','OMP_NUM_THREADS':'1'})
-    for script,sp,res in ((causal,'iv-spec.json','iv-result.json'),(markets,'search-spec.json','search-result.json')):
-        proc=subprocess.run([python,str(script),'run',str(out/sp),'--output',str(out/res)],env=env,text=True,capture_output=True)
-        if proc.returncode: raise ValueError('example producer failed: '+proc.stderr[-2000:])
-    article="""---
-title: "Independent synthetic comparisons"
----
-
-The IV treatment effect is {{stat:effect}}; its standard error is {{stat:se}}.
-
-With independent uniform offers on [0,1], full recall and search cost c in [0,1/2], the reservation threshold z satisfies `c = (1-z)^2 / 2`. Its value is {{stat:threshold}}. Expected net surplus is {{stat:surplus}}.
-
-{{table}}
-
-{{figure}}
-"""
-    slides="""% Independent synthetic comparisons
-
-# IV treatment effect
-
-The estimate is {{stat:effect}}; its standard error is {{stat:se}}.
-
-{{figure}}
-
-# Consumer search
-
-The reservation threshold is {{stat:threshold}} and expected net surplus is {{stat:surplus}}.
-
-{{table}}
-"""
-    (out/'article.qmd').write_text(article,encoding='utf8'); (out/'slides.qmd').write_text(slides,encoding='utf8')
-    def binding(key,unit,label): return {'key':key,'unit':unit,'display_unit':unit,'format':'.3f','label':label}
-    ivunit='outcome units per one unit of d'; zunit='dimensionless utility normalized to [0,1]'
-    config={'pipeline':'artifact-example','sources':[{'id':'iv','result':rel+'/iv-result.json','specification':rel+'/iv-spec.json','data':rel+'/sample.csv','code':causal.relative_to(root).as_posix(),'expected_hashes':{'code':state.digest(causal)}},{'id':'search','result':rel+'/search-result.json','specification':rel+'/search-spec.json','code':markets.relative_to(root).as_posix(),'expected_hashes':{'code':state.digest(markets)},'quantities':{'reservation_value':{'key':['baseline','reservation_value'],'unit':zunit}}}], 'bindings':{'effect':binding('iv.coefficient.d',ivunit,'IV effect'),'se':binding('iv.standard_error.d',ivunit,'Standard error'),'lower':binding('iv.confidence_95_lower.d',ivunit,'Lower 95% limit'),'upper':binding('iv.confidence_95_upper.d',ivunit,'Upper 95% limit'),'threshold':binding('search.reservation_value',zunit,'Search threshold'),'surplus':binding('search.expected_net_surplus','model units','Search surplus')},'figure':['effect','lower','upper'],'article_template':rel+'/article.qmd','slides_template':rel+'/slides.qmd','models':[{'id':'search-reservation','source':'search','equation':'c = (1-z)^2 / 2','code_quote':'abs((1-z)**2/2-c)','residual_key':['baseline','reservation_equation_error'],'tolerance':1e-10,'judgment':{'reviewer':'example-author','decision':'supported','rationale':'The saved reservation equation, code and residual agree.'},'parameters':[{'id':'search-threshold','target':'reservation threshold z','code_quote':'z = 1-math.sqrt(2*c)','spec_key':['baseline','search_cost'],'spec_unit':zunit,'statistic':'search.reservation_value'}]}]}
-    state.save(out/'artifact-spec.json',config); validate_spec(root,config)
-    (root/'.agents'/'cache'/'research-artifacts-tex').mkdir(parents=True,exist_ok=True)
-    state.save(out/'manifest.json',manifest(root,rel+'/artifact-spec.json',config,python,pandoc,quarto))
-    print(json.dumps({'specification':rel+'/artifact-spec.json','manifest':rel+'/manifest.json','results':[rel+'/iv-result.json',rel+'/search-result.json']}))
-
-
 def gallery_main(argv=None):
     parser = argparse.ArgumentParser(description='Browse and edit saved research displays')
     commands = parser.add_subparsers(dest='command', required=True)
@@ -2283,14 +2224,11 @@ def main(argv=None):
     argv = list(sys.argv[1:] if argv is None else argv)
     if argv and argv[0] == 'gallery':
         return gallery_main(argv[1:])
-    p=argparse.ArgumentParser(description=__doc__); p.add_argument('command',choices=['example','materialize','normalize','merge','table','figure','render','render-latex','generate-adapters','bind-generated','quarto-render']); p.add_argument('--root',required=True,type=Path); p.add_argument('--spec',type=Path); p.add_argument('--output',type=Path); p.add_argument('--registry',type=Path,action='append'); p.add_argument('--source'); p.add_argument('--template',type=Path); p.add_argument('--table',type=Path); p.add_argument('--figure',type=Path); p.add_argument('--figure-pdf',type=Path); p.add_argument('--target',choices=['paper','slides']); p.add_argument('--pdf',action='store_true'); p.add_argument('--trace',type=Path); p.add_argument('--python'); p.add_argument('--pandoc'); p.add_argument('--quarto'); p.add_argument('--quarto-format',choices=['html','revealjs'],default='html'); p.add_argument('--engine',type=Path);
+    p=argparse.ArgumentParser(description=__doc__); p.add_argument('command',choices=['materialize','normalize','merge','table','figure','render','render-latex','generate-adapters','bind-generated','quarto-render']); p.add_argument('--root',required=True,type=Path); p.add_argument('--spec',type=Path); p.add_argument('--output',type=Path); p.add_argument('--registry',type=Path,action='append'); p.add_argument('--source'); p.add_argument('--template',type=Path); p.add_argument('--table',type=Path); p.add_argument('--figure',type=Path); p.add_argument('--figure-pdf',type=Path); p.add_argument('--target',choices=['paper','slides']); p.add_argument('--pdf',action='store_true'); p.add_argument('--trace',type=Path); p.add_argument('--python'); p.add_argument('--pandoc'); p.add_argument('--quarto'); p.add_argument('--quarto-format',choices=['html','revealjs'],default='html'); p.add_argument('--engine',type=Path);
     for k in ('article','article-trace','slides','slides-trace','article-contract','article-check','slides-contract','slides-check','model-contracts'): p.add_argument('--'+k,type=Path)
     a=p.parse_args(argv)
     try:
         root=a.root.resolve(strict=True)
-        if a.command=='example':
-            if not a.output: raise ValueError('example requires a new output directory')
-            example(root,a.output,a.python,a.pandoc,a.quarto); return 0
         if a.command=='generate-adapters':
             assets=latex_assets(root,require_adapters=False)
             for kind in ('paper','slides'):
