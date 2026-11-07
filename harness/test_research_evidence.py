@@ -517,6 +517,7 @@ class EvidenceReviewTests(unittest.TestCase):
         return contract, original, revised, rationale
 
     def test_current_revision_generates_bilingual_response_through_cli(self):
+        from unittest.mock import patch
         for language in ('ja', 'en'):
             with self.subTest(language=language):
                 contract, original, revised, rationale = self.revision(language)
@@ -548,6 +549,47 @@ class EvidenceReviewTests(unittest.TestCase):
                 compared = evidence.review(comparison, self.root)
                 self.assertEqual(compared['status'], 'response-comparison-required')
                 self.assertEqual(compared['review']['findings'], result['review']['findings'])
+                self.assertEqual({name: (self.root / name).read_bytes() for name in before}, before)
+                rules_root = Path(__file__).resolve().parents[1]
+                self.write('rules.json', {
+                    'policy_id': 'current-writing',
+                    'texts': {key: (rules_root / path).read_text(encoding='utf-8') for key, path in {
+                        'CORE': 'runtime/CORE.md', 'PROSE': 'runtime/PROSE.md',
+                        'econ-writing': 'skills/econ-writing/SKILL.md',
+                        'prose-guide': 'skills/econ-writing/references/paper-workflow.md'}.items()},
+                    'dictionary': json.loads((rules_root / 'quality/prose_rules.json').read_text(encoding='utf-8')),
+                    'profile': (rules_root / 'profiles/default-micro/PROFILE.md').read_text(encoding='utf-8')})
+                self.write('host.py', '# Selected host adapter; transport is supplied by the test.\n')
+                events = {}
+                response = (rationale + (' 第3節の式は同じ割当て効果を表しています。' if language == 'ja'
+                                         else ' The equation in Section 3 defines this assignment effect.'))
+                def host(task):
+                    self.assertEqual(task['operation'], 'econ-writing:compose')
+                    entry = task['payload']['entries'][0]
+                    self.assertEqual(entry['origin']['target']['quote'], original)
+                    self.assertEqual(entry['passages'][0]['quote'], revised)
+                    self.assertEqual(entry['bindings']['effect-number']['selected_result']['value'], 8)
+                    returned = {'responses': {'definition-1': response}}
+                    original_return = json.dumps(returned, ensure_ascii=False)
+                    event = {'worker_id': 'writer', 'input_sha256': task['input_sha256'],
+                             'return_sha256': paragraph.sha(original_return), 'status': 'completed',
+                             'execution_kind': 'single-agent-sequential', 'turn_ref': 'response-turn'}
+                    events['response-event'] = event
+                    return {'worker_id': 'writer', 'event_id': 'response-event',
+                            'input_sha256': task['input_sha256'], 'return_text': original_return,
+                            'turn_ref': event['turn_ref']}
+                with patch.object(paragraph, 'load_host_adapter', return_value=(host, events.__getitem__)):
+                    self.assertEqual(evidence.main([
+                        'review', 'contract.json', '--root', str(self.root), '--output', 'written-review.json',
+                        '--host', 'host.py', '--rules', 'rules.json', '--request', 'Write the referee response.',
+                        '--response-output', 'written-response.md']), 0)
+                written = json.loads((self.root / 'written-review.json').read_text(encoding='utf-8'))['response_draft']
+                self.assertEqual(written['entries'][0]['response'], response)
+                self.assertEqual(written['entries'][0]['rationale'], rationale)
+                self.assertEqual(written['execution']['input']['operation'], 'econ-writing:compose')
+                self.assertEqual((self.root / 'written-response.md').read_text(encoding='utf-8'), written['text'])
+                self.assertEqual(written['output'], {'path': 'written-response.md',
+                                                    'sha256': paragraph.sha(written['text'])})
                 self.assertEqual({name: (self.root / name).read_bytes() for name in before}, before)
 
     def test_response_uses_preserved_original_current_changes_and_evidence(self):
@@ -599,6 +641,14 @@ class EvidenceReviewTests(unittest.TestCase):
                 self.assertEqual(status, 1)
                 self.assertIn('output cannot overwrite', error.getvalue())
                 self.assertEqual((self.root / target).read_bytes(), before)
+        before = (self.root / 'original.md').read_bytes()
+        error = io.StringIO()
+        with contextlib.redirect_stderr(error):
+            status = evidence.main(['review', 'contract.json', '--root', str(self.root),
+                                    '--output', 'current-review.json', '--response-output', 'original.md'])
+        self.assertEqual(status, 1)
+        self.assertIn('response output cannot overwrite', error.getvalue())
+        self.assertEqual((self.root / 'original.md').read_bytes(), before)
 
 
 if __name__ == '__main__':
