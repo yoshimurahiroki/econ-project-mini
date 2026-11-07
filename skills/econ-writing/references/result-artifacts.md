@@ -42,6 +42,8 @@ Axis and series selection choose existing saved columns. Binning, curve estimati
 
 At registration, `metadata` joins the saved result IDs to `producers` and `result_definitions`. Retain the actual producing run and specification IDs, code/specification/result references and hashes, engine and environment, sample and population, observation and assignment units, comparison, period, variables, measurement units, estimand, weights and saved inference settings. DID definitions retain treatment history, anticipation, cohort composition, aggregation weights, comparison groups and base period. Record the SE method, inference unit, clustering, degrees of freedom, interval type and level in `inference`. Producers retain the executed official function, effective options and saved-result format version. A source's optional `metadata` object supplies run, environment and economic definitions to the normalizer; an item's metadata supplies its shared display definitions. The selected input's provenance remains in the registry; fitted individual IDs stay in the scientific result. `status` records adoption, and `links.tasks` / `links.documents` connect the result to existing work and manuscripts.
 
+Structural solvers can store complete paths inside `scenario`. Keep those calculated arrays in `source_result`; captions use the adopted scenario definition or its saved ID, name and description. Supply additional intervention definitions through the source or display `metadata`. This preserves the complete numerical result and gives each exhibit its economic comparison.
+
 ## Browse compare and edit saved results
 
 ```sh

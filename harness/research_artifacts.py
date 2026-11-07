@@ -31,7 +31,7 @@ GALLERY_KINDS = ('descriptive', 'sample_composition', 'distribution', 'time_seri
 PLOT_TYPES = ('table', 'bar', 'line', 'scatter', 'step', 'area', 'coefficient', 'event_study', 'density', 'ecdf', 'box',
               'att_gt', 'cohort_event', 'parallel_trends', 'rdd', 'iv_first_stage', 'iv_reduced_form',
               'iv_confidence_set', 'scm', 'scm_gap', 'scm_placebo', 'binned_scatter', 'smd', 'structural', 'geo')
-GALLERY_RENDER_VERSION = 8
+GALLERY_RENDER_VERSION = 9
 DISPLAY_FIELDS = {'title', 'column_order', 'column_labels', 'formats', 'row_order',
                   'sort_by', 'ascending', 'notes', 'plot_type', 'x', 'y', 'lower', 'upper',
                   'series', 'visible_series', 'selected_result_ids', 'x_label', 'y_label',
@@ -124,6 +124,15 @@ def gallery_metadata(registry, result_ids):
             adopted = {}
         metadata = {key: copy.deepcopy(saved.get(key, adopted.get(key))) for key in fields
                     if key in saved or key in adopted}
+        # A structural result's scenario can contain the complete solved paths.
+        # Display its adopted definition; keep calculated arrays in source_result.
+        if isinstance(metadata.get('scenario'), dict):
+            scenario = adopted.get('scenario') or {key: metadata['scenario'][key]
+                for key in ('id', 'name', 'description') if key in metadata['scenario']}
+            if scenario:
+                metadata['scenario'] = copy.deepcopy(scenario)
+            else:
+                metadata.pop('scenario')
         metadata.update({key: copy.deepcopy(value) for key, value in record.get('metadata', {}).items()
                          if key in fields})
         if isinstance(saved.get('display'), dict):
@@ -1238,6 +1247,8 @@ def gallery_plot(item):
             if len(units) == 1 and not next((column['unit'] for column in view['columns'] if column['key'] == ykey), ''):
                 panel_columns[ykey] = panel_columns.get(ykey, ykey) + ' (' + str(next(iter(units))) + ')'
             gallery_plot_panel(axis, selected, display, metadata, panel_columns, family, font_size)
+            if not display.get('y_label'):
+                axis.set_ylabel(textwrap.fill(axis.get_ylabel(), 24, break_long_words=False, break_on_hyphens=False))
             axis.tick_params(labelsize=font_size)
             if facet:
                 axis.set_title(str(facets[index]), fontfamily=family, fontsize=font_size + 1)
@@ -1438,7 +1449,7 @@ def latex_adapter(source, kind):
             '$common.latex()$\n$if(bibliography)$$else$\\let\\bibliographystyle\\econbibstyle\n$endif$'
             '$if(standalone-renderer)$\n$for(header-includes)$\n$header-includes$\n$endfor$\n$endif$\n')
     if kind=='paper':
-        common += '\\usepackage{needspace}\n\\BeforeBeginEnvironment{longtable}{\\Needspace{12\\baselineskip}}\n'
+        common += '\\AtBeginEnvironment{longtable}{\\def\\_{\\textunderscore\\allowbreak}}\n'
         source=replace_once(source,'\\documentclass[ecta,nameyear,draft]{econsocart}', '\\RequirePackage{fontspec}\n\\def\\econselectedclass{$documentclass$}\n\\def\\econjournalclass{econsocart}\n\\ifx\\econselectedclass\\econjournalclass\n\\documentclass[ecta,nameyear,draft]{econsocart}\n\\else\n\\documentclass[$for(classoption)$$classoption$$sep$,$endfor$]{$documentclass$}\n\\fi')
         source=replace_once(source,'\\startlocaldefs',common+'\\newcounter{pandocauthor}\n\\newcommand{\\pandocauthor}[1]{\\stepcounter{pandocauthor}\\author[id=au\\arabic{pandocauthor},addressref={add1}]{\\fnms{}~\\snm{#1}\\ead[label=e\\arabic{pandocauthor}]{}}}\n\\ifx\\econselectedclass\\econjournalclass\n\\startlocaldefs')
         source=replace_once(source,'\\endlocaldefs','\\endlocaldefs\n\\fi')

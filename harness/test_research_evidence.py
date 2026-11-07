@@ -193,6 +193,27 @@ class EvidenceTests(unittest.TestCase):
         self.assertEqual(bodies['results'], 'Saved main result')
         self.assertEqual(bodies['findings'], 'main: Saved finding')
         self.assertEqual(meeting['artifacts']['main']['rows'], entries[0]['rows'])
+        structural = [{'id': key, 'title': key, 'kind': 'table', 'result_ids': ['fitted-model'],
+                       'files': [], 'metadata': {'report_role': role, 'model_contract': 'MC-pyblp-bertrand'},
+                       'rows': [{'value': value, 'result_id': 'fitted-model'}],
+                       'columns': [{'key': 'value', 'label': 'Saved value', 'unit': 'currency'}]}
+                      for key, role, value in [('prices', 'counterfactual', 2.4),
+                                               ('moments', 'model_fit', 0.01), ('parameters', 'parameters', -1.1)]]
+        model_text = r'Consumers choose one product. $u_{ij}=x_j\beta-\alpha p_j+\epsilon_{ij}$.'
+        output = self.root / 'structural'
+        meetings.create_bundle(root, output, structural, title='Structural model', kind='structural',
+                               project_view={'section_content': {'model': model_text,
+                                             'identification': 'Excluded cost shifts identify the price response.'}})
+        meeting, bodies, _ = meetings.load_meeting(output)
+        self.assertEqual(bodies['model'], model_text)
+        positions = [section['source_section'] for section in meeting['sections'] if section.get('artifacts')]
+        self.assertEqual(positions, ['parameters', 'model-fit', 'counterfactual'])
+        self.assertEqual(meeting['artifacts']['prices']['rows'], structural[0]['rows'])
+        self.assertIn(model_text, meetings.document_source(root, meeting, bodies))
+        self.assertIn('MC-pyblp-bertrand', meetings.artifact_notes(meeting['artifacts']['prices']))
+        with self.assertRaisesRegex(ValueError, 'outside the selected template'):
+            meetings.create_bundle(root, self.root / 'invalid-materials', [], title='Invalid', kind='model',
+                                   project_view={'section_content': {'unselected-section': 'Text'}})
 
     def test_saved_regression_presentation_survives_edit_and_native_export(self):
         definitions = {'estimand': 'linear projection', 'population': 'synthetic example',
