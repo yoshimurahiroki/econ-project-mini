@@ -205,7 +205,7 @@ def respy_run(spec, base):
         if 'params' in spec:
             raise ValueError('fit_path already supplies the saved parameters')
         observed = restore_frame(fit['observed_data']) if fit.get('observed_data') else None
-        sources.update(fit.get('sources', {}))
+        sources = {**fit.get('sources', {}), **sources}
     else:
         parameter_input = spec['params']
         if isinstance(parameter_input, dict) and 'path' in parameter_input:

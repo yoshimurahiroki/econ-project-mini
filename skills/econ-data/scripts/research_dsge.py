@@ -206,6 +206,8 @@ def hank_household_quantities(ss, household, impulse=None, stationary=None):
 
 
 def solve_hank(spec, base_dir):
+    from research_dynamic import official_package
+    identity = official_package('sequence-jacobian', '1.0.0', SSJ_REVISION)
     import sequence_jacobian
     from sequence_jacobian import SteadyStateDict, JacobianDict
     from sequence_jacobian.classes.sparse_jacobians import make_matrix
@@ -306,7 +308,8 @@ def solve_hank(spec, base_dir):
                              for key in ('beta', 'vphi', 'A', 'C', 'NE', 'w', 'Y')},
               'provenance': {'python': sys.version.split()[0], 'numpy': np.__version__, 'scipy': scipy.__version__,
                              'sequence_jacobian': version('sequence-jacobian'), 'numba': version('numba'),
-                             'upstream_revision': SSJ_REVISION, 'model_source': source, 'source_hashes': source_hashes,
+                             'upstream_revision': identity['source_revision'], 'official_package': identity,
+                             'model_source': source, 'source_hashes': source_hashes,
                              'official_api': {name: str(inspect.signature(getattr(model, name))) for name in operations},
                              'saved_solution': reference},
               'options': {'steady_state': steady_model.get_options({}, definition['steady_state'].get('options', {}), 'solve_steady_state'),
@@ -394,7 +397,7 @@ def solve_hank(spec, base_dir):
                     result['statistics'][name + '.impact.' + key] = {'value': float(values[0]), 'unit': HANK_UNITS.get(key, 'model units') + ' change'}
                     path_rows.extend({'scenario': name, 'period': t, 'quantity': key, 'value': float(value),
                                       'unit': HANK_UNITS.get(key, 'model units') + ' change'} for t, value in enumerate(values))
-    result['computation'] = {'requested_operation': operation, 'executed_operations': executed,
+    result['computation'] = {'requested_operation': operation, 'operations_executed': executed,
         'parameter_operation': 'reuse saved calibration' if saved else 'calibrate beta and vphi to the declared stationary targets',
         'reused_objects': reused, 'estimated_parameters': [],
         'computed_quantities': ['stationary equilibrium', 'household policies and distribution', 'stationary policy values'] +
@@ -422,6 +425,8 @@ def solve_hank(spec, base_dir):
 
 def solve_dolo(spec, base_dir):
     """Solve or reuse an adopted native YAML model with official Dolo methods."""
+    from research_dynamic import official_package
+    identity = official_package('dolo', '0.4.9.20', DOLO_REVISION)
     import dolo
     from dolo.compiler.model_import import yaml_import
     from dolo.compiler.misc import CalibrationDict
@@ -566,7 +571,7 @@ def solve_dolo(spec, base_dir):
         'normalization': spec.get('normalization', saved.get('normalization') if saved else 'The retained native YAML defines levels, units, preference scale and state/control timing.'),
         'equilibrium_selection': 'Native YAML calibration initializes the steady-state root; time iteration starts from its controls or the hash-bound saved decision rule on the declared grid and process.',
         'horizon': 'stationary infinite-horizon decision rule',
-        'computation': {'requested_operation': operation, 'executed_operations': executed,
+        'computation': {'requested_operation': operation, 'operations_executed': executed,
                         'parameter_operation': 'reuse adopted calibration; estimate no parameters',
                         'computed_quantities': ['steady-state calibration', 'original transition and arbitrage residuals',
                                                 'decision rule on state/regime coordinates', 'final-policy complementarity residuals'],
@@ -611,7 +616,8 @@ def solve_dolo(spec, base_dir):
               'provenance': {'python': sys.version.split()[0], 'numpy': np.__version__, 'scipy': scipy.__version__,
                              'dolo': version('dolo'), 'numba': version('numba'), 'quantecon': version('quantecon'),
                              'interpolation': version('interpolation'), 'jax': version('jax'),
-                             'upstream_revision': DOLO_REVISION, 'source_hashes': source_hashes, 'saved_solution': reference,
+                             'upstream_revision': identity['source_revision'], 'official_package': identity,
+                             'source_hashes': source_hashes, 'saved_solution': reference,
                              'official_api': {function.__name__: str(inspect.signature(function))
                                               for function in (yaml_import, find_steady_state, residuals, time_iteration, F)}}}
     return numeric_json(result)

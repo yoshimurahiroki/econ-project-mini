@@ -201,8 +201,8 @@ def lifecycle_run(spec, base_dir=Path.cwd()):
     if not spec.get('calibration_source'):
         raise ValueError('calibration_source must identify the supplied parameter values')
     parameter_status = spec.get('parameter_status', 'fixed')
-    if parameter_status not in ('fixed', 'estimated'):
-        raise ValueError('parameter_status must be fixed or estimated')
+    if parameter_status not in ('fixed', 'calibrated', 'estimated'):
+        raise ValueError('parameter_status must be fixed, calibrated or estimated')
     if operation != 'solve' and 'saved_solution' not in spec:
         raise ValueError('simulate and counterfactual require saved_solution.path and sha256')
     if operation == 'solve' and 'saved_solution' in spec:
@@ -487,7 +487,12 @@ def lifecycle_run(spec, base_dir=Path.cwd()):
             welfare_rows.append({'scenario': 'change', 'quantity': name, **statistics['change.'+name]})
     computation = {'requested_operation': operation, 'available_operations': ['solve', 'simulate', 'counterfactual'],
         'operations_executed': executed, 'native_calls': native_calls,
-        'parameter_operation': 'reuse supplied fixed or previously estimated parameters; estimate no parameters'}
+        'parameter_status': parameter_status,
+        'parameter_operation': {
+            'fixed': 'hold supplied fixed parameters; estimate no parameters',
+            'calibrated': 'hold supplied calibrated parameters; estimate no parameters',
+            'estimated': 'reuse supplied previously estimated parameters; estimate no parameters',
+        }[parameter_status]}
     definitions.update(horizon={'n_periods': horizon, 'discount_factor': beta, 'time_unit': 'model period'},
         computation=computation, model_contract='MC-lifecycle-regimes')
     displays = {}
