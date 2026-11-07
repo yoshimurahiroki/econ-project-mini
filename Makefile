@@ -1,18 +1,15 @@
 # Explicit project operations.
-.PHONY: help prepare-pixi sync setup-extensions register-kernels typecheck format-check format lint test r-parse clean r-install r-plan build-paper build-slides quarto-html qmd-pdf slides-pdf quarto-pdf quarto-reveal
+.PHONY: help prepare-pixi sync setup-extensions register-kernels typecheck format-check format lint r-parse clean r-install r-plan build-paper build-slides quarto-html qmd-pdf slides-pdf quarto-pdf quarto-reveal
 
 PIXI ?= pixi
 PIXI_RUN = $(PIXI) run
 QUALITY_RUN = $(PIXI_RUN)
-THREAD_ENV = OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 NUMEXPR_NUM_THREADS=1
 R_MAKEVARS_USER ?= $(CURDIR)/scripts/r-makevars
 FILE ?=
-TEST ?=
 # Keep user paths out of recipe text and prevent Make from expanding them again
 # while exporting its original command-line variables to child processes.
 export QUALITY_FILE := $(value FILE)
-export QUALITY_TEST := $(value TEST)
-unexport FILE TEST
+unexport FILE
 CHECK_FILE = test -f "$$QUALITY_FILE" || { printf '%s\n' 'Specify FILE=path to an existing file' >&2; exit 2; }; case "$$QUALITY_FILE" in /*) ;; *) QUALITY_FILE="./$$QUALITY_FILE" ;; esac
 QMD ?=
 PAPER ?= tex/paper/ecta_template.tex
@@ -46,10 +43,6 @@ format:
 	@$(CHECK_FILE); $(QUALITY_RUN) ruff format -- "$$QUALITY_FILE"
 lint:
 	@$(CHECK_FILE); $(QUALITY_RUN) ruff check -- "$$QUALITY_FILE"
-test:
-	@test -n "$$QUALITY_TEST" || { echo "Specify TEST=path::node" >&2; exit 2; }; \
-	$(THREAD_ENV) PYTHONPATH=".$${PYTHONPATH:+:$$PYTHONPATH}" $(PIXI_RUN) pytest -q -rs -p no:cacheprovider -p harness.local_checks -- "$$QUALITY_TEST"
-
 r-install: RV_ACTION = sync
 r-plan: RV_ACTION = plan
 r-install: prepare-pixi

@@ -88,27 +88,6 @@ Use that interpreter for numerical commands and the case's `--python` argument; 
 outputs/research-env/bin/python skills/econ-data/scripts/research.py estimate analysis.json -o result.json
 ```
 
-## Run the independent Python and R case
-
-The [case producer](../skills/econ-data/scripts/research_case.py) creates an original seeded data-generating process, raw observations, a base-R preprocessing script and the adopted OLS/IV specifications. Its nine stages connect R processing and summary, Python estimates, a named-statistic summary, table, SVG, QMD and standalone HTML. The saved source record defines the generated outcome, treatment, instrument, disturbances and true coefficient. These observations and results describe the specified simulation.
-
-```sh
-outputs/research-env/bin/python skills/econ-data/scripts/research_case.py prepare --root /path/to/project --python /path/to/analysis/python --rscript /path/to/Rscript --case-id independent019
-python /path/to/project/.agents/state/independent019/code/runner.py --root /path/to/project .agents/state/independent019/manifest.json
-```
-
-Use a new `--case-id` for each prepared case. Existing directories are preserved. `--parent TASK_ID` on the runner inherits the task's governing context, authority, holds and scope. Optional repeated `--source-record-dir` arguments copy explicitly selected source records after hash verification. The producer works from canonical, deployed and flat layouts. Each command stage declares the actual Python or R runtime, selected package versions and relevant environment inputs. An identical second invocation reuses all nine stages. A figure-label revision redraws the figure and assembled HTML while retaining matching fits.
-
-## Run an independently specified structural example
-
-The [structural producer](../skills/econ-data/scripts/research_structural_case.py) generates six synthetic product markets from its stated utility and cost equations, estimates demand through the existing `equity.fit` PyBLP interface and re-solves an ownership intervention. It saves its original generated observations, model and source specification, package/engine hashes, estimated parameters, changed prices, shares, profits, consumer values and original equilibrium residuals. The synthetic finite-state example uses the existing `equity.dynamic` NFXP and MPEC owners and re-solves the changed payoff policy.
-
-```sh
-outputs/research-env/bin/python skills/econ-data/scripts/research_structural_case.py --output outputs/structural-new
-```
-
-Supply a fresh output directory under an existing parent. The producer uses the existing complete-generation publisher and emits named statistics with units for subsequent tables, figures and prose. Restore the [equity requirements](../skills/econ-data/scripts/requirements-equity.txt) alongside the [research requirements](../skills/econ-data/scripts/requirements-research.txt) in the selected Python 3.12 environment. The current generating run saves its inputs, results and replay bindings in the requested output directory.
-
 ## Choose and execute the next research operation
 
 The lead formulates candidate questions from the requested economic object and the closest inspected answers. For each candidate, state the mechanism, estimand, identifying variation, measurement and population; identify the prediction or knowledge added by its comparison with the closest answer. Retrieve a consequential contrary finding and the actual data documentation when they determine that comparison. Keep these judgments and the candidate ordering in the adopted specification under the existing governing task.

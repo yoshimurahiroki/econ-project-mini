@@ -441,13 +441,6 @@
       "resource_kind": "support",
       "content_version": "0.48.1"
     },
-    "tool-check-instruction-links-py": {
-      "resource_id": "tool-check-instruction-links-py",
-      "source_path": "scripts/check_instruction_links.py",
-      "resource_kind": "maintenance",
-      "content_version": "0.49.0",
-      "source_distribution_only": true
-    },
     "paragraph-workflow": {
       "resource_id": "paragraph-workflow",
       "source_path": "skills/econ-writing/references/paragraph-workflow.md",
@@ -593,7 +586,6 @@
         "research-runner",
         "research-estimator",
         "research-dependencies",
-        "research-case",
         "research-sources",
         "equity-dependencies",
         "research-experience",
@@ -618,17 +610,6 @@
       "resource_kind": "support",
       "content_version": "0.53.2"
     },
-    "research-case": {
-      "resource_id": "research-case",
-      "source_path": "skills/econ-data/scripts/research_case.py",
-      "resource_kind": "support",
-      "content_version": "0.17.0",
-      "required_resources": [
-        "research-runner",
-        "research-estimator",
-        "research-dependencies"
-      ]
-    },
     "research-sources": {
       "resource_id": "research-sources",
       "source_path": "skills/econ-literature/scripts/research_sources.py",
@@ -645,17 +626,6 @@
       "resource_kind": "support",
       "content_version": "0.58.0",
       "source_distribution_only": true
-    },
-    "research-structural-case": {
-      "resource_id": "research-structural-case",
-      "source_path": "skills/econ-data/scripts/research_structural_case.py",
-      "resource_kind": "support",
-      "content_version": "0.17.0",
-      "required_resources": [
-        "equity-calculator",
-        "equity-dependencies",
-        "local-checks"
-      ]
     },
     "research-experience": {
       "resource_id": "research-experience",
@@ -697,16 +667,6 @@
       "required_resources": [
         "research-dependencies"
       ]
-    },
-    "research-evidence-tests": {
-      "resource_id": "research-evidence-tests",
-      "source_path": "harness/test_research_evidence.py",
-      "resource_kind": "support",
-      "content_version": "0.58.0",
-      "required_resources": [
-        "research-evidence"
-      ],
-      "source_distribution_only": true
     },
     "research-reproduction": {
       "resource_id": "research-reproduction",
@@ -1463,13 +1423,6 @@
       "source_path": ".github/ISSUE_TEMPLATE/research-task.yml",
       "resource_kind": "maintenance",
       "content_version": "0.53.0",
-      "source_distribution_only": true
-    },
-    "research-gallery-example": {
-      "resource_id": "research-gallery-example",
-      "source_path": "examples/research-workspace/gallery.json",
-      "resource_kind": "support",
-      "content_version": "0.60.0",
       "source_distribution_only": true
     },
     "economics-writing-comparison": {
@@ -2540,22 +2493,12 @@
         "whole_resource": true
       }
     },
-    "research-case": {
-      "all": {
-        "whole_resource": true
-      }
-    },
     "research-sources": {
       "all": {
         "whole_resource": true
       }
     },
     "research-runner-tests": {
-      "all": {
-        "whole_resource": true
-      }
-    },
-    "research-structural-case": {
       "all": {
         "whole_resource": true
       }
@@ -2576,11 +2519,6 @@
       }
     },
     "research-macro": {
-      "all": {
-        "whole_resource": true
-      }
-    },
-    "research-evidence-tests": {
       "all": {
         "whole_resource": true
       }
@@ -2889,11 +2827,6 @@
       }
     },
     "meeting-templates": {
-      "all": {
-        "whole_resource": true
-      }
-    },
-    "research-gallery-example": {
       "all": {
         "whole_resource": true
       }
@@ -5412,18 +5345,6 @@
       "conditional_requires": [],
       "optional_examples": []
     },
-    "research-case.all": {
-      "rule_id": "research-case.all",
-      "resource_id": "research-case",
-      "section_id": "all",
-      "requires": [
-        "research-runner.all",
-        "research-estimator.all",
-        "research-dependencies.all"
-      ],
-      "conditional_requires": [],
-      "optional_examples": []
-    },
     "research-sources.all": {
       "rule_id": "research-sources.all",
       "resource_id": "research-sources",
@@ -5438,14 +5359,6 @@
     "research-runner-tests.all": {
       "rule_id": "research-runner-tests.all",
       "resource_id": "research-runner-tests",
-      "section_id": "all",
-      "requires": [],
-      "conditional_requires": [],
-      "optional_examples": []
-    },
-    "research-structural-case.all": {
-      "rule_id": "research-structural-case.all",
-      "resource_id": "research-structural-case",
       "section_id": "all",
       "requires": [],
       "conditional_requires": [],
@@ -5490,16 +5403,6 @@
       "section_id": "all",
       "requires": [
         "research-dependencies.all"
-      ],
-      "conditional_requires": [],
-      "optional_examples": []
-    },
-    "research-evidence-tests.all": {
-      "rule_id": "research-evidence-tests.all",
-      "resource_id": "research-evidence-tests",
-      "section_id": "all",
-      "requires": [
-        "research-evidence.all"
       ],
       "conditional_requires": [],
       "optional_examples": []
@@ -6152,14 +6055,6 @@
     "meeting-templates.all": {
       "rule_id": "meeting-templates.all",
       "resource_id": "meeting-templates",
-      "section_id": "all",
-      "requires": [],
-      "conditional_requires": [],
-      "optional_examples": []
-    },
-    "research-gallery-example.all": {
-      "rule_id": "research-gallery-example.all",
-      "resource_id": "research-gallery-example",
       "section_id": "all",
       "requires": [],
       "conditional_requires": [],

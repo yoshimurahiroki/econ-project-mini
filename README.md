@@ -44,7 +44,7 @@ marimo のローカル画面で記述統計表・図表を検索、比較、編�
 
 研究計画、採用仕様、発見・解釈・判断は既存 ERS の記録を編集します。担当、期限、依存、優先順位、進捗は [GitHub Issues / Projects と接続したプロジェクト表示](harness/state.md#project-work)から管理します。
 
-[ミーティング資料](harness/meetings.md)は選択した保存済み図表、前回の決定・To Do、今回の進捗から作成します。分析ブリーフ、進捗報告、研究計画相談、主要結果報告、研究ミーティング、論文Data/Results節のテンプレートを使います。GitHub のブラウザで Markdown と構成を編集すると、Actions が選択した形式の HTML・PDF を生成します。Google Slides は独立したネイティブ編集版を保存し、元資料へ編集先を登録します。[公開用の合成表示例](examples/research-workspace/README.md)を同梱しています。
+[ミーティング資料](harness/meetings.md)は選択した保存済み図表、前回の決定・To Do、今回の進捗から作成します。分析ブリーフ、進捗報告、研究計画相談、主要結果報告、研究ミーティング、論文Data/Results節のテンプレートを使います。GitHub のブラウザで Markdown と構成を編集すると、Actions が選択した形式の HTML・PDF を生成します。Google Slides は独立したネイティブ編集版を保存し、元資料へ編集先を登録します。[保存済みのモデル計算](examples/research-workspace/README.md)は、入力・採用仕様・実行結果を保持しています。
 
 ## 論文とスライドを作る
 
