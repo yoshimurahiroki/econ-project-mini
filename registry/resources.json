@@ -23,7 +23,7 @@
       "resource_id": "execution",
       "source_path": "runtime/EXECUTION.md",
       "resource_kind": "rule",
-      "content_version": "0.48.0"
+      "content_version": "0.61.0"
     },
     "team": {
       "resource_id": "team",
@@ -41,7 +41,7 @@
       "resource_id": "econ-data",
       "source_path": "skills/econ-data/SKILL.md",
       "resource_kind": "rule",
-      "content_version": "0.54.1"
+      "content_version": "0.61.0"
     },
     "econ-literature": {
       "resource_id": "econ-literature",
@@ -53,37 +53,37 @@
       "resource_id": "econ-writing",
       "source_path": "skills/econ-writing/SKILL.md",
       "resource_kind": "rule",
-      "content_version": "0.58.0"
+      "content_version": "0.61.0"
     },
     "econ-review": {
       "resource_id": "econ-review",
       "source_path": "skills/econ-review/SKILL.md",
       "resource_kind": "rule",
-      "content_version": "0.58.0"
+      "content_version": "0.61.0"
     },
     "design-methods": {
       "resource_id": "design-methods",
       "source_path": "skills/econ-design/references/designs.md",
       "resource_kind": "rule",
-      "content_version": "0.57.0"
+      "content_version": "0.61.0"
     },
     "data-implementation": {
       "resource_id": "data-implementation",
       "source_path": "skills/econ-data/references/implementation.md",
       "resource_kind": "rule",
-      "content_version": "0.57.0"
+      "content_version": "0.61.0"
     },
     "data-results": {
       "resource_id": "data-results",
       "source_path": "skills/econ-data/references/reproducible-workflow.md",
       "resource_kind": "rule",
-      "content_version": "0.57.0"
+      "content_version": "0.61.0"
     },
     "paper-workflow": {
       "resource_id": "paper-workflow",
       "source_path": "skills/econ-writing/references/paper-workflow.md",
       "resource_kind": "rule",
-      "content_version": "0.58.0"
+      "content_version": "0.61.0"
     },
     "review-methods": {
       "resource_id": "review-methods",
@@ -138,13 +138,13 @@
       "resource_id": "resource-guide",
       "source_path": "docs/ai/resources.md",
       "resource_kind": "rule",
-      "content_version": "0.29.0"
+      "content_version": "0.61.0"
     },
     "team-state-helper": {
       "resource_id": "team-state-helper",
       "source_path": "harness/state.py",
       "resource_kind": "support",
-      "content_version": "0.55.0",
+      "content_version": "0.61.0",
       "required_resources": [
         "local-checks"
       ]
@@ -270,7 +270,7 @@
       "resource_id": "state-contract",
       "source_path": "harness/state.md",
       "resource_kind": "rule",
-      "content_version": "0.53.0"
+      "content_version": "0.61.0"
     },
     "publication": {
       "resource_id": "publication",
@@ -295,13 +295,13 @@
       "resource_id": "registry-resources",
       "source_path": "registry/resources.json",
       "resource_kind": "registry",
-      "content_version": "0.58.0"
+      "content_version": "0.61.0"
     },
     "registry-placements": {
       "resource_id": "registry-placements",
       "source_path": "registry/placements.json",
       "resource_kind": "registry",
-      "content_version": "0.53.2"
+      "content_version": "0.61.0"
     },
     "prose-check-guide": {
       "resource_id": "prose-check-guide",
@@ -319,7 +319,7 @@
       "resource_id": "local-checks",
       "source_path": "harness/local_checks.py",
       "resource_kind": "support",
-      "content_version": "0.53.0",
+      "content_version": "0.61.0",
       "required_resources": [
         "prose-check-rules"
       ]
@@ -334,7 +334,7 @@
       "resource_id": "requirements-check",
       "source_path": "harness/requirements_check.py",
       "resource_kind": "support",
-      "content_version": "0.48.0"
+      "content_version": "0.61.0"
     },
     "requirements-check-guide": {
       "resource_id": "requirements-check-guide",
@@ -346,13 +346,13 @@
       "resource_id": "native-check",
       "source_path": "harness/native_check.py",
       "resource_kind": "support",
-      "content_version": "0.48.0"
+      "content_version": "0.61.0"
     },
     "policy-assets": {
       "resource_id": "policy-assets",
       "source_path": "harness/policy_assets.py",
       "resource_kind": "support",
-      "content_version": "0.58.0"
+      "content_version": "0.61.0"
     },
     "policy-manifest": {
       "resource_id": "policy-manifest",
@@ -365,7 +365,7 @@
       "resource_id": "codex-hooks",
       "source_path": "harness/codex_hooks.py",
       "resource_kind": "support",
-      "content_version": "0.53.0",
+      "content_version": "0.61.0",
       "required_resources": [
         "team-state-helper"
       ]
@@ -425,38 +425,38 @@
       "resource_id": "state-tests",
       "source_path": "harness/test_state.py",
       "resource_kind": "maintenance",
-      "content_version": "0.53.0",
+      "content_version": "0.61.0",
       "source_distribution_only": true
     },
     "plugin-integration-guide": {
       "resource_id": "plugin-integration-guide",
       "source_path": "docs/ai/plugin-integration.md",
       "resource_kind": "support",
-      "content_version": "0.48.1"
+      "content_version": "0.61.0"
     },
     "paragraph-workflow": {
       "resource_id": "paragraph-workflow",
       "source_path": "skills/econ-writing/references/paragraph-workflow.md",
       "resource_kind": "rule",
-      "content_version": "0.58.0"
+      "content_version": "0.61.0"
     },
     "paragraph-engine": {
       "resource_id": "paragraph-engine",
       "source_path": "harness/paragraph.py",
       "resource_kind": "support",
-      "content_version": "0.58.0"
+      "content_version": "0.61.0"
     },
     "argument-engine": {
       "resource_id": "argument-engine",
       "source_path": "harness/argument.py",
       "resource_kind": "support",
-      "content_version": "0.58.0"
+      "content_version": "0.61.0"
     },
     "paragraph-schema": {
       "resource_id": "paragraph-schema",
       "source_path": "harness/paragraph.schema.json",
       "resource_kind": "support",
-      "content_version": "0.4.1"
+      "content_version": "0.61.0"
     },
     "argument-schema": {
       "resource_id": "argument-schema",
@@ -481,7 +481,7 @@
       "resource_id": "equity-calculator",
       "source_path": "skills/econ-data/scripts/equity.py",
       "resource_kind": "support",
-      "content_version": "0.54.1",
+      "content_version": "0.61.0",
       "required_resources": [
         "equity-io"
       ]
@@ -574,7 +574,7 @@
       "resource_id": "research-execution",
       "source_path": "harness/research.md",
       "resource_kind": "rule",
-      "content_version": "0.58.0",
+      "content_version": "0.61.0",
       "required_resources": [
         "research-runner",
         "research-estimator",
@@ -617,14 +617,14 @@
       "resource_id": "research-runner-tests",
       "source_path": "harness/test_research.py",
       "resource_kind": "support",
-      "content_version": "0.58.0",
+      "content_version": "0.61.0",
       "source_distribution_only": true
     },
     "research-experience": {
       "resource_id": "research-experience",
       "source_path": "harness/experience.py",
       "resource_kind": "support",
-      "content_version": "0.26.0",
+      "content_version": "0.61.0",
       "required_resources": [
         "team-state-helper",
         "native-check",
@@ -635,7 +635,7 @@
       "resource_id": "research-evidence",
       "source_path": "harness/research_evidence.py",
       "resource_kind": "support",
-      "content_version": "0.58.0",
+      "content_version": "0.61.0",
       "required_resources": [
         "paragraph-engine",
         "team-state-helper",
@@ -676,13 +676,13 @@
       "resource_id": "research-causal-dependencies",
       "source_path": "skills/econ-data/scripts/requirements-causal.txt",
       "resource_kind": "support",
-      "content_version": "0.20.0"
+      "content_version": "0.61.0"
     },
     "research-causal": {
       "resource_id": "research-causal",
       "source_path": "skills/econ-data/scripts/research_causal.py",
       "resource_kind": "support",
-      "content_version": "0.56.0",
+      "content_version": "0.61.0",
       "required_resources": [
         "econ-knowledge",
         "research-numerics",
@@ -697,7 +697,7 @@
       "resource_id": "models-causal",
       "source_path": "skills/econ-design/references/causal-models.md",
       "resource_kind": "rule",
-      "content_version": "0.56.0",
+      "content_version": "0.61.0",
       "required_resources": [
         "research-causal"
       ]
@@ -712,7 +712,7 @@
       "resource_id": "research-markets",
       "source_path": "skills/econ-data/scripts/research_markets.py",
       "resource_kind": "support",
-      "content_version": "0.56.0",
+      "content_version": "0.61.0",
       "required_resources": [
         "research-markets-dependencies",
         "equity-io",
@@ -723,7 +723,7 @@
       "resource_id": "models-markets",
       "source_path": "skills/econ-design/references/market-models.md",
       "resource_kind": "rule",
-      "content_version": "0.56.0",
+      "content_version": "0.61.0",
       "required_resources": [
         "research-markets"
       ]
@@ -738,7 +738,7 @@
       "resource_id": "research-dynamic",
       "source_path": "skills/econ-data/scripts/research_dynamic.py",
       "resource_kind": "support",
-      "content_version": "0.55.0",
+      "content_version": "0.61.0",
       "required_resources": [
         "research-dynamic-dependencies",
         "equity-io"
@@ -748,7 +748,7 @@
       "resource_id": "models-dynamic",
       "source_path": "skills/econ-design/references/dynamic-models.md",
       "resource_kind": "rule",
-      "content_version": "0.56.0",
+      "content_version": "0.61.0",
       "required_resources": [
         "research-dynamic",
         "research-causal",
@@ -760,13 +760,13 @@
       "resource_id": "research-numerics-dependencies",
       "source_path": "skills/econ-data/scripts/requirements-numerics.txt",
       "resource_kind": "support",
-      "content_version": "0.20.0"
+      "content_version": "0.61.0"
     },
     "research-numerics": {
       "resource_id": "research-numerics",
       "source_path": "skills/econ-data/scripts/research_numerics.py",
       "resource_kind": "support",
-      "content_version": "0.37.0",
+      "content_version": "0.61.0",
       "required_resources": [
         "research-numerics-dependencies",
         "local-checks"
@@ -776,7 +776,7 @@
       "resource_id": "models-numerics",
       "source_path": "skills/econ-design/references/numerical-models.md",
       "resource_kind": "rule",
-      "content_version": "0.55.0",
+      "content_version": "0.61.0",
       "required_resources": [
         "research-numerics"
       ]
@@ -791,7 +791,7 @@
       "resource_id": "research-macro-extended",
       "source_path": "skills/econ-data/scripts/research_macro_extended.py",
       "resource_kind": "support",
-      "content_version": "0.56.0",
+      "content_version": "0.61.0",
       "required_resources": [
         "research-macro-dependencies"
       ]
@@ -800,7 +800,7 @@
       "resource_id": "models-macro-extended",
       "source_path": "skills/econ-design/references/macro-models.md",
       "resource_kind": "rule",
-      "content_version": "0.56.0",
+      "content_version": "0.61.0",
       "required_resources": [
         "research-macro-extended"
       ]
@@ -809,7 +809,7 @@
       "resource_id": "research-dsge",
       "source_path": "skills/econ-data/scripts/research_dsge.py",
       "resource_kind": "support",
-      "content_version": "0.20.0",
+      "content_version": "0.61.0",
       "required_resources": [
         "research-macro-dependencies",
         "research-macro-extended"
@@ -819,7 +819,7 @@
       "resource_id": "models-dsge",
       "source_path": "skills/econ-design/references/dsge-models.md",
       "resource_kind": "rule",
-      "content_version": "0.55.0",
+      "content_version": "0.61.0",
       "required_resources": [
         "research-dsge"
       ]
@@ -828,7 +828,7 @@
       "resource_id": "research-abm",
       "source_path": "skills/econ-data/scripts/research_abm.py",
       "resource_kind": "support",
-      "content_version": "0.20.0",
+      "content_version": "0.61.0",
       "required_resources": [
         "research-macro-dependencies"
       ]
@@ -837,7 +837,7 @@
       "resource_id": "models-abm",
       "source_path": "skills/econ-design/references/agent-models.md",
       "resource_kind": "rule",
-      "content_version": "0.20.0",
+      "content_version": "0.61.0",
       "required_resources": [
         "research-abm"
       ]
@@ -863,7 +863,7 @@
       "resource_id": "research-data",
       "source_path": "skills/econ-data/scripts/research_data.py",
       "resource_kind": "support",
-      "content_version": "0.54.0",
+      "content_version": "0.61.0",
       "required_resources": [
         "research-sources",
         "research-estimator",
@@ -875,7 +875,7 @@
       "resource_id": "research-data-guide",
       "source_path": "skills/econ-data/references/research-data.md",
       "resource_kind": "rule",
-      "content_version": "0.54.0",
+      "content_version": "0.61.0",
       "required_resources": [
         "research-data"
       ]
@@ -884,7 +884,7 @@
       "resource_id": "research-artifacts",
       "source_path": "harness/research_artifacts.py",
       "resource_kind": "support",
-      "content_version": "0.58.0",
+      "content_version": "0.61.0",
       "required_resources": [
         "research-evidence",
         "team-state-helper",
@@ -899,7 +899,7 @@
       "resource_id": "result-artifacts",
       "source_path": "skills/econ-writing/references/result-artifacts.md",
       "resource_kind": "rule",
-      "content_version": "0.58.0",
+      "content_version": "0.61.0",
       "required_resources": [
         "research-artifacts",
         "research-runner",
@@ -947,7 +947,7 @@
       "resource_id": "knowledge-catalog",
       "source_path": "skills/econ-knowledge/references/catalog.json",
       "resource_kind": "support",
-      "content_version": "0.56.0",
+      "content_version": "0.61.0",
       "source_distribution_only": true
     },
     "knowledge-chapter-01": {
@@ -1414,7 +1414,7 @@
       "resource_id": "economics-writing-comparison",
       "source_path": "docs/ai/economics-writing-comparison.md",
       "resource_kind": "support",
-      "content_version": "0.58.0",
+      "content_version": "0.61.0",
       "source_distribution_only": true
     }
   },

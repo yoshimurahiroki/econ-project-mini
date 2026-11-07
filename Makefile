@@ -85,5 +85,5 @@ quarto-reveal:
 	$(PIXI_RUN) quarto render "$(if $(strip $(QMD)),$(QMD),.)" --to revealjs
 
 clean:
-	rm -rf -- .coverage .mypy_cache .pytest_cache .ruff_cache _site _book .quarto
+	rm -rf -- .mypy_cache .ruff_cache _site _book .quarto
 	find tex -type f \( -name '*.aux' -o -name '*.blg' -o -name '*.log' -o -name '*.out' -o -name '*.toc' -o -name '*.synctex.gz' -o -name '*.run.xml' -o -name '*.fdb_latexmk' -o -name '*.fls' \) -delete
