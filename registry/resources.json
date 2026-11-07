@@ -146,7 +146,8 @@
       "resource_kind": "support",
       "content_version": "0.53.1",
       "required_resources": [
-        "capabilities-helper"
+        "capabilities-helper",
+        "local-checks"
       ]
     },
     "capabilities-helper": {
@@ -731,7 +732,10 @@
       "content_version": "0.54.2",
       "required_resources": [
         "research-causal-dependencies",
-        "research-causal-r-dependencies"
+        "research-causal-r-dependencies",
+        "team-state-helper",
+        "registry-resources",
+        "registry-placements"
       ]
     },
     "models-causal": {
