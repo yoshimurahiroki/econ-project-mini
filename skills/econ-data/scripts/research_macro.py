@@ -120,7 +120,7 @@ def solve(spec):
                                                         ("resource_max_abs_error", spec["unit"]),
                                                         ("objective_gradient_max_abs_error", "utility per capital unit"),
                                                         ("resource_jacobian_max_abs_error", "resource per capital unit")))
-    model_metadata = {"model_contract": "MC-ramsey-cf", "population": spec["population"],
+    model_metadata = {"model_contract": "MC-ramsey-cf", "unit": "see row-specific unit", "population": spec["population"],
                       "period": spec["period"], "terminal_condition": "fixed terminal capital; no continuation utility"}
     displays = {
         "parameters": {"kind": "table", "title": "Preferences, technology and endpoints",
@@ -148,7 +148,8 @@ def solve(spec):
                                 (("scenario", "Scenario"), ("value", "Welfare"), ("unit", "Unit"))],
                     "rows": [{"scenario": name, "value": allocation["welfare"], "unit": "discounted log consumption"}
                              for name, allocation in (("baseline", baseline), ("scenario", scenario))],
-                    "metadata": {**model_metadata, "report_role": "welfare", "estimand": "Sum of beta^t log(c_t) over the stated horizon"},
+                    "metadata": {**model_metadata, "report_role": "welfare", "unit": "discounted log consumption",
+                                 "estimand": "Sum of beta^t log(c_t) over the stated horizon"},
                     "display": {"plot_type": "bar", "x": "scenario", "y": "value"}}}
     return {"model": "finite-horizon deterministic household growth", "engine": "scipy.optimize.minimize/SLSQP",
             "versions": {"python": sys.version.split()[0], "numpy": np.__version__, "scipy": scipy.__version__},

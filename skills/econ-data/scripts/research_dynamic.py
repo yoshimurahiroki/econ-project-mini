@@ -910,7 +910,7 @@ def simulate_capacity(model, markets, periods, seed):
 
 def replacement_displays(result):
     """Expose saved replacement estimates, policy curves and value comparisons."""
-    contract = {'model_contract': 'MC-replacement-ddc'}
+    contract = {'model_contract': 'MC-replacement-ddc', 'unit': 'see row-specific unit'}
     parameter_rows = []
     for estimator in ('nfxp', 'ccp', 'smm'):
         if estimator not in result:
@@ -947,13 +947,15 @@ def replacement_displays(result):
                                'columns': [{'key': key, 'label': label, 'unit': unit} for key, label, unit in
                                            (('scenario', 'Scenario', ''), ('state', 'Mileage state', 'state'),
                                             ('value', 'Replacement probability', 'probability'), ('unit', 'Unit', ''))],
-                               'metadata': {**contract, 'report_role': 'counterfactual', 'estimand': 'Optimal replacement probability conditional on mileage state'},
+                               'metadata': {**contract, 'report_role': 'counterfactual', 'unit': 'replacement probability',
+                                            'estimand': 'Optimal replacement probability conditional on mileage state'},
                                'display': {'plot_type': 'line', 'x': 'state', 'y': 'value', 'series': 'scenario'}},
         'state_values': {'kind': 'counterfactual', 'title': 'Expected discounted value by mileage state', 'rows': value_rows,
                          'columns': [{'key': key, 'label': label, 'unit': unit} for key, label, unit in
                                      (('scenario', 'Scenario', ''), ('state', 'Mileage state', 'state'),
                                       ('value', 'Expected discounted value', 'utility'), ('unit', 'Unit', ''))],
-                         'metadata': {**contract, 'report_role': 'counterfactual', 'population': 'Initial state-specific agents; no cross-state population aggregation',
+                         'metadata': {**contract, 'report_role': 'counterfactual', 'unit': 'discounted utility',
+                                      'population': 'Initial state-specific agents; no cross-state population aggregation',
                                       'value_definition': 'Inclusive expected discounted utility under unit-scale EV1 shocks with Euler constant normalized to zero'},
                          'display': {'plot_type': 'line', 'x': 'state', 'y': 'value', 'series': 'scenario'}}}
 

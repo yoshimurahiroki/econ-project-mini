@@ -353,7 +353,7 @@ def blp(s):
 
 def blp_displays(result, specification, unit):
     """Project saved estimates and scenario quantities into the common gallery rows."""
-    contract = {'model_contract': 'MC-pyblp-bertrand'}
+    contract = {'model_contract': 'MC-pyblp-bertrand', 'unit': 'see row-specific unit'}
     parameter_rows = []
     for group in ('beta', 'sigma', 'rho', 'gamma'):
         values = np.asarray(result[group])
@@ -415,11 +415,12 @@ def blp_displays(result, specification, unit):
                                              (('scenario', 'Scenario', ''), ('market', 'Market', ''), ('product', 'Product', ''),
                                               ('price', 'Price', unit), ('share', 'Market share', 'share'),
                                               ('cost', 'Marginal cost', unit), ('profit', 'Profit', unit+' per potential consumer'))],
-                                 'metadata': {**contract, 'report_role': 'counterfactual'}, 'display': {'plot_type': 'table'}},
+                                 'metadata': {**contract, 'report_role': 'counterfactual', 'unit': 'see column-specific unit'}, 'display': {'plot_type': 'table'}},
         'welfare': {'kind': 'counterfactual', 'title': 'Market welfare', 'rows': welfare_rows,
                     'columns': [{'key': key, 'label': label, 'unit': ''} for key, label in
                                 (('scenario', 'Scenario'), ('market', 'Market'), ('quantity', 'Quantity'), ('value', 'Value'), ('unit', 'Unit'))],
-                    'metadata': {**contract, 'report_role': 'welfare', 'population': 'Potential consumers within each market'},
+                    'metadata': {**contract, 'report_role': 'welfare', 'unit': unit+' per potential consumer',
+                                 'population': 'Potential consumers within each market'},
                     'display': {'plot_type': 'bar', 'x': 'market', 'y': 'value', 'series': 'scenario', 'facet': 'quantity'}}}
 
 
