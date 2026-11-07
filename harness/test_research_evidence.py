@@ -873,6 +873,80 @@ class EvidenceReviewTests(unittest.TestCase):
         self.assertEqual(entry['rationale'], rationale)
         self.assertEqual(entry['origin']['manuscript']['path'], 'original.md')
 
+    def test_removed_claim_requires_explicit_finding_before_response(self):
+        contract, _, revised, _ = self.revision()
+        effect = 'The assignment effect is 8 percentage points.'
+        outcome = 'The outcome is household application completion within eight weeks.'
+        contract['claims'][0]['target'] = selection(revised, effect)
+        effect_finding = contract['review']['assessment']['findings'][0]
+        effect_finding['changes'] = [selection(revised, effect)]
+        effect_finding['rationale'] = 'The manuscript reports the saved assignment effect of 8 percentage points.'
+        contract['claims'].append({'id': 'outcome', 'target': selection(revised, outcome),
+                                   'sources': copy.deepcopy(contract['claims'][0]['sources'])})
+        outcome_finding = {'id': 'outcome-definition', 'claim_id': 'outcome', 'criterion_id': 'definition',
+                           'decision': 'supported', 'rationale': 'The outcome matches the trial protocol.',
+                           'references': copy.deepcopy(effect_finding['references'])}
+        contract['review']['assessment']['findings'].append(outcome_finding)
+        contract['review'].pop('response_draft')
+        previous = evidence.review(contract, self.root)
+        self.assertEqual(previous['status'], 'reviewed')
+        previous_ref = self.write('completed-review.json', previous)
+        preserved = {name: (self.root / name).read_bytes()
+                     for name in ('completed-review.json', 'revised.md', 'saved-result.json')}
+
+        shortened = revised.replace(outcome + ' ', '')
+        contract['manuscript'] = self.write('shortened.md', shortened)
+        contract['claims'] = contract['claims'][:1]
+        contract['claims'][0]['target'] = selection(shortened, effect)
+        contract['numbers'][0]['target'] = selection(shortened, '8')
+        contract['numbers'][0]['unit_target'] = selection(shortened, 'percentage points')
+        contract['review'].pop('assessment')
+        contract['review']['previous'] = previous_ref
+        pending = evidence.review(contract, self.root)
+        self.assertEqual(pending['status'], 'review-required')
+        self.assertEqual(pending['changes']['reusable_claims'], ['effect'])
+        self.assertEqual(pending['changes']['removed_claims'], ['outcome'])
+        self.assertEqual(pending['review']['findings'][0]['reused_from'], previous_ref)
+        contract['review']['response_draft'] = {'language': 'en', 'finding_ids': ['definition-1']}
+        with self.assertRaisesRegex(ValueError, 'completed current assessment'):
+            evidence.review(contract, self.root)
+
+        outcome_finding.update(decision='removed', rationale='The outcome definition was removed from the manuscript.')
+        contract['review']['assessment'] = {'reviewer': 'owner', 'findings': [outcome_finding]}
+        contract['review']['response_draft']['finding_ids'].append('outcome-definition')
+        self.write('contract.json', contract)
+        self.assertEqual(evidence.main(['review', 'contract.json', '--root', str(self.root),
+                                        '--output', 'current-review.json', '--response-output', 'response.md']), 0)
+        result = json.loads((self.root / 'current-review.json').read_text(encoding='utf-8'))
+        self.assertEqual(result['status'], 'reviewed')
+        findings = {row['id']: row for row in result['review']['findings']}
+        self.assertEqual(set(findings), {'definition-1', 'outcome-definition'})
+        self.assertEqual(findings['definition-1']['reused_from'], previous_ref)
+        self.assertEqual(findings['outcome-definition']['decision'], 'removed')
+        entries = result['response_draft']['entries']
+        self.assertEqual(entries[0]['passages'], [selection(shortened, effect)])
+        self.assertEqual(entries[0]['bindings']['effect-number']['selected_result']['value'], 8)
+        self.assertEqual(entries[1]['origin']['target']['quote'], outcome)
+        self.assertEqual(entries[1]['passages'], [])
+        self.assertIn(outcome_finding['rationale'], (self.root / 'response.md').read_text(encoding='utf-8'))
+        contract['review']['previous'] = {'path': 'current-review.json',
+                                         'sha256': paragraph.sha((self.root / 'current-review.json').read_bytes())}
+        contract['review'].pop('assessment')
+        reused = evidence.review(contract, self.root)
+        self.assertEqual(reused['status'], 'reviewed')
+        self.assertEqual([row['id'] for row in reused['review']['findings']],
+                         ['definition-1', 'outcome-definition'])
+        self.assertTrue(all(row['reused_from'] == contract['review']['previous']
+                            for row in reused['review']['findings']))
+        contract['manuscript'] = self.write('restored.md', revised)
+        contract['claims'][0]['target'] = selection(revised, effect)
+        start = revised.index('8 percentage')
+        contract['numbers'][0]['target'] = {'start': start, 'end': start + 1, 'quote': '8'}
+        contract['numbers'][0]['unit_target'] = selection(revised, 'percentage points')
+        contract['review'].pop('response_draft')
+        self.assertEqual(evidence.review(contract, self.root)['status'], 'review-required')
+        self.assertEqual({name: (self.root / name).read_bytes() for name in preserved}, preserved)
+
     def test_cli_preserves_review_manuscript_and_evidence_inputs(self):
         import contextlib
         import io
