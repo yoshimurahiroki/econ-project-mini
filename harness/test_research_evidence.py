@@ -114,6 +114,7 @@ class EvidenceTests(unittest.TestCase):
                  'equilibrium_selection': 'unique maximizer', 'horizon': 'one period'}
         saved['adopted'] = {**model, 'sample_ids': ['individual-1']}
         saved['effective_options'] = {'raw_records': [{'private_row': index} for index in range(50)]}
+        saved['options'] = copy.deepcopy(saved['effective_options'])
         saved['run_id'] = 'saved-fit-run'
         spec['sources'][0]['metadata'] = {'welfare_definition': 'net benefit in currency per person'}
         self.write('saved.json', json.dumps(saved))
@@ -123,7 +124,16 @@ class EvidenceTests(unittest.TestCase):
         registry['items']['fit-alternative-view']['metadata']['interval_type'] = 'saved-pointwise'
         artifacts.save_registry(self.root / 'gallery.json', registry)
         self.assertEqual(artifacts.load(self.root / 'gallery.json'), registry)
-        self.assertIn('shared_metadata', json.loads((self.root / 'gallery.json').read_text()))
+        stored = json.loads((self.root / 'gallery.json').read_text())
+        self.assertIn('shared_metadata', stored)
+        self.assertEqual(stored['records']['fit']['source_fields']['options'], ['options'])
+        self.assertNotIn('options', stored['records']['fit'])
+        shared = next(iter(stored['shared_metadata'].values()))
+        self.assertEqual(shared['producers']['fit']['source_fields']['effective_options'], ['effective_options'])
+        self.assertEqual(stored['records']['fit']['source_result'], saved)
+        stored['records']['fit']['source_fields']['options'] = ['missing_options']
+        with self.assertRaisesRegex(ValueError, 'missing JSON key'):
+            artifacts.expand_registry(stored)
         (self.root / 'saved.json').unlink()
         (self.root / 'code.py').unlink()
         selected = artifacts.gallery_items(self.root, 'gallery.json', item_ids=['fit-coefficients'])[0]

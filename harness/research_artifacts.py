@@ -113,6 +113,12 @@ def gallery_source_rows(registry, reference):
 def expand_registry(registry):
     """Restore public display metadata and rows from this registry's saved values."""
     shared = registry.pop('shared_metadata', {})
+    for record in registry.get('records', {}).values():
+        expand_source_fields(record, record.get('source_result', {}))
+    metadata = [*shared.values(), *[item.get('metadata', {}) for item in registry.get('items', {}).values()]]
+    for fields in metadata:
+        for result_id, producer in fields.get('producers', {}).items():
+            expand_source_fields(producer, registry['records'][result_id].get('source_result', {}))
     for item in registry.get('items', {}).values():
         reference = item.pop('metadata_ref', None)
         if reference is not None:
@@ -126,6 +132,40 @@ def expand_registry(registry):
                 raise ValueError('display row reference must identify its saved result rows')
             item['rows'] = rows
     return registry
+
+
+def expand_source_fields(fields, source):
+    """Restore repeated producer fields from the retained scientific result."""
+    references = fields.pop('source_fields', {})
+    if not isinstance(references, dict):
+        raise ValueError('source_fields must map producer fields to saved result keys')
+    for field, keys in references.items():
+        if field in fields or field in ('source_result', 'source_fields'):
+            raise ValueError('source field reference conflicts with a saved field: ' + field)
+        fields[field] = copy.deepcopy(evidence.lookup(source, keys, 'source field reference'))
+
+
+def compact_source_fields(fields, source, aliases):
+    """Reference identical saved containers only when the reference saves space."""
+    references = {}
+    for field, value in list(fields.items()):
+        if field == 'source_result' or not isinstance(value, (dict, list)) or not value:
+            continue
+        for keys in [(field,), *aliases.get(field, ())]:
+            candidate = source
+            for key in keys:
+                candidate = candidate.get(key) if isinstance(candidate, dict) else None
+            if candidate != value:
+                continue
+            encoded = json.dumps(value, sort_keys=True, ensure_ascii=False, allow_nan=False)
+            if encoded != json.dumps(candidate, sort_keys=True, ensure_ascii=False, allow_nan=False):
+                continue
+            if len(encoded) > len(json.dumps(keys)) + len('"source_fields":{},'):
+                references[field] = list(keys)
+                del fields[field]
+            break
+    if references:
+        fields['source_fields'] = references
 
 
 def save_registry(path, registry):
@@ -153,6 +193,14 @@ def save_registry(path, registry):
                 item['metadata_ref'] = reference
     if shared:
         saved['shared_metadata'] = shared
+    for record in saved.get('records', {}).values():
+        compact_source_fields(record, record.get('source_result', {}),
+                              {'adopted': [('definition',)], 'options': [('design',)]})
+    metadata = [*shared.values(), *[item.get('metadata', {}) for item in saved.get('items', {}).values()]]
+    for fields in metadata:
+        for result_id, producer in fields.get('producers', {}).items():
+            compact_source_fields(producer, saved['records'][result_id].get('source_result', {}),
+                                  {'effective_options': [('diagnostics', 'effective_options'), ('options',), ('design',)]})
     state.save(path, saved, indent=None)
 
 
