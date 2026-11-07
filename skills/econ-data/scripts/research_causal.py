@@ -143,7 +143,7 @@ def select_method(request):
         if 'comparison_group' not in fields and 'control_group' in o:
             fields['comparison_group'] = o['control_group']
         if 'weights' not in fields:
-            weights = {k:o[k] for k in ('weightsname','fix_weights') if k in o}
+            weights = {k:o[k] for k in ('weightsname','fix_weights','weights','weights_type') if k in o}
             for group in ('args','columns'):
                 selected = {k:v for k,v in o.get(group, {}).items() if k in ('weights','i.weights','sample.weights','weight')}
                 if selected: weights[group] = selected
@@ -922,6 +922,22 @@ def select_method(request):
     if method in ('fixest_ols', 'fixest_ppml', 'sunab') and cluster_columns is not None:
         quoted_columns = ['`' + name.replace('\\', '\\\\').replace('`', '\\`') + '`' for name in cluster_columns]
         required_native_options['args.vcov'] = '~' + '+'.join(quoted_columns)
+    if method == 'hdfe':
+        if interval_type not in (None, 'pointwise'):
+            raise ValueError('the HDFE runner implements pointwise official confint intervals')
+        if level is not None:
+            required_native_options['confidence_level'] = level
+        if cluster_columns is not None:
+            if len(cluster_columns) != 1:
+                raise ValueError('the HDFE runner requires one declared independent cluster column')
+            native_vcov = forward_options.get('vcov', {})
+            adjustment = 'CRV3' if isinstance(native_vcov, dict) and 'CRV3' in native_vcov else 'CRV1'
+            required_native_options['vcov'] = {adjustment:cluster_columns[0]}
+        selected_weight = proposed_contract.get('weights')
+        if isinstance(selected_weight, str):
+            required_native_options['weights'] = selected_weight
+        elif selected_weight is not None and not forward_options.get('weights'):
+            raise ValueError('HDFE weights require the actual column in options.weights or a string weights binding')
     if method in ('ols_r', 'fixest_ols', 'fixest_ppml', 'negative_binomial_r', 'sunab', 'did2s'):
         if interval_type not in (None, 'pointwise'):
             raise ValueError('the selected fitted-model confint interface supplies pointwise intervals')
@@ -938,7 +954,7 @@ def select_method(request):
             if 'cluster' in selected_options.get(container, {}):
                 previous = selected_options[container].pop('cluster')
                 option_changes.append({'field':f'options.{container}.cluster','supplied':previous,'selected':None})
-    if method in ('ols_r','fixest_ols','fixest_ppml','negative_binomial_r','sunab','did2s','grf','staggered_did','did_multiplegt_dyn','nonabs_did','iv_ar','iv_ar_robust','rdrobust_r','dml_irm','dml_pliv','dml_iivm','finite_horizon_choice','consumption_saving'):
+    if method in ('ols_r','fixest_ols','fixest_ppml','negative_binomial_r','sunab','did2s','grf','staggered_did','did_multiplegt_dyn','nonabs_did','iv_ar','iv_ar_robust','rdrobust_r','hdfe','dml_irm','dml_pliv','dml_iivm','finite_horizon_choice','consumption_saving'):
         for field, value in required_native_options.items():
             cursor = selected_options
             path = field.split('.', 1)
@@ -954,14 +970,17 @@ def select_method(request):
                         'cband':False,'aggregation.cband':forward_options.get('cband',False),
                         'bstrap':False,'aggregation.bstrap':forward_options.get('bstrap',False),
                         'score':'ATE' if method == 'dml_irm' else 'LATE' if method == 'dml_iivm' else 'partialling out',
-                        'return_scalar':True,'vFuncBool':False}
+                        'return_scalar':True,'vFuncBool':False,
+                        'vcov':{'CRV1':cluster_columns[0]} if method == 'hdfe' and cluster_columns else 'hetero'}
             supplied = cursor.get(key, defaults.get(field))
             if supplied != value:
                 option_changes.append({'field':'options.'+field,'supplied':supplied,'selected':value})
             cursor[key] = value
     unbound_inputs = []
     if request['dependence'] in ('cluster', 'clustered'):
-        if method == 'staggered_did' and not selected_options.get('clustervars'):
+        if method == 'hdfe' and not cluster_columns:
+            unbound_inputs.append('inference.cluster: one independent cluster column')
+        elif method == 'staggered_did' and not selected_options.get('clustervars'):
             unbound_inputs.append('inference.cluster/clusters or options.clustervars')
         elif method == 'iv_ar_robust' and not selected_options.get('args', {}).get('cl'):
             unbound_inputs.append('inference.cluster/clusters or options.args.cl')
@@ -1217,6 +1236,11 @@ def select_method(request):
             execution_spec['inference'] = {'type':'did'}
         elif method == 'iv_ar':
             execution_spec['inference'] = {'type':'homoskedastic'}
+        elif method == 'hdfe':
+            if cluster_columns:
+                execution_spec['inference'] = {'type':'cluster','cluster':cluster_columns[0]}
+            else:
+                execution_spec['inference'] = {'type':'cluster' if request['dependence'] in ('cluster','clustered') else 'robust'}
         missing_fields = sorted(RUN_FIELDS - execution_spec.keys())
         implementation['execution_specification'] = {
             'status':'inputs_required' if missing_fields or unbound_inputs else 'specified',
@@ -2222,6 +2246,8 @@ def run(spec, spec_path):
     optional = ({'panel','allow_unbalanced_panel','anticipation','weightsname','fix_weights',
                  'alp','bstrap','biters','clustervars','cband','est_method','base_period',
                  'faster_mode','seed','aggregation'} if method == 'staggered_did' else set())
+    if method == 'hdfe':
+        optional = {'weights','weights_type','ssc','vcov','confidence_level'}
     if not required <= set(opt) or set(opt) - required - optional:
         raise ValueError(f'{method} options must contain exactly {sorted(required)}')
     inf = spec['inference']
@@ -2279,6 +2305,8 @@ def run(spec, spec_path):
             raise ValueError('DID clustervars must be a list of column names')
         columns.extend(opt.get('clustervars', []))
         if 'weightsname' in opt: columns.append(opt['weightsname'])
+    if method == 'hdfe' and opt.get('weights') is not None:
+        columns.append(opt['weights'])
     if inf['type']=='cluster': columns += [inf['cluster']]
     if any(not isinstance(x,str) or not x for x in columns): raise ValueError('column names must be nonempty strings')
     roles = [spec['id'],spec['outcome'],*spec['regressors'],*spec['endogenous'],*spec['instruments']]
@@ -2295,6 +2323,7 @@ def run(spec, spec_path):
     if method == 'generalized_synth': numeric.extend([opt['time'],opt['treatment']])
     if method == 'staggered_did': numeric.extend([opt['time'],opt['cohort']])
     if method == 'staggered_did' and 'weightsname' in opt: numeric.append(opt['weightsname'])
+    if method == 'hdfe' and opt.get('weights') is not None: numeric.append(opt['weights'])
     if method == 'policy_tree': numeric.extend([opt['treatment'],opt['propensity']])
     if method == 'shift_share': numeric.extend(opt['shares'])
     if method == 'gls': numeric.append(opt['variance'])
@@ -2544,11 +2573,48 @@ cat(toJSON(obj,auto_unbox=TRUE,digits=16,na='null',null='null'))
         versions['pyfixest']=version('pyfixest')
         names=[spec['outcome'],*spec['regressors'],*opt['fixed_effects']] + ([inf['cluster']] if groups is not None else [])
         if not spec['regressors'] or any(not isinstance(k,str) or not re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]*',k) for k in names): raise ValueError('hdfe requires simple column names and at least one regressor')
+        confidence_level = opt.get('confidence_level', .95)
+        if (isinstance(confidence_level, bool) or not isinstance(confidence_level, (int, float)) or
+                not 0 < confidence_level < 1):
+            raise ValueError('HDFE confidence_level must be between zero and one')
+        weights_column = opt.get('weights')
+        weights_type = opt.get('weights_type', 'aweights')
+        if weights_type not in ('aweights', 'fweights'):
+            raise ValueError('HDFE weights_type must be aweights or fweights')
+        weights = d[weights_column].to_numpy(dtype=float) if weights_column is not None else np.ones(len(d))
+        if np.any(weights <= 0) or (weights_type == 'fweights' and np.any(weights != np.floor(weights))):
+            raise ValueError('HDFE weights must be positive; fweights must be integer frequencies')
+        ssc_options = opt.get('ssc', {})
+        if not isinstance(ssc_options, dict) or set(ssc_options)-{'k_adj','k_fixef','G_adj','G_df'}:
+            raise ValueError('HDFE ssc accepts k_adj, k_fixef, G_adj and G_df')
+        small_sample = pyfixest.ssc(**ssc_options)
+        covariance = opt.get('vcov', {'CRV1': inf['cluster']} if groups is not None else 'hetero')
+        if groups is None:
+            if covariance not in ('hetero', 'HC1'):
+                raise ValueError('HDFE robust inference requires vcov hetero or HC1')
+        elif (not isinstance(covariance, dict) or len(covariance) != 1 or
+              next(iter(covariance)) not in ('CRV1','CRV3') or next(iter(covariance.values())) != inf['cluster']):
+            raise ValueError('HDFE cluster vcov must bind CRV1 or CRV3 to inference.cluster')
         formula=spec['outcome']+' ~ '+' + '.join(spec['regressors'])+' | '+' + '.join(opt['fixed_effects'])
-        fit=pyfixest.feols(formula,d,vcov={'CRV1':inf['cluster']} if groups is not None else 'hetero',fixef_rm='none')
-        coef=fit.coef(); se=fit.se(); pv=fit.pvalue(); ci=fit.confint(); cov=pd.DataFrame(fit._vcov,index=coef.index,columns=coef.index); reference='Student t'; engine='pyfixest.feols'
-        if int(fit._N)!=len(d) or list(coef.index)!=spec['regressors']: raise ValueError('HDFE dropped observations or collinear regressors')
-        diagnostics={'fixed_effects':opt['fixed_effects'],'levels':{k:int(d[k].nunique()) for k in opt['fixed_effects']},'singleton_policy':'retain','covariance': 'CRV1' if groups is not None else 'hetero'}
+        fit=pyfixest.feols(formula,d,vcov=covariance,weights=weights_column,weights_type=weights_type,
+                           ssc=small_sample,fixef_rm='none')
+        coef=fit.coef(); se=fit.se(); pv=fit.pvalue(); ci=fit.confint(alpha=1-confidence_level)
+        cov=pd.DataFrame(fit._vcov,index=coef.index,columns=coef.index); reference='Student t'; engine='pyfixest.feols'
+        fitted_ids = fit._data[spec['id']].astype(str).tolist()
+        if (int(fit._N_rows) != len(d) or fitted_ids != d[spec['id']].astype(str).tolist() or
+                list(coef.index) != spec['regressors']):
+            raise ValueError('HDFE dropped observations or collinear regressors')
+        fitted_weights = np.asarray(fit._weights, dtype=float).reshape(-1)
+        if not np.array_equal(fitted_weights, weights):
+            raise ArithmeticError('HDFE fitted weights differ from the declared complete-case weights')
+        fit_n = int(fit._N_rows)
+        diagnostics={'fixed_effects':opt['fixed_effects'],'levels':{k:int(d[k].nunique()) for k in opt['fixed_effects']},
+            'singleton_policy':'retain','covariance':covariance,'degrees_of_freedom':float(fit._df_t),
+            'effective_observations':float(fit._N),
+            'weights':{'column':weights_column,'type':fit._weights_type,'values':fitted_weights.tolist(),
+                       'total':float(fitted_weights.sum()),'row_order':'sample.included_ids'},
+            'effective_options':{'weights':weights_column,'weights_type':fit._weights_type,'ssc':fit._ssc_dict,
+                                 'vcov':covariance,'confidence_level':confidence_level,'fixef_rm':'none'}}
     elif method in ('rdd_sharp','rdd_fuzzy'):
         from rdrobust import rdrobust
         from importlib.metadata import version
