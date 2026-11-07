@@ -516,5 +516,53 @@
     },
     "manuscript_review": "Completed native integrated review of quantities, economic mechanism, section consistency and Japanese/English prose.",
     "numerical_inputs": "Existing executed DID, growth and BLP results consumed unchanged."
+  },
+  "market_population_and_types": {
+    "operation": "econ-data:execute",
+    "command": [
+      ".agents/cache/writing-060/markets-env/bin/python",
+      "skills/econ-data/scripts/research_markets.py",
+      "case",
+      "--name",
+      "blp-random-merger",
+      "--output",
+      ".agents/cache/writing-060/random-merger-run"
+    ],
+    "returncode": 0,
+    "source_commit_before_change": "5dd02ca4bbbabc32e095180a817d0a322fbf23b9",
+    "code": {
+      "path": "skills/econ-data/scripts/research_markets.py",
+      "sha256": "792cf3958dd74767f8c931d861fe0c97f16bec9a5bd59ec6b26f8cbfc2bab1ed"
+    },
+    "specification": {
+      "path": "examples/research-workspace/models/blp-random-merger.json",
+      "sha256": "de5f204e3e7acc56f03eb16956114c6915cd2edeb03b5478b3d0745c485ad0cd"
+    },
+    "result": {
+      "path": "examples/research-workspace/models/blp-random-merger-result.json",
+      "sha256": "2ee59125761f52b0b2693d0fa975864bb199c68de6460fb9a1eeae0daea96fd9"
+    },
+    "requirements": {
+      "path": "skills/econ-data/scripts/requirements-markets.txt",
+      "sha256": "584f46abfb55edb865b3c64912e80880e80a3fd7c763560ec951d40bedc6ea2e"
+    },
+    "verification": {
+      "method": "Direct population-weighted sums and weighted official type-specific surplus compared with official market surplus; original pricing and share equations evaluated by the runner.",
+      "max_agent_to_market_surplus_error": 1.1102230246251565e-16,
+      "population_sum_relative_tolerance": 1e-12,
+      "population_sum_absolute_tolerance": 1e-09,
+      "share_max_abs_error": 9.71445146547012e-16,
+      "counterfactual_profit_gradient_max_abs": 5.2628040814184374e-14,
+      "counterfactual_profit_hessian_max_eigenvalue": -0.05418969386969193
+    },
+    "result_summary": {
+      "markets": 80,
+      "products": 320,
+      "potential_consumers": 140000,
+      "estimated_quality_taste_sd": 0.6265280088900336,
+      "total_consumer_surplus_change": -3081.435701372073,
+      "total_producer_surplus_change": 906.6881677798374,
+      "total_social_welfare_change": -2174.7475335922354
+    }
   }
 }
