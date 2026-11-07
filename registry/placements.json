@@ -121,11 +121,6 @@
       "deployment_path": ".agents/harness/state.py",
       "export_alias": "state.py"
     },
-    "capabilities-helper": {
-      "resource_id": "capabilities-helper",
-      "deployment_path": ".agents/harness/capabilities.py",
-      "export_alias": "capabilities.py"
-    },
     "project-instructions": {
       "resource_id": "project-instructions",
       "deployment_path": "docs/ai/project_instructions.txt",

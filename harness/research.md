@@ -148,21 +148,6 @@ For an observed project command or environment repair, select `operational_proce
 
 Optional `failure_run_id` selects an earlier actual run of the same adopted check command. Its `failure_observation` references `{run_id, reason, observed_output}` in the checked output; the observed text must occur in that earlier run's retained stdout or stderr. A zero exit retains its actual status when the observation identifies a wrong target or another unmet output condition. Capture preserves both original runs and their versions. `find` rechecks the successful producer and receipt. `prepare` requires the current target to track or consume the exact operational identity and specification, then binds the proposed procedure to its current authority and holds. Observations, proposed steps and adopted governing rules retain their existing separate authority.
 
-### Select a version-bound operational fact
-
-For recurring test-launch failures, the same [experience helper](experience.py) can assess explicitly supplied private Codex logs. Its deterministic adapter recognizes the bare `pytest -q` or `unittest -q` command missing with exit 127 and the corresponding successful `python -m` command, with actual pass counts. Exact pre/post environment, package and input checksum observations bind the pair. Keep the source logs, conditions and code inputs in the target task's current consumed/read inputs. Source paths and their content hashes identify the received evidence; `provided-host-log` retains `host_authenticated:false`.
-
-```sh
-python harness/experience.py --root . assess-host-logs --target TASK \
-  --conditions .agents/state/TASK/identity.json --family unittest \
-  --log .agents/state/TASK/session-a.jsonl --log .agents/state/TASK/session-b.jsonl \
-  --log .agents/state/TASK/session-c.jsonl --code code/test_module.py
-```
-
-Conditions use the operational identity above, including the actual Python/package versions and specification hash. Each received log must contain its actual session header, project working directory, turn/policy context and matched tool calls with terminal returns. Running processes and unsupported return encodings require reconciliation. Three distinct source sessions establish the initial eligibility threshold; four or more known opportunities require at least forty percent contribution. A contradictory successful bare command invalidates the fact. Input, specification, environment and authority versions govern subsequent application. `operational-candidates` displays candidates from the existing saved procedure records, including their typed failed-execution or unmet-semantic-output cause. An exit-zero call with a wrong target retains exit zero.
-
-`assess-host-logs --record` explicitly registers its sanitized assessment through the same task store. Automatic feedback uses the existing [task controls](state.md#optional-execution-controls-and-observed-usage). Its private plan contains `conditions`, `logs`, `code`, `family` and optional `current_log` paths. Configure that plan through `optimization ... --experience-plan`; the saved plan hash and current target inputs are checked before a matching pending command. The existing PreToolUse caller appends the selected fact after the mandatory reminder. A received current-session developer message containing the exact version-marked fact supplies repeat-delivery evidence. Constructed callback output retains prepared status until that evidence exists. Task controls, selected scientific specification and current permissions govern the subsequent operation.
-
 ## Bind claims equations and saved results
 
 The [evidence binder](research_evidence.py) checks an explicitly selected manuscript against source, result and producer identities:

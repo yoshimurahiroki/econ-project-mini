@@ -146,15 +146,8 @@
       "resource_kind": "support",
       "content_version": "0.55.0",
       "required_resources": [
-        "capabilities-helper",
         "local-checks"
       ]
-    },
-    "capabilities-helper": {
-      "resource_id": "capabilities-helper",
-      "source_path": "harness/capabilities.py",
-      "resource_kind": "support",
-      "content_version": "0.26.0"
     },
     "project-instructions": {
       "resource_id": "project-instructions",
@@ -2100,11 +2093,6 @@
       }
     },
     "team-state-helper": {
-      "all": {
-        "whole_resource": true
-      }
-    },
-    "capabilities-helper": {
       "all": {
         "whole_resource": true
       }
@@ -4348,14 +4336,6 @@
         "paragraph-engine.all",
         "native-check.all"
       ],
-      "conditional_requires": [],
-      "optional_examples": []
-    },
-    "capabilities-helper.all": {
-      "rule_id": "capabilities-helper.all",
-      "resource_id": "capabilities-helper",
-      "section_id": "all",
-      "requires": [],
       "conditional_requires": [],
       "optional_examples": []
     },
