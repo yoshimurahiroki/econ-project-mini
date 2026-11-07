@@ -31,7 +31,7 @@ GALLERY_KINDS = ('descriptive', 'sample_composition', 'distribution', 'time_seri
 PLOT_TYPES = ('table', 'bar', 'line', 'scatter', 'step', 'area', 'coefficient', 'event_study', 'density', 'ecdf', 'box',
               'att_gt', 'cohort_event', 'parallel_trends', 'rdd', 'iv_first_stage', 'iv_reduced_form',
               'iv_confidence_set', 'scm', 'scm_gap', 'scm_placebo', 'binned_scatter', 'smd', 'structural', 'geo')
-GALLERY_RENDER_VERSION = 9
+GALLERY_RENDER_VERSION = 10
 DISPLAY_FIELDS = {'title', 'column_order', 'column_labels', 'formats', 'row_order',
                   'sort_by', 'ascending', 'notes', 'plot_type', 'x', 'y', 'lower', 'upper',
                   'series', 'visible_series', 'selected_result_ids', 'x_label', 'y_label',
@@ -447,6 +447,7 @@ def saved_display_definitions(result_id, saved):
             else:
                 plot_type = kind if kind in PLOT_TYPES else 'line'
             if kind == 'att_gt' and 'cohort' in keys:
+                x = 'time' if 'time' in keys else x
                 y = 'cohort'
             elif kind == 'smd' and 'smd' in keys:
                 y = 'smd'
@@ -464,8 +465,9 @@ def saved_display_definitions(result_id, saved):
                 display['column_order'] = [key for key in keys if key in ('variable', 'group', 'period', 'mean', 'sd', 'median', 'min', 'max', 'n', 'unit') or key.startswith('q')]
                 display['height'] = max(300, min(1600, 160 + len(rows) * 34))
             if plot_type != 'table':
+                value_key = next((key for key in ('estimate', 'value') if key in keys), None) if kind in ('att_gt', 'geo') else y
                 for column in columns:
-                    if column['key'] == y:
+                    if column['key'] == value_key:
                         column['unit'] = metadata.get('unit', '')
                     if column['key'] == x and kind == 'distribution' and plot_type != 'box':
                         column['unit'] = metadata.get('outcome_unit', '')
@@ -476,7 +478,7 @@ def saved_display_definitions(result_id, saved):
                     if field in keys:
                         display[field] = field
                 if kind in ('att_gt', 'geo'):
-                    display['value'] = next((key for key in ('estimate', 'value') if key in keys), None)
+                    display['value'] = value_key
                 if plot_type in ('coefficient', 'smd'):
                     display['orientation'] = 'horizontal'
             if 'columns' in block:
@@ -1249,11 +1251,13 @@ def gallery_plot(item):
             gallery_plot_panel(axis, selected, display, metadata, panel_columns, family, font_size)
             if not display.get('y_label'):
                 axis.set_ylabel(textwrap.fill(axis.get_ylabel(), 24, break_long_words=False, break_on_hyphens=False))
-            axis.tick_params(labelsize=font_size)
             if facet:
                 axis.set_title(str(facets[index]), fontfamily=family, fontsize=font_size + 1)
-            for label in [*axis.get_xticklabels(), *axis.get_yticklabels(), axis.xaxis.label, axis.yaxis.label]:
-                label.set_fontfamily(family)
+    # Color bars create additional axes; apply the same scientific-label font.
+    for axis in figure.axes:
+        axis.tick_params(labelsize=font_size)
+        for label in [*axis.get_xticklabels(), *axis.get_yticklabels(), axis.xaxis.label, axis.yaxis.label]:
+            label.set_fontfamily(family)
     bottom = min(.5, (note_lines * 15 + 20) / height) if notes else .03
     if notes:
         figure.text(.06, .02, notes, fontsize=9, color='#425466', va='bottom', fontfamily=family)
