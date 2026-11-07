@@ -1,4 +1,4 @@
-# 公開経済学実装とERS 0.61.0の対応
+# 公開経済学実装とERSの対応
 
 本資料は、公開実装の関数・API・Skill本文を、ERSの既存所有箇所、採用した変更、実行結果に対応させる。固定リンクは比較に用いた版を指す。採用した変更は正本の既存ランナー、知識catalog、Writing、binderへ実装した。
 
@@ -24,7 +24,7 @@ DoubleMLの実行版は[0.11.4の固定commit](https://github.com/DoubleML/doubl
 | [QuantEcon `DiscreteDP.solve`](https://github.com/QuantEcon/QuantEcon.py/blob/d30c9000a96d7ae1d434bdecb4aa63d285a18599/quantecon/markov/ddp.py) | 報酬、遷移、割引から価値、政策添字、政策下のMarkov連鎖を返す。有限期間では終端価値が必要になる。 | 既存Aiyagari経路で公式の動学計画を使う。状態座標・行動値・政策・価値を既存結果へ保存する構造を保持した。 |
 | [dcegm `backward_induction.py`](https://github.com/OpenSourceEconomics/dcegm/blob/6914875e57f4fe3a6de50c2f3ddb9e56cba7f93c/src/dcegm/backward_induction.py) | 終端、状態間の依存、内生grid、上包絡線から離散・連続選択の価値と政策を計算する。 | ERSの`lifecycle_choice`はpylcmの`Model.solve`・`Model.simulate`への仕様引継ぎを返す。状態、期間、離散・連続選択のタイミングをこの既存入口に対応させ、今回の固定モデル契約ではHARKの実行接続を採用した。 |
 | [respy `get_solve_func`・`solve`](https://github.com/OpenSourceEconomics/respy/blob/91e8a193fb7d5cf7212c15e50ae43f810bb9b1eb/respy/solve.py) | 採用状態空間、報酬、遷移、ショックから後ろ向きに期待価値を求める。 | `finite_horizon_choice`はrespyの公式criterion・simulation入口と必要引数を返す。既存の仕様引継ぎを保持し、ERS内の動学runnerから固定模擬panel・case生成を削除した。 |
-| [PyBLP `Problem.solve`](https://github.com/jeffgortmaker/pyblp/blob/16536807004b16c24fb40b931531b45b33884e00/pyblp/economies/problem.py) | 需要・供給のmoment、instrument、重み、最適化から構造parametersと推論を得る。反実仮想は変更後の所有・費用で均衡を解く。 | 既存の推定・価格・数量・利益・余剰の経路を保持した。Writingにprimitive→均衡→観測写像→推定→変更後均衡→厚生の依存を明記した。 |
+| [PyBLP `Problem.solve`](https://github.com/jeffgortmaker/pyblp/blob/16536807004b16c24fb40b931531b45b33884e00/pyblp/economies/problem.py)、[`ProblemResults.to_pickle`](https://github.com/jeffgortmaker/pyblp/blob/16536807004b16c24fb40b931531b45b33884e00/pyblp/results/problem_results.py) | 需要・供給のmoment、instrument、重み、最適化から構造parametersと推論を得る。native fitは積分点・重み・推定パラメータを保持し、変更後の所有・費用で均衡を解く。 | 0.61.0では別の反実仮想を実行するたびに`Problem.solve`を呼んでいた。既存market runnerの結果JSONに公式fitを保存し、`counterfactual`入口から再利用する経路を加えた。入力の版とfitのhashを対応させ、同じパラメータ・消費者分布から価格・数量・利益・余剰・共通displayを返す。 |
 
 ### 既存モデル契約の実行接続
 
@@ -81,3 +81,5 @@ DoubleMLの公開401(k)データ9915世帯を、固定標本・foldで公式推�
 五つのモデルはselectorが返した仕様を既存CLIへ渡し、数値と共通JSON保存を確認した。Binary Logitの解析Jacobian、Cournotの線形需要均衡、SIRの感染流入ゼロの解析経路、M/M/1の時間・人数関係、意思決定権配分の均衡式と比較した。HARKの完全予見二期間モデルは公式`solve()`から政策・価値・scenario・simulationを保存し、CRRA解析式との最大差は7.77×10⁻¹⁶だった。
 
 Writingの段落host経路は実装と保存形式を更新した。実行記録は、公開データから得た推定結果の登録・選択・本文render・binderについて保存した。数値比較は各計算の正しさと接続を、binderは指定箇所の出典・数値・仕様の対応を確認する。
+
+PyBLP 1.3.0の[Nevo製品データ](https://github.com/jeffgortmaker/pyblp/blob/16536807004b16c24fb40b931531b45b33884e00/pyblp/data/nevo_products.csv)2256観測・94市場でfit保存と再利用を実行した。線形効用は`1 + prices + sugar + mushy`、random coefficientは定数項に固定標準偏差0.2、Monte Carlo積分は15点・seed 726、GMMは一段階とした。企業1と2の合併を、回収した限界費用を保持して計算した。再利用中の`Problem.solve`呼出しは0回で、価格・シェア・利潤・消費者余剰は保存fitの公式result methodsによる別計算と最大1.39×10⁻¹⁶の差だった。利潤勾配の最大絶対値は8.96×10⁻¹⁴で、元の推定結果、パラメータ、積分typeの基準余剰・重みを保持した。
