@@ -84,4 +84,6 @@ DoubleMLの公開401(k)データ9915世帯を、固定標本・foldで公式推�
 
 Writingの段落host経路は実装と保存形式を更新した。実行記録は、公開データから得た推定結果の登録・選択・本文render・binderについて保存した。数値比較は各計算の正しさと接続を、binderは指定箇所の出典・数値・仕様の対応を確認する。
 
+401(k)の保存結果を追跡すると、表示用の`inference: {type: official}`が実行済みの推論全体を上書きしていた。`research_artifacts.py`の登録・表示選択で、同じ区間族・水準の公式推論を保持するよう修正した。再登録した9915世帯の結果は、registry・selection・Writingの結果定義・表示定義へnormal参照、公式score分散、点別95%区間、反復間集約を渡した。数値・表示行・母集団・標本・米ドル単位・期間は元の保存結果と一致し、既存2段落原稿のbinderは`bound`を返した。推定を実行せず、対応する保存済み端点を持たない水準・区間族への表示変更を拒否した。
+
 PyBLP 1.3.0の[Nevo製品データ](https://github.com/jeffgortmaker/pyblp/blob/16536807004b16c24fb40b931531b45b33884e00/pyblp/data/nevo_products.csv)2256観測・94市場でfit保存と再利用を実行した。線形効用は`1 + prices + sugar + mushy`、random coefficientは定数項に固定標準偏差0.2、Monte Carlo積分は15点・seed 726、GMMは一段階とした。企業1と2の合併を、回収した限界費用を保持して計算した。再利用中の`Problem.solve`呼出しは0回で、価格・シェア・利潤・消費者余剰は保存fitの公式result methodsによる別計算と最大1.39×10⁻¹⁶の差だった。利潤勾配の最大絶対値は8.96×10⁻¹⁴で、元の推定結果、パラメータ、積分typeの基準余剰・重みを保持した。
