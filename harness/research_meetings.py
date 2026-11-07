@@ -371,6 +371,12 @@ def artifact_notes(entry, *, output_format="html"):
             value = definition.get(key)
             if value is None or value == "" or (identity and value == metadata.get(key)):
                 continue
+            if key == "inference" and isinstance(value, dict):
+                # Saved endpoints and test statistics belong to the exhibit's
+                # cells. Its caption retains the method and defining settings.
+                value = {name: item for name, item in value.items()
+                         if not name.startswith(("confidence_interval", "confidence_set", "p_value", "pvalue", "critical_value"))
+                         and name not in {"statistic", "test_statistic"}}
             if isinstance(value, dict):
                 value = ", ".join(str(name) + ": " + str(item) for name, item in value.items() if item not in (None, "", []))
             elif isinstance(value, list):
@@ -458,8 +464,8 @@ def exhibit_markdown(entry, output_format="html", *, slides=False, caption=""):
         caption = entry.get("title", "")
         if output_format == "pdf" and notes:
             caption += ". " + notes
-        size = " height=2in" if output_format == "pdf" and slides else ""
-        content = "![" + caption.replace("]", "\\]") + "](" + image + "){fig-alt=" + json.dumps(entry.get("title", ""), ensure_ascii=False) + size + "}"
+        size = (" height=1.5in" if len(caption) > 500 else " height=2in") if output_format == "pdf" and slides else ""
+        content = "![" + caption.replace("[", "\\[").replace("]", "\\]") + "](" + image + "){fig-alt=" + json.dumps(entry.get("title", ""), ensure_ascii=False) + size + "}"
         if output_format == "pdf":
             return content
     else:

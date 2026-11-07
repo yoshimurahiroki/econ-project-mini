@@ -1451,7 +1451,7 @@ def latex_adapter(source, kind):
     common=('$if(bibliography)$$else$\\let\\econbibstyle\\bibliographystyle\n'
             '\\renewcommand{\\bibliographystyle}[1]{}\n$endif$'
             '$common.latex()$\n$if(bibliography)$$else$\\let\\bibliographystyle\\econbibstyle\n$endif$'
-            '$if(standalone-renderer)$\n$for(header-includes)$\n$header-includes$\n$endfor$\n$endif$\n')
+            '$for(header-includes)$\n$header-includes$\n$endfor$\n')
     if kind=='paper':
         common += '\\AtBeginEnvironment{longtable}{\\def\\_{\\textunderscore\\allowbreak}}\n'
         source=replace_once(source,'\\documentclass[ecta,nameyear,draft]{econsocart}', '\\RequirePackage{fontspec}\n\\def\\econselectedclass{$documentclass$}\n\\def\\econjournalclass{econsocart}\n\\ifx\\econselectedclass\\econjournalclass\n\\documentclass[ecta,nameyear,draft]{econsocart}\n\\else\n\\documentclass[$for(classoption)$$classoption$$sep$,$endfor$]{$documentclass$}\n\\fi')
