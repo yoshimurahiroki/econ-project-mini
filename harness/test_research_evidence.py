@@ -386,6 +386,67 @@ class EvidenceTests(unittest.TestCase):
                 self.assertEqual([row['cells'][index] for row in table['presentation']['body']],
                                  expected['a' if model == 'main' else 'b'])
 
+    def test_artifact_definitions_preserve_saved_text_and_numeric_spans(self):
+        comparison = '地区Aと地区B、2024–2025年。文字列 {{stat:effect}} を保持。'
+        equation = r'c_t + k_{t+1} = (1-\tau_t)k_t^\alpha + (1-\delta)k_t'
+        saved = {'statistics': {'effect': {'value': 1.249, 'unit': 'hours'}},
+                 'adopted': {'comparison': comparison, 'equations': {'resource': equation}},
+                 'provenance': {'producer_sha256': self.ref('code.py')['sha256']}}
+        self.write('saved.json', json.dumps(saved, ensure_ascii=False))
+        source_bytes = (self.root / 'saved.json').read_bytes()
+        templates = {
+            'article': '{{definition:comparison}}\n{{stat:effect}}\n{{definition:equation}}\n{{stat:effect}}',
+            'slides': '{{definition:equation}}\n{{stat:effect}}\n{{definition:comparison}}\n{{stat:effect}}'}
+        for name, text in templates.items():
+            self.write(name + '.qmd', text)
+        spec = {'pipeline': 'saved-definitions',
+                'sources': [{'id': 'fit', 'result': 'saved.json', 'code': 'code.py'}],
+                'bindings': {'effect': {'key': 'fit.effect', 'unit': 'hours', 'format': '.2f',
+                                        'display_unit': '時間', 'label': 'Effect'}},
+                'definitions': {
+                    'comparison': {'key': ['items', 'fit-statistics', 'metadata',
+                                           'result_definitions', 'fit', 'comparison']},
+                    'equation': {'key': ['records', 'fit', 'source_result', 'adopted',
+                                        'equations', 'resource']}},
+                'article_template': 'article.qmd', 'slides_template': 'slides.qmd', 'figure': ['effect']}
+        self.write('artifacts.json', json.dumps(spec))
+        common = ['--root', str(self.root), '--spec', str(self.root / 'artifacts.json')]
+        registry_path = self.root / 'registry.json'
+        self.assertEqual(artifacts.main(['normalize', *common, '--output', str(registry_path)]), 0)
+        registry_bytes = registry_path.read_bytes()
+        for name in templates:
+            manuscript = self.root / (name + '-rendered.qmd')
+            trace = self.root / (name + '-trace.json')
+            self.assertEqual(artifacts.main([
+                'render', *common, '--registry', str(registry_path),
+                '--template', str(self.root / (name + '.qmd')),
+                '--output', str(manuscript), '--trace', str(trace)]), 0)
+            text = manuscript.read_text(encoding='utf-8')
+            self.assertIn(comparison, text)
+            self.assertIn(equation, text)
+            self.assertEqual(text.count('1.25 時間'), 2)
+            self.assertEqual(text.count('{{stat:effect}}'), 1)
+            captures = artifacts.load(trace)
+            self.assertEqual(len(captures), 2)
+            for capture in captures:
+                for key in ('target', 'unit_target'):
+                    span = capture[key]
+                    self.assertEqual(text[span['start']:span['end']], span['quote'])
+            contract = artifacts.make_contract(self.root, spec, registry_path, manuscript, captures)
+            self.assertEqual(evidence.bind(contract, self.root)['status'], 'verified')
+        self.assertEqual(registry_path.read_bytes(), registry_bytes)
+        self.assertEqual((self.root / 'saved.json').read_bytes(), source_bytes)
+
+        invalid = copy.deepcopy(spec)
+        invalid['definitions'].pop('comparison')
+        with self.assertRaisesRegex(ValueError, 'unknown definition binding'):
+            artifacts.validate_spec(self.root, invalid)
+        registry = artifacts.load(registry_path)
+        for value in (' ', {'period': '2024'}, 2024):
+            registry['records']['fit']['source_result']['adopted']['equations']['resource'] = value
+            with self.assertRaisesRegex(ValueError, 'saved nonempty text'):
+                artifacts.render(self.root, spec, registry, 'article.qmd', None, None)
+
 
 class EvidenceReviewTests(unittest.TestCase):
     def setUp(self):
