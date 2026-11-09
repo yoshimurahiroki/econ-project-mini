@@ -10,9 +10,7 @@ The common source is synchronized to explicitly selected public or private desti
 
 `econ-writing` owns `compose`, `revise`, `explain`, `translate`, `convert`, `guidance` and explicitly requested `profile` work. Japanese clarity and concision requests reach `econ-writing` directly. The historical `explain-before-shorten` selector resolves to `econ-writing:revise`; the independent skill is retired.
 
-Each operation reads CORE, PROSE and the complete selected mode and dependency text. CORE owns substantive reasoning, authorized execution, one integrated review and checks of affected behavior. PROSE owns direct argument, natural Japanese and English, and removal of defensive rhetoric. The writing skill completes the explanation before shortening it. The data skill owns minimal implementation and verification of the behavior changed by code.
-
-The existing native harness supplies independent review, paragraph and argument state, source bindings and certified publication when that workflow is explicitly selected. Its recorded reviewer identities and release predicates stay within that selected workflow. Ordinary operations complete through CORE and their own result contracts.
+[CORE](../../runtime/CORE.md) owns entry, authority and completion; [PROSE](../../runtime/PROSE.md) owns expression, and specialist Skills own their procedures. [TEAM](../../runtime/TEAM.md#review-findings-and-independence) owns explicitly selected independent review. The [state interface](../../harness/state.md) retains source bindings and paragraph/argument state when the selected workflow needs them. The separately selected Checked Artifacts service owns its validation and publication operations.
 
 ## Synchronize repositories
 
@@ -40,7 +38,7 @@ For an incremental account update, retain the complete candidate archive and fil
 
 After saving, match the returned release and resulting inventory to the candidate and confirm every requested deletion. Read back the changed entry points, their affected rule or implementation bodies, and the provider-generated compatibility manifest. Reuse the exporter's completed reference and rule-body resolution for unchanged dependencies. Compare the effective App bindings and prompts with the retrieved baseline. Keep the candidate, baseline identity and actual update return in the existing publication record.
 
-The `project-work` package exposes the single shared tree through its Skill reader and bundle. Read `references/shared/runtime/CORE.md`, `references/shared/runtime/PROSE.md`, `references/shared/registry/operations.json` and the selected specialist's complete body and activated dependencies from that package. The selected specialist and mode retain ownership within `references/shared/skills/<owner>/`. The policy manifest binds paths relative to this shared runtime root. Subsequent releases start from the canonical GitHub source and preserve the account-owned metadata through the same overlay.
+The `project-work` package exposes the shared tree through its Skill reader and bundle under CORE's task-entry protocol. The selected specialist and mode retain ownership within `references/shared/skills/<owner>/`; the policy manifest binds paths relative to this runtime root. Subsequent releases use the canonical source and the same account-metadata overlay.
 
 ## Data and authentication ownership
 

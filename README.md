@@ -11,7 +11,7 @@ git clone https://github.com/yoshimurahiroki/econ-project-mini.git
 cd econ-project-mini
 ```
 
-コーディングエージェントの作業場所をこのフォルダーにし、[AGENTS.md](AGENTS.md)と[操作一覧](docs/ai/compiled_ai_skills.md)を入口にする。依頼には、研究上の問い、対象データ・資料、欲しい成果物、変更する範囲を添える。エージェントは担当Skillとモードを選び、[CORE](runtime/CORE.md)、[PROSE](runtime/PROSE.md)、必要な専門資料を読む。
+コーディングエージェントの作業場所をこのフォルダーにし、[AGENTS.md](AGENTS.md)を入口にする。依頼には、研究上の問い、対象データ・資料、欲しい成果物、変更する範囲を添える。操作が決まっている場合はその担当Skillとモードへ進み、担当を探す場合は[操作一覧](docs/ai/compiled_ai_skills.md)を使う。必要な本文の取得と実行・完了の共通規則は[CORE](runtime/CORE.md)、表現は[PROSE](runtime/PROSE.md)にある。
 
 | Skill | 担当する作業 |
 | --- | --- |
