@@ -4,6 +4,10 @@
 
 ## Current research and reading path
 
+Six layers share one route: common obligations in CORE and PROSE's common-output/language sections; operation ownership in the seven Skills; method definitions and scientific procedures in their references and knowledge contracts; pending-stage reading in the registry; environment-specific authority and recovery in EXECUTION, TEAM and existing host/state adapters; optional examples, templates and manuals at their supporting owners. Operation, method, stage, output and environment are independent dimensions. A known case goes directly to its complete bodies; no cross-product of new operations is created.
+
+Design/model-construction dependencies require consequential problem formulation. Scientific-result dependencies require targeted interpretation. A new research question receives the additional reconsideration; an adopted calculation preserves its specification. Proofreading follows its source and writing mode. The exact request and inspected inputs determine these cases; cost or a self-declared simple label cannot remove mandatory work.
+
 [CORE](../../runtime/CORE.md#task-entry) owns operation entry and required reading, [EXECUTION](../../runtime/EXECUTION.md) owns implementation and returned operations, and [CORE's completion contract](../../runtime/CORE.md#completion-and-reporting) owns the integrated review and delivery. Use the commands below to retrieve the selected bodies; a known operation goes directly to `read`.
 
 Saved-result registration and display edits select `research_result_artifacts`. A calculation selects its corresponding method condition, scientific model reference and estimator/engine rule. The registry's rule dependencies govern required reading; executable-resource dependencies package the selected gallery, renderer, runners and requirements. Retrieve implementation bodies through EXECUTION when changing their behavior.
@@ -14,7 +18,7 @@ Knowledge lookup applies the complete econ-knowledge instructions and reads the 
 
 `project-work:clarify` resolves requested task requirements and work-approach choices; `project-work:prompt` creates or improves the resulting executable prompt. Both use the existing task sources, CORE, PROSE, TEAM and state requirements mapping when needed. Settled inputs go directly to the requested output. An ordinary research, writing or implementation request keeps its actual specialist and execution responsibility.
 
-The [state interface](../../harness/state.md#governing-context) owns optional operation binding, task state, callback evidence, interactive sessions and compaction recovery. Its policy assembler resolves applicable resources at binding and restoration; a changed governing source requires reconciliation. Oversized callback text remains in the private task area's saved JSON `text` field, identified by its locator and `content_sha256`. Retrieve it under CORE's complete-reading contract.
+The [state interface](../../harness/state.md#governing-context) owns optional operation binding, task state, callback evidence, interactive sessions and compaction recovery. Its policy assembler resolves applicable resources at binding and restoration; complete bodies observed in successful native tool returns can be reused in the same intact root context, while unobserved bodies and new contexts receive their complete text. Other hosts without that callback evidence retain full delivery. No host infers semantic reading from a locator or hash; pending-stage navigation preserves the adopted scientific prerequisites, so skipping a stage cannot waive them; a changed governing source requires reconciliation. Oversized callback text remains in the private task area's saved JSON `text` field, identified by its locator and `content_sha256`. Retrieve it under CORE's complete-reading contract.
 
 ## Select complete rule bodies
 
