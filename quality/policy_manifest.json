@@ -63,7 +63,7 @@
     },
     "registry_resources": {
       "path": "registry/resources.json",
-      "sha256": "726d751cac9bc272d19bacb8d9681ed5d04b226ea19700ace441fd6e399067da"
+      "sha256": "823c632434eccfb3d1d8d4654f07f0db31d29cd80f9696fdb59a2a08e2efd4eb"
     },
     "requirements_check": {
       "path": "harness/requirements_check.py",
@@ -459,7 +459,7 @@
     },
     "resource:plugin-integration-guide": {
       "path": "docs/ai/plugin-integration.md",
-      "sha256": "3ddc8bb704aefbef749973d0ba6aae57263ee086af38af2ea07049dd1f3534d0"
+      "sha256": "5ea1dc8fffdbada8da02627fdeda67067a3c5e4ca4d225150cd74933197f2e42"
     },
     "resource:policy-agents-agentsmd": {
       "path": "references/repository-policy/.agents/AGENTS.md",

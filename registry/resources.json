@@ -193,7 +193,7 @@
       "resource_id": "tool-export-project-py",
       "source_path": "scripts/export_project.py",
       "resource_kind": "support",
-      "content_version": "0.81.0",
+      "content_version": "0.84.0",
       "source_distribution_only": true
     },
     "tool-route-registry-py": {
