@@ -1,0 +1,11 @@
+[project]
+name = "econ-project"
+r_version = "4.5"
+
+# Pixi owns R, IRkernel, Quarto/R Markdown, TinyTeX and editor infrastructure.
+# Add only the adopted research's R packages here; rv resolves their versions.
+repositories = [
+  { alias = "CRAN", url = "https://cran.r-project.org/" },
+]
+
+dependencies = []
