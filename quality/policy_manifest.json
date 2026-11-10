@@ -563,7 +563,7 @@
     },
     "resource:research-artifacts": {
       "path": "harness/research_artifacts.py",
-      "sha256": "a3cb14dc1ed8f2931a387bad41ee2b221fb6473462ee286a04552833223e1e26"
+      "sha256": "3d11144ee59acaf87701e61bf927f5f430d8676817b7d496896a130e542aba8f"
     },
     "resource:research-causal": {
       "path": "skills/econ-data/scripts/research_causal.py",
@@ -699,7 +699,7 @@
     },
     "resource:result-artifacts": {
       "path": "skills/econ-writing/references/result-artifacts.md",
-      "sha256": "dd12f2d313e84f389e0cd48e562a40b028be6a55379ccd79db7cd096cd41a844"
+      "sha256": "178c35e7cd18efcd822bb695b1d060058edd1bcdf5e391df1a1a6058b3d94e93"
     },
     "resource:review-methods": {
       "path": "skills/econ-review/references/oversight.md",
