@@ -171,7 +171,7 @@
     "tool-route-registry-py": {
       "source_path": "scripts/route_registry.py",
       "resource_kind": "support",
-      "content_version": "0.95.0"
+      "content_version": "0.95.1"
     },
     "tool-sync-common-core-py": {
       "source_path": "scripts/sync_common_core.py",
@@ -4855,10 +4855,6 @@
       "resource_id": "default-micro",
       "section_id": "principles"
     },
-    "default-micro.select-the-passage-function": {
-      "resource_id": "default-micro",
-      "section_id": "select-the-passage-function"
-    },
     "examples-en.all": {
       "resource_id": "examples-en",
       "section_id": "all"
@@ -7471,6 +7467,10 @@
     "state-contract.project-allocation-interface": {
       "resource_id": "state-contract",
       "section_id": "project-allocation-interface"
+    },
+    "default-micro.select-the-passage-function": {
+      "resource_id": "default-micro",
+      "section_id": "select-the-passage-function"
     }
   },
   "examples": {
@@ -7843,7 +7843,7 @@
         "all"
       ],
       "default-micro": [
-        "principles"
+        "all"
       ],
       "data-implementation": [
         "select-the-operation-specific-rules",
@@ -8390,7 +8390,7 @@
         "all"
       ],
       "default-micro": [
-        "principles"
+        "all"
       ]
     },
     "finalize": {

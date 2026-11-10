@@ -245,6 +245,7 @@ def _resolve_selection(assets, operation, conditions=(), profile=None, templates
         input_rules.extend(_string_ids(declared, 'adopted input required_rules'))
         input_rules.extend(rule_id for rule_id, rule in routes['rules'].items()
                            if rule['resource_id'] == rid
+                           and (rid in templates or rid not in resolved['resource_sections'])
                            and routes['sections'][rid][rule['section_id']].get('whole_resource'))
     input_active, input_sections = resolver.required_closure(
         routes, input_rules, conditions, resolved['canonical_operation'])
@@ -253,8 +254,10 @@ def _resolve_selection(assets, operation, conditions=(), profile=None, templates
     selection = {rid: ({'whole_resource': True} if value.get('whole_resource') else
                        {'sections': sorted(set(value.get('sections', [])))})
                  for rid, value in selection.items()}
-    for rid in [resolved['owner_skill'], *adopted_inputs]:
+    for rid in [resolved['owner_skill'], *templates]:
         selection[rid] = {'whole_resource': True}
+    if selected_profile and selected_profile not in selection:
+        selection[selected_profile] = {'whole_resource': True}
     required = set(RUN_PATHS)
     for rid in selection:
         if rid not in records:
