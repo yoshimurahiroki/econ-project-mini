@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "policy_id": "economics-native-0.95.9",
+  "policy_id": "economics-native-0.95.10",
   "profile": {
     "id": "research-full"
   },
@@ -11,7 +11,7 @@
     },
     "codex_hooks": {
       "path": "harness/codex_hooks.py",
-      "sha256": "26406c9a60fed26e60b378bea3efcb3aa932108d5057ca6fc56c6e49bc9bb17a"
+      "sha256": "dc391f96a7a1ae37abe70e08dbdd0b728791732592932ee7eaa66009e65d5117"
     },
     "core": {
       "path": "runtime/CORE.md",
@@ -43,7 +43,7 @@
     },
     "policy_assets": {
       "path": "harness/policy_assets.py",
-      "sha256": "3ade639c39d57d7926a20359a75b95f83349b823b2462977e0049ab040acb1d4"
+      "sha256": "23fc89f9ad0da95ace482b10f2b07dccb692e3a30af2992bf9d6860d020b3518"
     },
     "prose": {
       "path": "runtime/PROSE.md",
@@ -51,7 +51,7 @@
     },
     "prose_guide": {
       "path": "quality/prose_rules.md",
-      "sha256": "d7e836f3c6d7f9b89b6a419db6888e492a5114e2c4b43429afb66b212fad8164"
+      "sha256": "f16d6663ec7f2727783673b838d9294f9c0b0f02bb3d00e4f005262c4219daa6"
     },
     "registry_operations": {
       "path": "registry/operations.json",
@@ -91,7 +91,7 @@
     },
     "resource:config-template-readme-md": {
       "path": "docs/ai/config-templates/README.md",
-      "sha256": "1ea790096bb1144dd7a139e04f715e22d7d326998cd36f75484f3aacf320ad2a"
+      "sha256": "5f17b2bdfc78780410d1e67fd9239adacc3df07072c7632da382b89a42837057"
     },
     "resource:data-descriptive": {
       "path": "skills/econ-data/references/implementation-descriptive.md",
@@ -719,7 +719,7 @@
     },
     "resource:state-contract": {
       "path": "harness/state.md",
-      "sha256": "11f93480c322718f2e00d954da045748302c8dfd9ab8f1e058ee79f323884a92"
+      "sha256": "c8b86aa0fc8016dca940ec1ca58be8f0909e39fdaa4c7e3f2d4928a759ddc1d3"
     },
     "resource:tool-pack-context-sh": {
       "path": "scripts/pack_context.sh",
