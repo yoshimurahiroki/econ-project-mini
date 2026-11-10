@@ -4,6 +4,8 @@
 
 ## Current research and reading path
 
+Responsibilities: CORE owns scope, reading and completion; [PROSE](../../runtime/PROSE.md) expression; [DECIDE](../../runtime/DECIDE.md) economic decisions; [TEAM](../../runtime/TEAM.md) delegation and resumption; [EXECUTION](../../runtime/EXECUTION.md) files and operations. Skills own specialist procedures; knowledge units own definitions, equations and model conditions. Registries select their canonical bodies.
+
 CORE owns scope/reading/completion; PROSE owns expression; DECIDE owns economic judgments; TEAM owns delegation/recovery; EXECUTION owns files and operations. Seven Skills select specialist work, method references and knowledge supply scientific bodies, and the existing registries select their applicable stage/case. Examples and administration stay optional.
 
 Design dependencies require applied formulation; consequential result dependencies require interpretation. Their existing saved records bind application to source versions. Ordinary research uses the selected specialist; this document is for integration and distribution.
@@ -130,6 +132,8 @@ Installed-layout export consumes the same deployment mappings and complete regis
 The shared source repositories retain canonical files only. An explicitly selected research destination can install a generated `.agents` tree. The source policy uses `quality/policy_manifest.json`; the deployed policy uses its registered `.agents/quality/policy_manifest.json` with repository-root deployment paths. Discovery matches the actual policy module against the installed placement before treating the nested registry as a source root. Each layout binds its own resources and policy manifest; a changed resource invalidates the corresponding manifest. Deployment adoption preserves canonical root documents and binds the actual adopted bytes through the deployed manifest and source snapshot.
 
 ## Distribution contract
+
+For instruction maintenance, edit canonical owners and regenerate affected consumers once.
 
 Read this section only for requested export, installation, synchronization or configuration work. The [operation registry](../../registry/operations.json) defines modes and conditional rule selection, the [resource registry](../../registry/resources.json) defines logical resource IDs and rule dependencies, and the [placement registry](../../registry/placements.json) defines physical locations and export aliases. Use the registered resource IDs and the selected layout when exporting or synchronizing. Read the relevant command section and its supported options. Compare common inputs at batch boundaries and each destination immediately before writing; do not reread every unchanged input for each target.
 
