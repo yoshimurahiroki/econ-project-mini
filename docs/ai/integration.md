@@ -6,15 +6,15 @@
 
 Responsibilities: CORE owns scope, reading and completion; [PROSE](../../runtime/PROSE.md) expression; [DECIDE](../../runtime/DECIDE.md) economic decisions; [TEAM](../../runtime/TEAM.md) delegation and resumption; [EXECUTION](../../runtime/EXECUTION.md) files and operations. Skills own specialist procedures; knowledge units own definitions, equations and model conditions. Registries select their canonical bodies.
 
-CORE owns scope/reading/completion; PROSE owns expression; DECIDE owns economic judgments; TEAM owns delegation/recovery; EXECUTION owns files and operations. Seven Skills select specialist work, method references and knowledge supply scientific bodies, and the existing registries select their applicable stage/case. Examples and administration stay optional.
+Seven Skills select specialist work, method references and knowledge supply scientific bodies, and the existing registries select their applicable stage/case. Examples and administration stay optional.
 
 Design dependencies require applied formulation; consequential result dependencies require interpretation. Their existing saved records bind application to source versions. Ordinary research uses the selected specialist; this document is for integration and distribution.
 
 ## Select complete rule bodies
 
-CORE owns the read command and pagination. `reading_stages` selects explicit sections within the adopted case closure; `all` expands only adopted sections. Operation reads default to entry, while direct rule-ID reads return their complete dependencies. Returned current `required_rules` and total `adopted_required_rules` keep stage navigation separate from adoption. Registries validate locators and stage declarations.
+CORE owns complete-body reading and reuse; [ROUTING](../../runtime/ROUTING.md) owns the read command and pagination. `reading_stages` selects explicit sections within the adopted case closure; `all` expands only adopted sections. Operation reads default to entry, while direct rule-ID reads return their complete dependencies. Returned current `required_rules` and total `adopted_required_rules` keep stage navigation separate from adoption. Registries validate locators and stage declarations.
 
-Known operations go directly to their pending stage. Use the operation/resource index only for an unresolved condition or method. Family-wide cases retain their complete references; identified methods select individual bodies. GitHub project operations select `project_github_operations`; ordinary project management omits its external binding/update manual.
+Known operations go directly to their pending stage with `--format compact`. Reuse only complete same-version bodies still in context via `--seen BODY_SHA256`; the response names every reused section and still resolves all prerequisites. After context loss restore originals without seen arguments. Use the operation/resource index only for an unresolved condition or method; operation indexes show purpose/family choices and accept `--family` or `--query`. Family-wide cases retain their complete references; identified methods select individual bodies. GitHub project operations select `project_github_operations`; ordinary project management omits its external binding/update manual.
 
 A deployed snapshot retains registries, reader and selected bodies; `--layout installed` resolves it for reading/re-export. Expand incomplete snapshots from canonical source. Distribution selects `distribution_sync`, `distribution_plugin` or `distribution_snapshot` for its actual destination.
 
@@ -24,7 +24,7 @@ Native callbacks reuse complete matching bodies observed in the intact context; 
 
 The authored catalog/chapters own content. `knowledge.py build` generates units, indexes, semantic views and manifest once after source edits; export/sync consume that saved generation. The [knowledge retrieval owner](../../skills/econ-knowledge/references/retrieval.md) defines search, prerequisite bodies, model bindings, task cache and external-source acquisition.
 
-Runtime projections retain manifest, closure and body identities, packaging the collection once under econ-knowledge. Specialist Skills keep scientific execution. Administrative manifests establish identity without requiring their full text in the working context.
+Runtime projections retain manifest, closure and body identities. The knowledge Skill owns retrieval; plugin collections live once at runtime-root `knowledge/references`, outside Skill directories. Native readers and the complete execution bundle retain all bodies and dependency indexes; executor-free cloud reads follow the installed entrance's pinned Git references. Specialist Skills keep scientific execution. Administrative manifests establish identity without requiring their full text in the working context.
 
 ## Supplied document defaults
 
@@ -139,7 +139,7 @@ Read this section only for requested export, installation, synchronization or co
 
 For an operation export, select CORE, the final operation and its activated support/resources. Include only sections needed by those operations. Short prose does not activate whole-paper instructions. Resolve every active mandatory reference inside a standalone package. An omitted optional capability becomes an additional input if later needed; do not turn it into an automatic remote-repository fetch. Resolve resource paths through the declared placement and export aliases. Check required files, references, unique output names and requested size limits before producing the complete package in a new destination.
 
-A plugin export uses `--format plugin`: native execution retains the canonical root, specialist resources remain in their own Skill, and project-work exposes common reading views plus one compressed cloud execution runtime. Entrances point directly to each owner's `instructions.md`; known resources need no intermediate main-entry/catalog read. Repository source retains its canonical layout. [Plugin publication](plugin-integration.md#publish-the-plugin) owns the complete package layout, account overlay and update procedure; CORE owns reading and bundle acquisition on a Skill-scoped host.
+A plugin export uses `--format plugin`: native execution retains the runtime root, specialist resources remain in their own Skill, the knowledge collection is outside Skill directories, and project-work exposes common reading views plus one compressed cloud execution runtime. Entrances point directly to each owner's `instructions.md`; known resources need no intermediate main-entry/catalog read. Repository source retains its canonical layout. [Plugin publication](plugin-integration.md#publish-the-plugin) owns the complete package layout, account overlay and update procedure; CORE owns reading and bundle acquisition on a Skill-scoped host.
 
 The configuration interface defaults to a diff, changes only explicitly selected clients or adopted project targets, and rejects unknown arguments or incompatible modes before writing. Read every selected destination and required input, then assemble all intended changes. Include devcontainer only when selected. Resolve relative paths from the command's declared project root.
 
