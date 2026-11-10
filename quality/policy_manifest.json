@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "policy_id": "economics-native-0.95.5",
+  "policy_id": "economics-native-0.95.6",
   "profile": {
     "id": "research-full"
   },
@@ -11,7 +11,7 @@
     },
     "codex_hooks": {
       "path": "harness/codex_hooks.py",
-      "sha256": "ee18b21c0f3d3decd5db36dc7a4e9c74ea7fc800eb145d85653f5e0eaa21022e"
+      "sha256": "66806054ed7c5b1d7da812978111699c48c966d71aa08d4c298f91ff1fb9810f"
     },
     "core": {
       "path": "runtime/CORE.md",
@@ -43,7 +43,7 @@
     },
     "policy_assets": {
       "path": "harness/policy_assets.py",
-      "sha256": "164a619abcad6f29c540fcb4fc0645c284efb0e0a3001a1f8f1f1c1d27d557ac"
+      "sha256": "1d7e20a4e2fffcaca23e962e69923703d8070da14a32b44a393df0a22d004b0c"
     },
     "prose": {
       "path": "runtime/PROSE.md",
@@ -91,7 +91,7 @@
     },
     "resource:config-template-readme-md": {
       "path": "docs/ai/config-templates/README.md",
-      "sha256": "ac365da3c095c526e18796c03d52a25bb359df78c28bc97c7a655b27a900024c"
+      "sha256": "8f8a438b2bec74799a6b9ed196b3b4147135d3195ad9b92d67cb9891a858c129"
     },
     "resource:data-descriptive": {
       "path": "skills/econ-data/references/implementation-descriptive.md",
