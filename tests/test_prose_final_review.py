@@ -25,11 +25,13 @@ with hook_tempdir() as directory:
         (directory / 'turns' / (gate.sha(turn.encode()) + '.json')).write_text(
             json.dumps({'task_id': 'test'}), encoding='utf-8')
     original = 'This is not an absent count. The value is 12.'
-    revised = 'The observed count is zero; 12 observations remain. Exclude x < 0. The source says “annual”.'
+    revised = 'The treatment effect is 1.2; the standard error is 0.3.'
     event = {'turn_id': 'turn-a', 'last_assistant_message': original, 'stop_hook_active': True}
     requested = hooks._review_final_prose(event, root, directory)
     assert requested['decision'] == 'block' and 'semantically review' in requested['reason']
     assert 'lexical patterns' in requested['reason']
+    assert 'mathematical exclusions' not in requested['reason']
+    assert 'observed conditions' not in requested['reason']
     assert all(x not in requested['reason'] for x in ('base64', 'record-prose-review', 'text_sha256'))
     event['last_assistant_message'] = revised
     assert hooks._review_final_prose(event, root, directory) is None
