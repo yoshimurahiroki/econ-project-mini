@@ -16,6 +16,9 @@ sudo chmod u+rwX /home/vscode/.cache .pixi data .resources /home/vscode/.cache/R
 
 make sync
 
+# Install project lifecycle hooks for Codex.
+PATH="$PWD/.pixi/envs/default/bin:$PATH" bash scripts/setup_ide_mcp.sh --write --client codex --codex-hooks
+
 # Pixi supplies the R infrastructure; sync rv when research packages are requested.
 if [ "${INSTALL_R_PACKAGES:-0}" = "1" ]; then
   make r-install
