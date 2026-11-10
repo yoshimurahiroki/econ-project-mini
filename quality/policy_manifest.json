@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "policy_id": "economics-native-0.95.8",
+  "policy_id": "economics-native-0.95.9",
   "profile": {
     "id": "research-full"
   },
@@ -11,7 +11,7 @@
     },
     "codex_hooks": {
       "path": "harness/codex_hooks.py",
-      "sha256": "1e19783c35dda4c56e70f15e25369de7305d50881ba2a02355fad895a6ac4e9c"
+      "sha256": "26406c9a60fed26e60b378bea3efcb3aa932108d5057ca6fc56c6e49bc9bb17a"
     },
     "core": {
       "path": "runtime/CORE.md",
@@ -43,15 +43,15 @@
     },
     "policy_assets": {
       "path": "harness/policy_assets.py",
-      "sha256": "f46f4d02fb480219d4f8f05928e2589c766e1375299a9bc1167851b6813883d2"
+      "sha256": "3ade639c39d57d7926a20359a75b95f83349b823b2462977e0049ab040acb1d4"
     },
     "prose": {
       "path": "runtime/PROSE.md",
-      "sha256": "4055b173a8fd12c1ab22825335797291aad9c712641ab2990658d587d48be351"
+      "sha256": "a6cb2b9a9014b4c480434cf243a213efdeb63df9c65df4eeac915268865d3e61"
     },
     "prose_guide": {
       "path": "quality/prose_rules.md",
-      "sha256": "7fc458dc78008c0c05d9a8a4657d4b0fcf5a58586a137d1c0848e5269645faa3"
+      "sha256": "d7e836f3c6d7f9b89b6a419db6888e492a5114e2c4b43429afb66b212fad8164"
     },
     "registry_operations": {
       "path": "registry/operations.json",
@@ -91,7 +91,7 @@
     },
     "resource:config-template-readme-md": {
       "path": "docs/ai/config-templates/README.md",
-      "sha256": "c905a2c9c7790657ad9ed0fcf745525291266692ea7fb7f65ff60454c3efd8a1"
+      "sha256": "1ea790096bb1144dd7a139e04f715e22d7d326998cd36f75484f3aacf320ad2a"
     },
     "resource:data-descriptive": {
       "path": "skills/econ-data/references/implementation-descriptive.md",
@@ -719,7 +719,7 @@
     },
     "resource:state-contract": {
       "path": "harness/state.md",
-      "sha256": "19c7eac4c640ef8261411963d7c6a7d6a900666f0b6c274ffdd8668288bc2a01"
+      "sha256": "11f93480c322718f2e00d954da045748302c8dfd9ab8f1e058ee79f323884a92"
     },
     "resource:tool-pack-context-sh": {
       "path": "scripts/pack_context.sh",
