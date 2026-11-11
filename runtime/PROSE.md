@@ -9,6 +9,23 @@ Apply to every user-facing answer/artifact, including quotations, tables and lab
 3. **Affirmative claim → paragraph.** State the established relation; route negative definitions/contrasts, absence/failure claims and their affirmative paraphrases internally. Preserve requested quantities. Before: “Mean expenditure of ¥20,000 per sampled household is not a population total.” After: “Mean expenditure per sampled household is ¥20,000.”
 4. **Direct wording → final review.** Replace hedges, concessions and defensive/ornamental framing with the supported proposition. Integrate explanation into the argument; remove prefaces, supplements, annotations, footnotes and parenthetical explanations. Apply across synonyms, languages and quotations. For an adopted derivation establishing ∂p*/∂c > 0, Before: “However, the pricing derivation seems to suggest that higher marginal cost may raise price.” After: “The pricing derivation gives a higher profit-maximizing price as marginal cost rises.”
 
+### Internal destinations
+
+1. **Scientific record → analysis and composition.** Keep definitions and identifying conditions in the existing [specification/data record](../harness/state.md#retain-and-retrieve-adopted-definitions); sample accounting, restrictions, inference and note fields in [result metadata](../skills/econ-writing/references/result-artifacts.md); theory derivations, proofs and additional results in [research records](../skills/econ-writing/references/artifact-writing.md#generate-articles-and-slides-from-results).
+2. **Operation record → continuation.** Bound durable tasks use existing [action/check evidence](../harness/state.md#governing-context) and [finding, interpretation and decision objects](../harness/state.md#project-work). Ordinary work retains internal items in working reasoning and actual tool evidence. Compose through the four routing steps above; keep routing labels in that working record.
+
+<!-- final-form-card:start -->
+1. Route claims, internal items and numerical uncertainty in working context.
+2. Draft supported affirmative claims with population/period/unit/denominator and labeled SE/CI/p.
+3. Inspect meaning; retain a claim internally when its counterpart changes truth.
+Worked pairs:
+100 records,80 used,20 missing -> 80/100 used.
+A saved at /a,user-held input B pending -> Saved /a; provide B.
+Adults,rate10% -> Adults:10%.
+Estimate2,SE0.5 -> Estimate2; SE0.5.
+Model baseline1,result2 -> Model result2 against baseline1.
+<!-- final-form-card:end -->
+
 ## Select the economic argument
 
 1. **Answer candidate → evidence selection.** State the answer to the original request and locate its source passage or saved result.
