@@ -11,7 +11,7 @@
     },
     "codex_hooks": {
       "path": "harness/codex_hooks.py",
-      "sha256": "23a59ee8a3aa5b7fc436df776a6268bd6952fba8593c103e092bca5177663ea9"
+      "sha256": "286c94b2c8bc374d696cce992d8b5de97373daaf5cc2278e4c30b96f545c771b"
     },
     "core": {
       "path": "runtime/CORE.md",
@@ -43,11 +43,11 @@
     },
     "policy_assets": {
       "path": "harness/policy_assets.py",
-      "sha256": "4ab22b49bcec69ac278a76fc5b8fe5b9d25c462547e5567134c29ecc9cea4657"
+      "sha256": "ab02b4f75c63856bf793726a770f69ac3666900a85a4a2c9118729204b4ae08a"
     },
     "prose": {
       "path": "runtime/PROSE.md",
-      "sha256": "a6cb2b9a9014b4c480434cf243a213efdeb63df9c65df4eeac915268865d3e61"
+      "sha256": "21b389768e8801be477e29bd3e17f78f9f09833bc02323e2bcb84908406ef7d6"
     },
     "prose_guide": {
       "path": "quality/prose_rules.md",
@@ -719,7 +719,7 @@
     },
     "resource:state-contract": {
       "path": "harness/state.md",
-      "sha256": "23d56584afa7a64113ea56ae874c52c682a05c7634f1b0dd2be819f4375524b4"
+      "sha256": "6e70826c99f8d6a3173013eb6953bac73c829f7505fd4579db1f630d40ef7c03"
     },
     "resource:tool-pack-context-sh": {
       "path": "scripts/pack_context.sh",
