@@ -6,7 +6,7 @@ requires-python = ">=3.12"
 dependencies = []
 
 # ── Pixi configuration ──────────────────────────────────────────
-# Resolve compatible infrastructure versions; keep R aligned with rproject.toml.
+# Core runtime versions match econ-project's active default pixi.lock environment.
 [tool.pixi.workspace]
 name = "econ-project"
 channels = ["https://prefix.dev/conda-forge"]
@@ -14,7 +14,7 @@ platforms = ["linux-64"]
 
 [tool.pixi.dependencies]
 # Python runtime
-python = "*"
+python = "==3.12.13"
 pip = "*"
 setuptools = "*"
 wheel = "*"
@@ -32,7 +32,7 @@ nbformat = "*"
 pyzmq = "*"
 
 # R runtime and Jupyter kernel infrastructure
-r-base = "4.5.*"
+r-base = "==4.5.3"
 r-irkernel = "*"
 r-languageserver = "*"
 
@@ -67,8 +67,8 @@ r-pbdzmq = "*"
 "r-data.table" = "*"
 
 # Quarto / R Markdown / TeX integration infrastructure
-quarto = "*"
-pandoc = "*"
+quarto = "==1.9.38"
+pandoc = "==3.8.3"
 deno = "*"
 typst = "*"
 esbuild = "*"

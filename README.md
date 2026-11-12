@@ -43,7 +43,7 @@ make r-install
 make register-kernels
 ```
 
-miniは`pixi.lock`と`rv.lock`を同梱しない。研究用のPython・Rパッケージと固定版は、採用した研究環境で管理する。初期セットアップのRパッケージ導入は`INSTALL_R_PACKAGES=1`で選べる。コンテナ内の作業場所は`/workspaces/<フォルダー名>`で、`data/`と`.pixi/`はDocker volumeに置く。Notebookでは`Python (フォルダー名)`または`R (フォルダー名)`を選ぶ。カーネルIDは作業場所ごとに分かれ、別の研究環境の登録で上書きされない。
+miniの基盤はPython 3.12.13、R 4.5.3、Quarto 1.9.38、Pandoc 3.8.3に固定する。[econ-project](https://github.com/yoshimurahiroki/econ-project)のfullプロファイルが研究用依存、`pixi.lock`、`rv.lock`とJulia環境を管理する。各研究では採用した環境のlockと入力を保存する。初期セットアップのRパッケージ導入は`INSTALL_R_PACKAGES=1`で選べる。コンテナ内の作業場所は`/workspaces/<フォルダー名>`で、`data/`と`.pixi/`はDocker volumeに置く。Notebookでは`Python (フォルダー名)`または`R (フォルダー名)`を選ぶ。カーネルIDは作業場所ごとに保持する。
 
 ## 必要な経済学知識を選ぶ
 
