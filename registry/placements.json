@@ -813,10 +813,6 @@
       "deployment_path": ".github/ISSUE_TEMPLATE/research-task.yml",
       "export_alias": "research-task.yml"
     },
-    "economics-writing-comparison": {
-      "deployment_path": "docs/ai/economics-writing-comparison.md",
-      "export_alias": "ECONOMICS_WRITING_COMPARISON.md"
-    },
     "research-respy-dependencies": {
       "deployment_path": ".agents/skills/econ-data/scripts/requirements-respy.txt",
       "export_alias": "requirements-respy.txt"
