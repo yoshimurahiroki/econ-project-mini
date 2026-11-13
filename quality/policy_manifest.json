@@ -71,7 +71,7 @@
     },
     "resource:academic-ja": {
       "path": "profiles/academic-ja/PROFILE.md",
-      "sha256": "f1ac3993e4fdd36b80c559b21cbaaaa0c0b319c8247f8556631fc8b4b2335ec7"
+      "sha256": "a17625993658a59953472e3d7cf442ccb6ed7212c6bf9d037832858013acabd1"
     },
     "resource:academic-ja-attention-plan-choice": {
       "path": "profiles/academic-ja/attention-plan-choice.md",
@@ -151,7 +151,7 @@
     },
     "resource:default-micro": {
       "path": "profiles/default-micro/PROFILE.md",
-      "sha256": "2d478b96bd790794204ef2a897348e95384d045538825ef49f6ba8f758cdde29"
+      "sha256": "c24030268d1cbf4b6bfc93eab49260be615d97d2d84a6590485a9ce00c60505e"
     },
     "resource:design-methods": {
       "path": "skills/econ-design/references/designs.md",
@@ -815,7 +815,7 @@
     },
     "resource:top-five-en": {
       "path": "profiles/top-five-en/PROFILE.md",
-      "sha256": "802bc32065d0a50203f196723539aacaa1c697555e9b0782b3512d8c3bd7b88b"
+      "sha256": "0258ef24458a4db02e35138aed6cd5d25e6822a4915387f201ab0a7ddd5ad196"
     },
     "resource:top-five-en-abstract-econometrics": {
       "path": "profiles/top-five-en/abstract-econometrics.md",
