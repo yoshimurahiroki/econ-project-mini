@@ -111,7 +111,7 @@
     },
     "resource:data-descriptive": {
       "path": "skills/econ-data/references/implementation-descriptive.md",
-      "sha256": "9084d46e0bf0f0f1db486b9b88d8fbe8e2981f8bbfcda4cfbb484e98ff14490b"
+      "sha256": "74dffd59f0ea487e15eb76fc36ad52e679ed898888e2e347b8eaf398df7b4a0d"
     },
     "resource:data-engine-selection": {
       "path": "skills/econ-data/references/implementation-engines.md",
@@ -127,15 +127,15 @@
     },
     "resource:data-numerical-execution": {
       "path": "skills/econ-data/references/implementation-numerics.md",
-      "sha256": "7c477f86e7a20b73191e47230d7c6377db42ee0ad8eb107248bb0db103af33ac"
+      "sha256": "5c97698b6761f4084f0062cb351eefeb2705c5769d2629c619240fc4ab22d8d2"
     },
     "resource:data-results": {
       "path": "skills/econ-data/references/reproducible-workflow.md",
-      "sha256": "5b09bbf513af2ff375219886c071cc1ec16cf7092ea0d14f07f50ed006ff17af"
+      "sha256": "aa20558be9fd08e2ef2adfc74ae83df4bd4325b0bd78a403cb181431a5e15312"
     },
     "resource:data-source": {
       "path": "skills/econ-data/references/implementation-data.md",
-      "sha256": "af8e59bf956e46bafeb2a13efad714d0de94c370b054ba63ba492d608b9d86c0"
+      "sha256": "2bdb6becc130eafcb3d4982c60d282dd1488e72a771ef84ecb95c9cb163f9d10"
     },
     "resource:data-structural-execution": {
       "path": "skills/econ-data/references/implementation-structural.md",
@@ -155,7 +155,7 @@
     },
     "resource:design-methods": {
       "path": "skills/econ-design/references/designs.md",
-      "sha256": "4b5b253312a867e3b729f0cf71efa180987236eafebd4f1994e72a0f40bedd7e"
+      "sha256": "b41d1a25672f25c2ac9737278b79b09511f41915e03976daea236736485ae0a8"
     },
     "resource:design-workflow": {
       "path": "skills/econ-design/references/workflow.md",
