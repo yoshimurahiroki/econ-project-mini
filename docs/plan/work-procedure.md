@@ -125,6 +125,8 @@
 | 研究例の資料生成と Quarto 出力（housing・charging・subscription の日本語 14 件、英語 5 件の bundle を HTML・PDF） | 全件成功。subscription の日本語論文 PDF は修正前に失敗していた（`econsocart` が Babel の読む見出し名を定義せず、`\begin{document}` で停止）。論文 PDF から Babel の言語指定を外し、`meeting_template.qmd` の `\babeladjust` を Babel 読み込み時だけ実行する形にして解消。 |
 | スライドテンプレートの `mathserif` クラスオプション（beamer が廃止予定と警告） | `\usefonttheme[onlymath]{serif}` に置換。描画は同一。生成器 `research_artifacts.py` の置換元も更新。 |
 | `ruff` の F 系検査 | 未使用 import 7件を削除。残る6件は依存の存在確認を目的とする import で維持。 |
+| 書き方の参照文書の否定表現 | `result-artifacts.md`（23件 → API フィールド名由来4件）、`practice.md`（8件 → 0件）、`paper-workflow.md`（5件 → 0件）、`artifact-writing.md`（4件 → 0件）、`integration.md`（28件 → 10件）を肯定形に書き換え。`integration.md` の借用規則の複製は PROSE Common output への参照に置換。 |
+| 残る `scan-text` 検出（技術文書） | `harness/state.md` 44件、`designs.md` 43件、`implementation-data.md` 36件、`equity-models.md` 27件、`reproducible-workflow.md` 17件、`docs/ai/config-templates/README.md` 17件。ツールの挙動と数式の条件を規定する文が大半で、文ごとに意味を確認して書き換える。 |
 | Markdown の相対リンク 782件 | 壊れたリンク0件（検出2件は数式の誤検出） |
 | 研究例 equipment（ruspy の GitHub 固定版）と commuting（estimatr 2.1.0 の GitHub 固定版） | 未実行。固定版の取得元 `github.com` と `codeload.github.com` が環境のネットワーク規則で拒否される |
 | `pixi` の導入と TinyTeX の導入 | 未実行。同じ理由で `github.com` のリリース配布と `prefix.dev` が拒否される |
