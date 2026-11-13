@@ -38,7 +38,7 @@ format:
     CJKsansfont: HaranoAjiGothic
     include-in-header:
       text: |
-        \babeladjust{bidi.text=off}
+        \makeatletter\@ifpackageloaded{babel}{\babeladjust{bidi.text=off}}{}\makeatother
   revealjs:
     theme: simple
     width: 1280

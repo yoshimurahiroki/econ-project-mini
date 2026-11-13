@@ -383,7 +383,7 @@
     },
     "resource:meeting-quarto-template": {
       "path": "tex/slides/meeting_template.qmd",
-      "sha256": "35bfcc2e429b622a9691eec01479a367306e9a03bd3180da78c99752adc98179"
+      "sha256": "70155a3d07fab5106f41701c3922aa75d41dddc8a0aee04756fd22ddcf418982"
     },
     "resource:meeting-templates": {
       "path": "tex/slides/meeting_templates.json",
@@ -747,7 +747,7 @@
     },
     "resource:research-meetings": {
       "path": "harness/research_meetings.py",
-      "sha256": "c7dba5f0485391d3ddb7a11921916df381ee9814b64c5ac951cbd7a68f747e3b"
+      "sha256": "617eed6f6ccf25f85fee794ffb50737686ca8cff5ac674cb6d1d06708b9ac253"
     },
     "resource:research-numerics": {
       "path": "skills/econ-data/scripts/research_numerics.py",
