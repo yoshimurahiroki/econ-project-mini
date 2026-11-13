@@ -1,6 +1,6 @@
 # econ-project-mini
 
-Economics Research Skills（ERS）の研究スキル、経済学知識、実行・成果物管理を保守する正本。研究質問と識別条件の整理から、データ取得、推定・均衡計算、図表、論文・スライドまでを同じ採用仕様と保存結果でつなぐ。
+Economics Research Skills（ERS）の研究スキル、経済学知識、実行・成果物管理を保守する正本。研究質問と識別条件の整理から、データ取得、推定・均衡計算、図表、論文・スライドまでを、同じ採用仕様と保存結果から一貫して作成する。
 
 Python・R・Jupyter・Quarto・TinyTeXの基盤を備え、分析パッケージは研究ごとに選ぶ。広いPython・R分析環境とlockファイルをまとめて使う場合は、[econ-project](https://github.com/yoshimurahiroki/econ-project)を選ぶ。
 
@@ -80,7 +80,7 @@ python3 harness/research.py --root . research.json
 
 ## 保存結果から成果物を作る
 
-[結果の登録と図表・本文](skills/econ-writing/references/result-artifacts.md)では、推定結果の数量、単位、定義と生成元を結ぶ。同じ保存結果から表・図・Quarto・LaTeX・HTML・PDFを作り、[結果ギャラリー](harness/research_gallery.py)で表示を編集する。自分の研究で登録したギャラリーを指定して開く。
+[結果の登録と図表・本文](skills/econ-writing/references/result-artifacts.md)では、推定結果の数量に単位、定義、生成元を対応させる。同じ保存結果から表・図・Quarto・LaTeX・HTML・PDFを作り、[結果ギャラリー](harness/research_gallery.py)で表示を編集する。自分の研究で登録したギャラリーを指定して開く。
 
 ```sh
 pixi run research-ui -- --root . --registry path/to/research/gallery.json
