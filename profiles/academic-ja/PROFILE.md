@@ -14,3 +14,8 @@ Japanese papers, explanations and slides are composed as Japanese from Japanese 
 The source sheet, the identity of each original and every mapping stay in the private working record. The samples below are fictional studies assembled by the same procedure; they show the register and architecture, and their facts, names and citations are invented.
 
 ## Samples
+
+| Genre | Sample ID | Sample |
+|---|---|---|
+| Journal article: method, application, comparison and simulation | `academic-ja-paper-scm-plant-closure` | [Synthetic Control Method を用いた大規模工場閉鎖の雇用効果の識別](paper-scm-plant-closure.md) |
+| Research or lecture deck | `academic-ja-slides-scm-plant-closure` | [大規模工場閉鎖の雇用効果：研究報告スライド](slides-scm-plant-closure.md) |

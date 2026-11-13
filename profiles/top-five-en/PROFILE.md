@@ -14,3 +14,8 @@ Every English sentence, section architecture, table, figure and slide is borrowe
 The source sheet, the identity of each original and every mapping stay in the private working record. The samples below are fictional studies assembled by the same procedure; they show the register and architecture, and their facts, names and citations are invented.
 
 ## Samples
+
+| Genre | Sample ID | Sample |
+|---|---|---|
+| Journal article: abstract, introduction, table and figure notes | `top-five-en-paper-plant-closures` | [Plant Closures and the Local Labor Market](paper-plant-closures.md) |
+| Seminar deck | `top-five-en-slides-plant-closures` | [Plant Closures and the Local Labor Market: seminar slides](slides-plant-closures.md) |
