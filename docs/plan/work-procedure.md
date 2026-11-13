@@ -102,6 +102,7 @@
 | 1 Stop レビューの範囲限定 | 完了。200文字以上の回答、または `.md/.tex/.qmd/.txt/.html/.docx/.pptx/.pdf/.bib` を名指す回答のターンだけで起動。短い応答のターンは追加モデル呼び出し0回。CORE 完了節を同範囲に更新。 | `469b184` |
 | 2 ツール呼び出しフック | 完了。`hooks/check.py` が、ネイティブのファイル読み取りツールの `PreToolUse`・`PostToolUse` を、再注入待ちがなく失敗応答でない場合に即時終了。読み取り呼び出し 0.13秒 → 0.04秒。書き込み系は従来の経路。 | `82ec5b7` |
 | 3 入口読み込み | 完了。入口ステージに他ステージ用の PROSE 節を引き込んでいた `requires` を除去。18操作の平均 13.8KB → 9.7KB、econ-writing 16.9KB → 9.7KB。全18操作×5ステージの読み取り90回が成功。読み取り手順（ハッシュ・オフセット）の文言は現行のまま維持。 | `df9d512` |
+| 3c フック経由のカーネル重複 | 完了。フックのカーネル packet（CORE と Common output、約7.3KB）と入口の `read` が同じ本文を二重に配信していた。packet の案内に「入口の `read` へ `--kernel-delivered` を付ける」を追加し、`read --kernel-delivered` で入口のカーネルを省略。フック対応ホストの1タスクは約33.4KB → 約26.1KB。 | |
 | 4 pin 文字列のハッシュ化 | 見送り。`PRIMARY_*_RULE` は worker 用 instruction packet の接頭辞で、保存済みの段落契約・タスクの `instruction_context` と文字列一致で照合される。置換すると保存済みの実行を再開できなくなる。 | |
 | 5 エージェント統合 | 見送り。モデル名の定義（terra・luna・astra）は `scripts/setup_ide_mcp.sh` の役割表、`resources.json`、`policy_manifest.json` に結び付いており、統合は 30KB の設定生成スクリプトの書き換えを要する。削減効果は読み込み量に現れない。 | |
 | 6 ランタイム文書の統合 | 見送り。`EXECUTION.md` と `DECIDE.md` は入口ステージで読まれず、統合しても毎タスクの読み込みが変わらない。 | |
