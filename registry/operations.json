@@ -85,7 +85,7 @@
       "id": "econ-writing:compose",
       "owner_skill": "econ-writing",
       "mode": "compose",
-      "trigger": "Compose academic prose and research materials from the adopted sources. For every element, including short edits, single words, translation, formatting and existing drafts, first search real top-five economics journal papers or slides from 2020 onward, major economics handbooks, reviews or guides, economics textbooks, or economics course materials including lecture notes, course slides and handouts; read the relevant passage and surroundings or the actual pages, slides and exhibits. Map content selection, argument, wording, endings, connections, placement and visual style to those passages, borrow and imitate them, and make only the minimal adjustments required by the confirmed task facts, names, variables and symbols, affected subject, periods, numbers and units, citations, grammar, medium and 28pt slide body setting. Do not import a source study’s empirical conditions or conclusions into the task. Use corresponding Japanese originals for Japanese expression rather than newly translating English prose. If references are insufficient, continue searching and reading; do not invent, freely paraphrase, design from scratch or fill gaps without references. Record each source correspondence and adjustment in the existing source or work record, and compare every completed element with the original.",
+      "trigger": "Compose academic prose and research materials from the adopted sources.",
       "required_rules": [
         "kernel.all",
         "econ-writing.compose",
@@ -102,7 +102,7 @@
       "id": "econ-writing:revise",
       "owner_skill": "econ-writing",
       "mode": "revise",
-      "trigger": "Revise supplied prose, including natural Japanese, spoken explanations and requests such as 自然な日本語に, 何を言いたいの, 直訳っぽい, 口頭で説明して and わかりやすく短く. For every element, including short edits, single words, translation, formatting and existing drafts, first search real top-five economics journal papers or slides from 2020 onward, major economics handbooks, reviews or guides, economics textbooks, or economics course materials including lecture notes, course slides and handouts; read the relevant passage and surroundings or the actual pages, slides and exhibits. Map content selection, argument, wording, endings, connections, placement and visual style to those passages, borrow and imitate them, and make only the minimal adjustments required by the confirmed task facts, names, variables and symbols, affected subject, periods, numbers and units, citations, grammar, medium and 28pt slide body setting. Do not import a source study’s empirical conditions or conclusions into the task. Use corresponding Japanese originals for Japanese expression rather than newly translating English prose. If references are insufficient, continue searching and reading; do not invent, freely paraphrase, design from scratch or fill gaps without references. Record each source correspondence and adjustment in the existing source or work record, and compare every completed element with the original.",
+      "trigger": "Revise supplied prose, including natural Japanese, spoken explanations and requests such as 自然な日本語に, 何を言いたいの, 直訳っぽい, 口頭で説明して and わかりやすく短く.",
       "required_rules": [
         "kernel.all",
         "econ-writing.revise",
@@ -118,7 +118,7 @@
       "id": "econ-writing:translate",
       "owner_skill": "econ-writing",
       "mode": "translate",
-      "trigger": "Translate supplied prose into natural Japanese or English with source attribution under PROSE. For every element, including short edits, single words, translation, formatting and existing drafts, first search real top-five economics journal papers or slides from 2020 onward, major economics handbooks, reviews or guides, economics textbooks, or economics course materials including lecture notes, course slides and handouts; read the relevant passage and surroundings or the actual pages, slides and exhibits. Map content selection, argument, wording, endings, connections, placement and visual style to those passages, borrow and imitate them, and make only the minimal adjustments required by the confirmed task facts, names, variables and symbols, affected subject, periods, numbers and units, citations, grammar, medium and 28pt slide body setting. Do not import a source study’s empirical conditions or conclusions into the task. Use corresponding Japanese originals for Japanese expression rather than newly translating English prose. If references are insufficient, continue searching and reading; do not invent, freely paraphrase, design from scratch or fill gaps without references. Record each source correspondence and adjustment in the existing source or work record, and compare every completed element with the original.",
+      "trigger": "Translate supplied prose into natural Japanese or English with source attribution under PROSE.",
       "required_rules": [
         "kernel.all",
         "econ-writing.translate",
@@ -134,7 +134,7 @@
       "id": "econ-writing:convert",
       "owner_skill": "econ-writing",
       "mode": "convert",
-      "trigger": "Convert adopted content into a paper, slides, research site or requested format. For every element, including short edits, single words, translation, formatting and existing drafts, first search real top-five economics journal papers or slides from 2020 onward, major economics handbooks, reviews or guides, economics textbooks, or economics course materials including lecture notes, course slides and handouts; read the relevant passage and surroundings or the actual pages, slides and exhibits. Map content selection, argument, wording, endings, connections, placement and visual style to those passages, borrow and imitate them, and make only the minimal adjustments required by the confirmed task facts, names, variables and symbols, affected subject, periods, numbers and units, citations, grammar, medium and 28pt slide body setting. Do not import a source study’s empirical conditions or conclusions into the task. Use corresponding Japanese originals for Japanese expression rather than newly translating English prose. If references are insufficient, continue searching and reading; do not invent, freely paraphrase, design from scratch or fill gaps without references. Record each source correspondence and adjustment in the existing source or work record, and compare every completed element with the original.",
+      "trigger": "Convert adopted content into a paper, slides, research site or requested format.",
       "required_rules": [
         "kernel.all",
         "econ-writing.convert",
@@ -150,7 +150,7 @@
       "id": "econ-writing:guidance",
       "owner_skill": "econ-writing",
       "mode": "guidance",
-      "trigger": "Explain a concrete writing decision and show the needed revision. For every element, including short edits, single words, translation, formatting and existing drafts, first search real top-five economics journal papers or slides from 2020 onward, major economics handbooks, reviews or guides, economics textbooks, or economics course materials including lecture notes, course slides and handouts; read the relevant passage and surroundings or the actual pages, slides and exhibits. Map content selection, argument, wording, endings, connections, placement and visual style to those passages, borrow and imitate them, and make only the minimal adjustments required by the confirmed task facts, names, variables and symbols, affected subject, periods, numbers and units, citations, grammar, medium and 28pt slide body setting. Do not import a source study’s empirical conditions or conclusions into the task. Use corresponding Japanese originals for Japanese expression rather than newly translating English prose. If references are insufficient, continue searching and reading; do not invent, freely paraphrase, design from scratch or fill gaps without references. Record each source correspondence and adjustment in the existing source or work record, and compare every completed element with the original.",
+      "trigger": "Explain a concrete writing decision and show the needed revision.",
       "required_rules": [
         "kernel.all",
         "econ-writing.guidance",
@@ -167,7 +167,7 @@
       "id": "econ-writing:explain",
       "owner_skill": "econ-writing",
       "mode": "explain",
-      "trigger": "Explain a paper, theory, institution, method or result through its question, mechanism, evidence and answer. For every element, including short edits, single words, translation, formatting and existing drafts, first search real top-five economics journal papers or slides from 2020 onward, major economics handbooks, reviews or guides, economics textbooks, or economics course materials including lecture notes, course slides and handouts; read the relevant passage and surroundings or the actual pages, slides and exhibits. Map content selection, argument, wording, endings, connections, placement and visual style to those passages, borrow and imitate them, and make only the minimal adjustments required by the confirmed task facts, names, variables and symbols, affected subject, periods, numbers and units, citations, grammar, medium and 28pt slide body setting. Do not import a source study’s empirical conditions or conclusions into the task. Use corresponding Japanese originals for Japanese expression rather than newly translating English prose. If references are insufficient, continue searching and reading; do not invent, freely paraphrase, design from scratch or fill gaps without references. Record each source correspondence and adjustment in the existing source or work record, and compare every completed element with the original.",
+      "trigger": "Explain a paper, theory, institution, method or result through its question, mechanism, evidence and answer.",
       "required_rules": [
         "kernel.all",
         "econ-writing.explain",
@@ -183,7 +183,7 @@
       "id": "econ-writing:profile",
       "owner_skill": "econ-writing",
       "mode": "profile",
-      "trigger": "Create or revise a reusable writing profile only when explicitly requested. For every element, including short edits, single words, translation, formatting and existing drafts, first search real top-five economics journal papers or slides from 2020 onward, major economics handbooks, reviews or guides, economics textbooks, or economics course materials including lecture notes, course slides and handouts; read the relevant passage and surroundings or the actual pages, slides and exhibits. Map content selection, argument, wording, endings, connections, placement and visual style to those passages, borrow and imitate them, and make only the minimal adjustments required by the confirmed task facts, names, variables and symbols, affected subject, periods, numbers and units, citations, grammar, medium and 28pt slide body setting. Do not import a source study’s empirical conditions or conclusions into the task. Use corresponding Japanese originals for Japanese expression rather than newly translating English prose. If references are insufficient, continue searching and reading; do not invent, freely paraphrase, design from scratch or fill gaps without references. Record each source correspondence and adjustment in the existing source or work record, and compare every completed element with the original.",
+      "trigger": "Create or revise a reusable writing profile only when explicitly requested.",
       "required_rules": [
         "kernel.all",
         "econ-writing.profile",
@@ -301,7 +301,7 @@
       "id": "project-work:prompt",
       "owner_skill": "project-work",
       "mode": "prompt",
-      "trigger": "Create, rewrite or improve a ready-to-execute prompt from the user request or supplied draft; do not substitute prompt drafting for an ordinary execution request. For every prose or visual expression being authored in any mode, including in prompts, short edits, single words, translation, formatting and existing drafts, first search real top-five economics journal papers or slides from 2020 onward, major economics handbooks, reviews or guides, economics textbooks, or economics course materials including lecture notes, course slides and handouts; read the relevant passage and surroundings or the actual pages, slides and exhibits. Map content selection, argument, wording, endings, connections, placement and visual style to those passages, borrow and imitate them, and make only the minimal adjustments required by the confirmed task facts, names, variables and symbols, affected subject, periods, numbers and units, citations, grammar, medium and 28pt slide body setting. Do not import a source study’s empirical conditions or conclusions into the task. Use corresponding Japanese originals for Japanese expression rather than newly translating English prose. If references are insufficient, continue searching and reading; do not invent, freely paraphrase, design from scratch or fill gaps without references. Record each source correspondence and adjustment in the existing source or work record, and compare every completed prose or visual element with the original. Preserve technical instructions, inputs, outputs and validation examples.",
+      "trigger": "Create, rewrite or improve a ready-to-execute prompt from the user request or supplied draft; do not substitute prompt drafting for an ordinary execution request. Preserve technical instructions, inputs, outputs and validation examples.",
       "required_rules": [
         "kernel.all",
         "project-work.all",
