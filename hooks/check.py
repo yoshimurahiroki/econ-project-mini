@@ -14,6 +14,14 @@ READ_TOOLS = {'read', 'read_file', 'read_text_file', 'read_multiple_files', 'lis
               'directory_tree', 'search_files', 'get_file_info', 'view_image', 'grep', 'glob'}
 
 
+def awaiting(value):
+    """True when a record holds a pending restoration or a required child assignment."""
+    if isinstance(value, dict):
+        return (value.get('pending_restoration') is True or value.get('assignment_required') is True
+                or any(awaiting(item) for item in value.values()))
+    return isinstance(value, list) and any(awaiting(item) for item in value)
+
+
 def pure_read(raw):
     """A native file read changes no task state; its callbacks are skipped unless instructions await restoration."""
     try:
@@ -28,7 +36,7 @@ def pure_read(raw):
             return False
         data = Path(os.environ.get('PLUGIN_DATA') or Path.home() / '.local' / 'state' / 'economics-research-skills')
         folder = data / 'economics' / hashlib.sha256(session.encode('utf-8')).hexdigest()
-        return folder.is_dir() and not any('"pending_restoration": true' in p.read_text(encoding='utf-8')
+        return folder.is_dir() and not any(awaiting(json.loads(p.read_text(encoding='utf-8')))
                                            for p in folder.rglob('reinjection.json'))
     except Exception:
         return False

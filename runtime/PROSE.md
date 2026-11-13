@@ -14,6 +14,8 @@ Apply to all public content, languages and formats, including quotations, tables
 1. **Scientific record → composition.** Retain definitions/identification in the [specification](../harness/state.md#retain-and-retrieve-adopted-definitions), sample accounting/restrictions/inference/notes in [result metadata](../skills/econ-writing/references/result-artifacts.md), and derivations/proofs/results in [research records](../skills/econ-writing/references/artifact-writing.md#generate-articles-and-slides-from-results).
 2. **Operation record → continuation.** Durable tasks use existing [action/check evidence](../harness/state.md#governing-context) and [findings/interpretation/decisions](../harness/state.md#project-work). Record inspected source locations, correspondence and minimal adjustments in existing records, alongside actual tool evidence. A record does not replace reading originals.
 
+## Final-form card
+
 <!-- final-form-card:start -->
 Do not invent text or visuals. For every word, language, translation and existing draft, search real 2020+ Top Five papers/slides, economics handbooks, reviews, guides, textbooks and economics course materials (lecture notes, course slides, handouts); read passages in context or inspect pages/slides/exhibits. Map content, argument, wording and appearance; borrow and imitate with minimal factual, grammar and medium/28pt adjustments. Search/read for gaps; record mappings/adjustments; compare every element. Preserve facts and uncertainty; do not import source conditions or findings. Exclude hedges, concessions, disclaimers, ornament, supplements and not-A/contrast rhetoric. See Common output.
 <!-- final-form-card:end -->

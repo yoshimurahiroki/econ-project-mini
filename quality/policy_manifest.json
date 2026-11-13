@@ -47,7 +47,7 @@
     },
     "prose": {
       "path": "runtime/PROSE.md",
-      "sha256": "fd9a545105ac00008dbc6757889dd1a78f19cdf9e40483afe9feac6485bee57b"
+      "sha256": "d7312c7c06601c04234684414e8f8915a371c47d6fb04242c6de43c7f0435fc4"
     },
     "prose_guide": {
       "path": "quality/prose_rules.md",
@@ -307,11 +307,11 @@
     },
     "resource:hook-wrapper": {
       "path": "hooks/check.py",
-      "sha256": "f7d123012b1a991956adb64035e02133873a1ba106b11201c460a393ce775cf0"
+      "sha256": "4564ee111cb3f583188fc2b598bc5dd6ce97ef496a3c981708d459ea066e4ae1"
     },
     "resource:integration": {
       "path": "docs/ai/integration.md",
-      "sha256": "5998937ea265592a17660ac6f22a6eede279a04f4365ffd46a0b54b2d748588a"
+      "sha256": "32e4bc911bf89e109baded41095b648f5389231824c32c42bc42041393da56d1"
     },
     "resource:journal-priority": {
       "path": "skills/econ-literature/references/journal-priority.json",
@@ -591,7 +591,7 @@
     },
     "resource:policy-codex-agent-reviewer": {
       "path": "references/repository-policy/.codex/agents/reviewer.toml",
-      "sha256": "c8059cff60ed7904eb4ae9a5ee8818a58f6d6366e2fb5910ce60b0e6bf95264a"
+      "sha256": "0f5a303c17a0048165bf22c63e272cddc363e517f70036b540da211df78c22dc"
     },
     "resource:policy-codex-agent-specialist": {
       "path": "references/repository-policy/.codex/agents/specialist.toml",
@@ -955,7 +955,7 @@
     },
     "route_registry": {
       "path": "scripts/route_registry.py",
-      "sha256": "cc693fed1daa9fc73773e1303a8c4481e39395aeba8df1dbcd3a9fb71c7f25a3"
+      "sha256": "b150f182bca97fd4de27422188ed3231c4da89c146a15e5fd1223f1410de608c"
     },
     "state": {
       "path": "harness/state.py",
@@ -963,7 +963,7 @@
     },
     "team": {
       "path": "runtime/TEAM.md",
-      "sha256": "479111d6980cbc4038e60a93af40de35e18677ef66e1d5493dc691be6e053bb5"
+      "sha256": "5543393bc89f17da791ed5ecfeddb6a82bf90afa3b4f58f9b140ee775548abb3"
     }
   }
 }

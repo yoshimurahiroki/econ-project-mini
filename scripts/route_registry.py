@@ -197,8 +197,8 @@ def select_reading_sections(routes, manifest, stage, role=None, reader_id=None, 
     # A current-stage body needs its prerequisites now, including prerequisites
     # assigned to another stage. Future unrelated bodies remain deferred.
     seeds = [key for row in result for key in row['rule_ids']]
-    # Every entry stage, including a bounded task starting mid-workflow, restores
-    # the kernel. Only explicit complete-body --seen evidence suppresses it.
+    # Selection always includes the kernel; the reader omits it after entry
+    # unless restore is requested.
     if 'core' in adopted and 'kernel.all' in routes['rules']:
         seeds.append('kernel.all')
     conditions = manifest.get('selection', {}).get('conditions', [])
@@ -369,6 +369,7 @@ def read_selected(routes, root, selector, *, layout='source', mode=None, conditi
     if unknown:
         raise ValueError('Unknown condition: ' + ', '.join(sorted(unknown)))
     custom_profile = None
+    kernel_omitted = False
     if selector in routes['rules']:
         active, selection = required_closure(routes, [selector], conditions, selector)
     else:
@@ -388,8 +389,10 @@ def read_selected(routes, root, selector, *, layout='source', mode=None, conditi
         selection = {}
         active = []
         if stage != 'entry' and not restore:
-            refs = [row for row in refs if row['resource_id'] != 'core'
+            kept = [row for row in refs if row['resource_id'] != 'core'
                     and (row['resource_id'], row['section_id']) != ('prose', 'common-output')]
+            kernel_omitted = len(kept) != len(refs)
+            refs = kept
         for row in refs:
             locator = routes['sections'][row['resource_id']][row['section_id']]
             merge_selection(selection, {row['resource_id']: {'whole_resource': True}
@@ -450,6 +453,8 @@ def read_selected(routes, root, selector, *, layout='source', mode=None, conditi
             commands = [shlex.join(['python', str(helper), 'plan', kid, '--read']) for kid in knowledge]
             delivered.append('# Selected method knowledge\n\nRead the complete bodies and prerequisites before adoption:\n'
                              + '\n'.join(commands))
+    if kernel_omitted:
+        delivered.insert(0, 'CORE and PROSE Common output were delivered at entry; rerun with `--restore` if they are absent from context.')
     text = '\n\n'.join(delivered) + ('\n' if delivered or not body_hashes else '')
     if offset > len(text):
         raise ValueError('Reading offset exceeds the selected body')
@@ -457,7 +462,8 @@ def read_selected(routes, root, selector, *, layout='source', mode=None, conditi
     if compact:
         return {'content_sha256': hashlib.sha256(text.encode('utf-8')).hexdigest(),
                 'offset': offset, 'next_offset': end if end < len(text) else None,
-                'bodies': body_hashes, 'reused': reused, 'text': text[offset:end]}
+                'bodies': body_hashes, 'reused': reused,
+                'omitted': ['core', 'prose#common-output'] if kernel_omitted else [], 'text': text[offset:end]}
     result = {'selector': selector, 'stage': stage, 'required_rules': active,
             'adopted_required_rules': adopted_rules, 'sources': sources,
             'content_sha256': hashlib.sha256(text.encode('utf-8')).hexdigest(),
