@@ -47,7 +47,7 @@
     },
     "prose": {
       "path": "runtime/PROSE.md",
-      "sha256": "5402176e3be568a0db0bf1c3e89ac2f0ba35965278683de52d0baedcc91460d7"
+      "sha256": "a00ace2dc265e4d93614f529f0791cb2b09eb6d7a5d8756d92cacad505914029"
     },
     "prose_guide": {
       "path": "quality/prose_rules.md",
@@ -919,7 +919,7 @@
     },
     "resource:writing-artifacts": {
       "path": "skills/econ-writing/references/artifact-writing.md",
-      "sha256": "8a8d3424ade0b8c12e961f8a72cc91642314eb0ca3b160b719d790973a9e6099"
+      "sha256": "dcb26ef8acf3ea553c8e5ece38315f9bee7a7de64006e66d2b6f9573476469c3"
     },
     "resource:writing-compose": {
       "path": "skills/econ-writing/references/compose.md",
