@@ -227,7 +227,7 @@
     },
     "resource:example-charging-materials": {
       "path": "skills/econ-data/examples/charging/materials.py",
-      "sha256": "bdba63b305772ce60cf97baee3ecbf531d1ec888790bbafab3aaeb00b8407bab"
+      "sha256": "0e6080313985b6f3c545b6b986158aeacd35e99a9cf5bd90120b97f0c9f55e82"
     },
     "resource:example-charging-specification": {
       "path": "skills/econ-data/examples/charging/specification.json",
@@ -259,7 +259,7 @@
     },
     "resource:example-equipment-materials": {
       "path": "skills/econ-data/examples/equipment/materials.py",
-      "sha256": "bdf9cc41b42f16ad72a17a4e64a3ae9dc777ab18529b27ad5c600948456b323b"
+      "sha256": "1ab84d0e167b651b6c931d93d56bf44f6208e1f46cdb7897923d813d0b09aaed"
     },
     "resource:example-equipment-specification": {
       "path": "skills/econ-data/examples/equipment/specification.json",
@@ -275,7 +275,7 @@
     },
     "resource:example-housing-materials": {
       "path": "skills/econ-data/examples/housing/materials.py",
-      "sha256": "291b0626d5cc0099469f86a7da207303e0441941f292b86e3f714e558086515f"
+      "sha256": "17b3de131c5363f07cc5c09e125a33afc001253c843d4fe367e57e192c2c3e7a"
     },
     "resource:example-housing-specification": {
       "path": "skills/econ-data/examples/housing/specification.json",
@@ -747,7 +747,7 @@
     },
     "resource:research-meetings": {
       "path": "harness/research_meetings.py",
-      "sha256": "e050801591ea4203d9fe8d141ddf8bb7af978d4359f7a124e9365531b68a630e"
+      "sha256": "4132b81efacfb5c9e73b47a6cb55f8d916c855fffec3cf654af18e60a2cf89b9"
     },
     "resource:research-numerics": {
       "path": "skills/econ-data/scripts/research_numerics.py",
