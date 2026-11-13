@@ -15,7 +15,7 @@
     },
     "core": {
       "path": "runtime/CORE.md",
-      "sha256": "db76339dc9d62e336f851104c9ffcdacf64b935094ac1ecdcb506ea11df2ebb2"
+      "sha256": "46617cb442136c9a5655573efdf49fa7fd0ff39d37789d00cf1fbfa6406dd728"
     },
     "decide": {
       "path": "runtime/DECIDE.md",
@@ -507,7 +507,7 @@
     },
     "resource:native-index": {
       "path": "docs/ai/compiled_ai_skills.md",
-      "sha256": "f0f0728c5e42b89587e90d467b52cc5ea4345baf3890c5b42d1daa2d037f71b0"
+      "sha256": "c850ce370548aee4c11960bba69fc833b3491cf0c2fd286db8dfcb87d35f8df7"
     },
     "resource:package-notices": {
       "path": "THIRD_PARTY_NOTICES.md",
@@ -955,7 +955,7 @@
     },
     "route_registry": {
       "path": "scripts/route_registry.py",
-      "sha256": "2e7fa9309eaaacbe8451b16257ac44f41205f541ce12406d34cf406b6b9b2681"
+      "sha256": "cc693fed1daa9fc73773e1303a8c4481e39395aeba8df1dbcd3a9fb71c7f25a3"
     },
     "state": {
       "path": "harness/state.py",

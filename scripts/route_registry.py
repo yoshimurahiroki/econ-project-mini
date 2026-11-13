@@ -267,7 +267,7 @@ def native_index(routes, *, links=False, operation=None, family=None, query=None
              '## Read the pending operation', '',
              '1. **Selected operation → reader.** Read CORE and PROSE Common output, then select the final operation below. Find conditions with `python scripts/route_registry.py index --operation OPERATION --family FAMILY` or `--query TEXT`.',
              '2. **Complete bodies → execution.** Run `python scripts/route_registry.py read OPERATION --stage STAGE --condition CONDITION --format compact`. Stages: entry classifies; contract adopts question/method/inputs; compose executes by borrowing, imitating and minimally adapting read sources for writing; review interprets/repairs; finalize saves/delivers. Direct `read RULE_ID` returns that rule and prerequisites.',
-             '3. **Retained bodies → next stage.** Follow every `next_offset` under the same `content_sha256` and seen arguments. `bodies` identifies complete bodies and `reused` names omissions. Pass `--seen BODY_SHA256` only for complete matching bodies still in intact context. After compaction, handoff or model change read originals without seen arguments.',
+             '3. **Retained bodies → next stage.** Follow every `next_offset` under the same `content_sha256` and seen arguments. `bodies` identifies complete bodies and `reused` names omissions. Pass `--seen BODY_SHA256` only for complete matching bodies still in intact context. Stages after entry omit CORE and PROSE Common output. After compaction, handoff or model change read originals with `--restore` and without seen arguments.',
              '4. **Runtime root → reader.** Deployed trees run `python .agents/scripts/route_registry.py --layout installed read OPERATION --stage STAGE --format compact`; expand incomplete snapshots from canonical source. Skill-scoped hosts read specialist `instructions.md` and common `project-work/references/shared/` bodies, acquiring the matching runtime bundle once for execution.', '']
     for op in routes['operations']:
         label = op['skill_id'] + ' / ' + op['mode']
@@ -354,8 +354,12 @@ def extract_sections(text, selection, resource):
 
 def read_selected(routes, root, selector, *, layout='source', mode=None, conditions=(),
                   user_profile=None, project_profile=None, offset=0, limit=16000, stage=None,
-                  seen=(), compact=False):
-    """Deliver exact selected bodies; pagination never marks them as read."""
+                  seen=(), compact=False, restore=False):
+    """Deliver exact selected bodies; pagination never marks them as read.
+
+    Stages after entry omit the kernel (CORE and PROSE Common output) that entry
+    delivered; restore=True delivers it again after context loss.
+    """
     import hashlib
     if offset < 0 or limit < 1:
         raise ValueError('Reading offset must be nonnegative and limit positive')
@@ -383,6 +387,9 @@ def read_selected(routes, root, selector, *, layout='source', mode=None, conditi
             'selection': {'conditions': list(conditions)}}, stage)
         selection = {}
         active = []
+        if stage != 'entry' and not restore:
+            refs = [row for row in refs if row['resource_id'] != 'core'
+                    and (row['resource_id'], row['section_id']) != ('prose', 'common-output')]
         for row in refs:
             locator = routes['sections'][row['resource_id']][row['section_id']]
             merge_selection(selection, {row['resource_id']: {'whole_resource': True}
@@ -1142,6 +1149,7 @@ if __name__ == '__main__':
             selected.add_argument('--limit', type=int, default=16000, help='Maximum body characters per page')
             selected.add_argument('--format', choices=('json', 'compact'), default='compact')
             selected.add_argument('--seen', action='append', default=[], help='Hash of a complete body still present in this intact context')
+            selected.add_argument('--restore', action='store_true', help='Deliver CORE and PROSE Common output at a stage after entry (context loss, handoff, model change)')
     args = parser.parse_args()
     if args.command == 'index' and (args.family or args.query or args.all_conditions) and not args.operation:
         parser.error('condition filters require --operation')
@@ -1157,7 +1165,7 @@ if __name__ == '__main__':
                                conditions=args.condition, user_profile=args.user_profile,
                                project_profile=args.project_profile, offset=args.offset, limit=args.limit,
                                stage=args.stage or (None if args.operation in routes['rules'] else 'entry'),
-                               seen=args.seen, compact=args.format == 'compact')
+                               seen=args.seen, compact=args.format == 'compact', restore=args.restore)
         print(json.dumps(result, ensure_ascii=False, indent=2))
     else:
         result = resolve_operation(routes, args.operation, args.mode,
