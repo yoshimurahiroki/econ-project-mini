@@ -543,7 +543,7 @@
     },
     "resource:plugin-integration-guide": {
       "path": "docs/ai/plugin-integration.md",
-      "sha256": "76f93af4067b97876ae5463fbc6e63d46944d4c558ce6b0df44f60d60f104416"
+      "sha256": "a6c2faa59a14b5b1b243577451c429401b7187f149f9c8a27923d78959073ff5"
     },
     "resource:policy-agents-agentsmd": {
       "path": "references/repository-policy/.agents/AGENTS.md",
@@ -955,7 +955,7 @@
     },
     "route_registry": {
       "path": "scripts/route_registry.py",
-      "sha256": "21d1fbff9ea408348cf48464e58927aaf9f79370fdb6c2f72235315d5b2f48ac"
+      "sha256": "8eeb56dc37c091c67d24b5333e181823c51ebb4328d9f2e67a60e803ddc823bb"
     },
     "state": {
       "path": "harness/state.py",
