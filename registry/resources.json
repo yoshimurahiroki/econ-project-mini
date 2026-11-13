@@ -8551,10 +8551,6 @@
       "execution": [
         "select-the-operation-and-working-area"
       ],
-      "team": [
-        "shared-work",
-        "resumption"
-      ],
       "models-causal": [
         "causal-scope",
         "method-selection"
@@ -8885,8 +8881,7 @@
       ],
       "research": [
         "investigate-source-claims",
-        "resolve-dependencies-and-integrate-findings",
-        "operational-plans"
+        "resolve-dependencies-and-integrate-findings"
       ],
       "execution": [
         "complete-outputs-and-failure-propagation",
@@ -9288,16 +9283,10 @@
     },
     "review": {
       "prose": [
-        "finish-the-passage",
-        "revise-for-the-requested-language"
+        "finish-the-passage"
       ],
       "research": [
-        "interpret-a-consequential-result",
-        "separate-explanations-with-a-comparison"
-      ],
-      "execution": [
-        "compare-changed-outputs",
-        "complete-outputs-and-failure-propagation"
+        "interpret-a-consequential-result"
       ],
       "team": [
         "return-and-integration",
@@ -9531,17 +9520,11 @@
       ]
     },
     "finalize": {
-      "prose": [
-        "finish-the-passage",
-        "revise-for-the-requested-language"
-      ],
       "execution": [
-        "record-and-artifact-boundaries",
-        "complete-outputs-and-failure-propagation"
+        "record-and-artifact-boundaries"
       ],
       "team": [
-        "requested-usage-accounting",
-        "resumption"
+        "requested-usage-accounting"
       ],
       "data-results": [
         "complete-outputs-and-failure-propagation",
