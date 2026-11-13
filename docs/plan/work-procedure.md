@@ -128,8 +128,8 @@
 | 書き方の参照文書の否定表現 | `result-artifacts.md`（23件 → API フィールド名由来4件）、`practice.md`（8件 → 0件）、`paper-workflow.md`（5件 → 0件）、`artifact-writing.md`（4件 → 0件）、`integration.md`（28件 → 10件）を肯定形に書き換え。`integration.md` の借用規則の複製は PROSE Common output への参照に置換。 |
 | 残る `scan-text` 検出（技術文書） | `harness/state.md` 44件、`designs.md` 43件、`implementation-data.md` 36件、`equity-models.md` 27件、`reproducible-workflow.md` 17件、`docs/ai/config-templates/README.md` 17件。ツールの挙動と数式の条件を規定する文が大半で、文ごとに意味を確認して書き換える。 |
 | Markdown の相対リンク 782件 | 壊れたリンク0件（検出2件は数式の誤検出） |
-| 研究例 equipment（ruspy の GitHub 固定版）と commuting（estimatr 2.1.0 の GitHub 固定版） | 未実行。固定版の取得元 `github.com` と `codeload.github.com` が環境のネットワーク規則で拒否される |
-| `pixi` の導入と TinyTeX の導入 | 未実行。同じ理由で `github.com` のリリース配布と `prefix.dev` が拒否される |
+| 研究例 equipment と commuting（ruspy と estimatr 2.1.0 の固定版を `git clone` で取得して導入） | 成功（`equipment-renewal-v1`、`commuting-market-v1`）。日本語・英語の資料 bundle 8件を HTML・PDF で出力し、全件成功 |
+| `pixi` の導入と TinyTeX の導入 | 未実行。`github.com` のリリース配布と `prefix.dev` が拒否される（`git clone` は通る）。conda-forge と CTAN の直接導入で代替 |
 
 ## 実施順
 

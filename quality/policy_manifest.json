@@ -47,7 +47,7 @@
     },
     "prose": {
       "path": "runtime/PROSE.md",
-      "sha256": "d7312c7c06601c04234684414e8f8915a371c47d6fb04242c6de43c7f0435fc4"
+      "sha256": "24c5101e3ecf9240e945744195072942429a8b4de4973e24afec0d563cb6ab03"
     },
     "prose_guide": {
       "path": "quality/prose_rules.md",
