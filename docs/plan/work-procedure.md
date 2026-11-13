@@ -111,6 +111,20 @@
 | 8b 未使用コード | 完了。呼び出し元のない `local_checks.UTF8Text` と未使用の `codecs` 取り込みを削除。`gallery_items` は研究例が呼ぶ公開関数のため維持。 | |
 | 9 文書の集約 | 見送り。`docs/ai/` の各文書は `resources.json`・`placements.json`・`operations.json` に登録され、操作の必須規則として読まれる。`scan-text` の検出の大半は、ツールの挙動を規定する技術文の否定表現であり、意味を変えずに書き換えられる箇所だけを今後の編集で修正する。 | |
 
+## 実行環境での検証
+
+`pyproject.toml` が指定する版に合わせ、conda-forge から micromamba で Python 3.12.13、R 4.5.3、Quarto 1.9.38、Pandoc 3.8.3、Julia 1.13.3、DuckDB 2.0.0 を導入し、TeX Live 2026（CTAN の `install-tl`、LuaLaTeX・Beamer・日本語組版を含む）と PyPI の分析パッケージ（pyblp、linearmodels、pyfixest、econml、DoubleML、StatsPAI など）を追加した。
+
+| 検証 | 結果 |
+| --- | --- |
+| 研究例 housing、charging、subscription の `run.py` | 成功（`housing-transport-v1`、`charging-merger-v1`、`subscription-allocation-v1`） |
+| subscription の資料生成と Quarto による HTML 出力 | 成功 |
+| 同資料の Quarto + LuaLaTeX による PDF 出力（日本語） | 成功 |
+| `tex/paper/ecta_template.tex` と `tex/slides/main.tex` の LaTeX ビルド | 成功 |
+| Julia のパッケージ導入（pkg.julialang.org） | 成功 |
+| 研究例 equipment（ruspy の GitHub 固定版）と commuting（estimatr 2.1.0 の GitHub 固定版） | 未実行。固定版の取得元 `github.com` と `codeload.github.com` が環境のネットワーク規則で拒否される |
+| `pixi` の導入と TinyTeX の導入 | 未実行。同じ理由で `github.com` のリリース配布と `prefix.dev` が拒否される |
+
 ## 実施順
 
 段階1 → 2 → 3 → 4 → 5 → 6 → 7 を順に進める。段階8は段階7の後、段階9は段階4の後に独立して進められる。段階1と3は承認を得るまで保留し、その間に段階2、4、5、6、7を先行できる。
