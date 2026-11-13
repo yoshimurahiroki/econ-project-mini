@@ -2,7 +2,6 @@
 
 Apply [PROSE Common output](../../../runtime/PROSE.md#common-output) to every instruction in this workflow, including research-type tables, section choices, exhibits, examples, revisions and callbacks. The scientific and evidence requirements below constrain the target facts and calculations; existing profile BODY text remains intact.
 
-
 Use this workflow for a complete economics paper, a requested manuscript section or its revision. Inherit [CORE](../../../runtime/CORE.md), [PROSE](../../../runtime/PROSE.md) and [econ-writing's common process](artifact-writing.md#compose-for-the-medium-and-language). Keep the requested mode, language, audience and editing authority. Read the section that resolves the current composition choice and deliver wording borrowed and minimally adjusted from inspected sources under the requirements above.
 
 ## Establish the argument from the research

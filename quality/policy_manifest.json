@@ -531,7 +531,7 @@
     },
     "resource:paper-workflow": {
       "path": "skills/econ-writing/references/paper-workflow.md",
-      "sha256": "575236297e92a4b02165b7f0e115d64c24c1cec8f037d995a3368f0ca60c3abb"
+      "sha256": "e488e12a5b2a5f344452703f180ebf8a6af182b9229d6d742a19ced2ade8f534"
     },
     "resource:paragraph-schema": {
       "path": "harness/paragraph.schema.json",
