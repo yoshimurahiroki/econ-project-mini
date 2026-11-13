@@ -1,90 +1,100 @@
 # 作業手順書
 
-[ideal-state.md](ideal-state.md) の到達基準を、依存の少ない順に実施する。各段階は「編集 → 再生成 → 検証 → 1コミット」で完結し、`ccr-0532f95d-npvlpj` へ push する。
+[ideal-state.md](ideal-state.md) の到達基準を、費用削減量が大きく研究能力への影響が小さい順に実施する。各変更は「編集 → 再生成 → 検証 → 1コミット」で完結し、`git revert` で単独に取り消せる。
 
 ## 共通ループ
 
-1. 所有者ファイルを編集する（登録簿、`runtime/*.md`、Skill、参照）。
+1. 所有者ファイル（登録簿、`runtime/*.md`、Skill、参照、コード）を編集する。
 2. `python3 scripts/export_project.py --generate-entries` で生成物を更新する。
 3. `python3 scripts/export_project.py --check` が終了コード0を返すことを確認する。
-4. 本文を変えた段階では、`--task econ-writing --mode compose`、`--format deployed`、`--format plugin` を scratchpad に書き出し、追加・変更したリンクの実在を確認する。
-5. 手書き文書の変更後に `python3 harness/local_checks.py scan-text --surface final --input FILE --dictionary quality/prose_rules.json` を実行し、検出0を確認する。
-6. 1段階1コミット。件名は短い英語の命令形とする。
+4. 本文または配線を変えた変更では、`--task econ-writing --mode compose`、`--format deployed`、`--format plugin` を scratchpad に書き出し、リンクの実在を確認する。
+5. 全18操作の全ステージで `python3 scripts/route_registry.py read OP --stage S --format compact` が成功することを確認する。
+6. 手書き文書の変更後に `python3 harness/local_checks.py scan-text --surface final --input FILE --dictionary quality/prose_rules.json` を実行する。
+7. フックを変えた変更では、`hooks/check.py` に各イベントのサンプル入力を渡し、応答 JSON と起動回数を確認する。
+8. コミット件名は短い英語の命令形とする。一時スクリプトは scratchpad に置き、リポジトリに追加しない。
 
-## 段階0　基準値の記録
+## 段階0　基準値の再記録
 
-- 操作ごとの入口ステージの読み込み量: `python3 scripts/route_registry.py read OP --stage entry --format compact | wc -c`（18操作）
-- 重複文: 120文字以上の完全一致文を数える Python 1回実行（スクリプトは保存しない）。
-- 表現規則の検出件数: 運用文書ごとに `scan-text`。
-- 受け入れ: 数値を作業ログ（コミット本文）に残す。
+操作ごとの入口読み込み量、重複文数、`scan-text` 検出数、フックの起動時間を測り、コミット本文に残す。
 
-## 段階1　規則の単一所有の完了
+## 段階1　Stop レビューの範囲限定 【承認が必要】
 
-1. `harness/meetings.md` のテンプレート固有の段落から、PROSE と重なる記述を削る。
-2. `quality/prose_rules.md` を `prose_rules.json` と PROSE との重なりで整理し、規則一覧の正本を1つに決める。
-3. `PROFILE.md` 3ファイルの類似文（資料の選び方、除外表現）を PROSE への参照に置換する。
-4. `harness/policy_assets.py` の `PRIMARY_EXPRESSION_RULE` と `PRIMARY_STYLE_RULE` は、`paragraph.py` の検証が参照する。検証が確認する文字列を PROSE Common output への参照付き短文に改め、両ファイルを同時に更新する。
-5. `docs/ai/economics-writing-comparison.md` の内容を、`integration.md` 内の該当節または参照として統合する。
-- 受け入れ: 到達基準2と3。
+- **費用と頻度**: 毎ターン、追加モデル呼び出し1回とサブエージェントによる CORE・PROSE・finish の読み込み。
+- **保持する機能**: 利用者向けの文章・成果物に対する独立レビュー。
+- **手順**: `codex_hooks.py` の `_review_final_prose` が、ターン中に作成・編集された利用者向け成果物のパスと最終回答の文章を既に受け取る。この情報から「文章または成果物を作ったか」を判定し、該当しないターンは `None` を返す。CORE 完了節の第3項を同範囲に書き換える。
+- **検証**: 判定が真・偽になる2種のサンプル入力で Stop の応答を確認する。
+- **ファイル**: `harness/codex_hooks.py`、`runtime/CORE.md`、生成物。
 
-## 段階2　入口ステージの縮小
+## 段階2　ツール呼び出しフックの絞り込み
 
-1. 入口ステージが返す本文を列挙する（`bodies` キー）。`research#turn-the-question-into-an-operation`、CORE、PROSE の各節、Skill が対象。
-2. entry で必須の本文を CORE と Skill の入口に限り、PROSE の節（argument、connect、profile、language、finish）を contract・compose・review の各ステージへ移す。移す節は `registry/operations.json` の `required_rules` と `reading_stages`（`resources.json`）で指定する。
-3. `finish-the-passage` を finalize と review に限定する。
-4. 18操作で入口の読み込み量を再測定する。
-- 受け入れ: 到達基準1。読み込み順序の変更が CORE の「Common output を一度読む」規則と整合することを確認する。
+- **費用と頻度**: 全ツール呼び出しごとに2回の Python 起動（各 0.12〜0.15秒）。
+- **保持する機能**: 書き込み・外部作用に対する権限確認と、操作結果の記録。
+- **手順**:
+  1. `_tool_effect` が返す分類（read、write、external）を一覧にする。
+  2. `PostToolUse` が状態に書き込む条件（`bind-operation` を含む）を一覧にする。
+  3. `hooks/hooks.json` の `PreToolUse` と `PostToolUse` に `matcher` を設定し、読み取りツールを除く。ホストの matcher はツール名の正規表現であるため、分類に対応するツール名集合を登録簿で定義して生成する。
+  4. 読み取りツールの入力を `hooks/check.py` に渡し、起動されないことを確認する。
+- **ファイル**: `hooks/hooks.json`、`placements.json`、`codex_hooks.py`（分類表）。
 
-## 段階3　経済学的な判断の入口への統合
+## 段階3　入口読み込みの縮小と読み取り手順の簡素化 【CORE 文言の変更に承認が必要】
 
-1. `DECIDE.md` の「Turn the question into an operation」と CORE の Economist role を読み、同じ手順が2箇所に分かれている部分を CORE に一本化する。
-2. 各 Skill の入口（econ-design、econ-data、econ-literature、econ-review、project-work）に、その Skill 固有の「主体・目的・選択・制約・識別・決定」の問い方を1項ずつ置く。共通部分は CORE への参照にする。
-3. 実際の呼び出し例（依存不要の `route_registry.py read` と `resolve`）で、各操作が最上流の問いを選ぶ手順に到達することを確認する。
-- 受け入れ: 全操作の入口で、ranked pair の受け渡しが1回だけ記述される。
+- **費用と頻度**: 毎タスク、約11〜12KB とハッシュ管理の手順。
+- **手順**:
+  1. 入口ステージが返す本文を列挙し、PROSE の各節（argument、connect、profile、language、finish）を contract・compose・review・finalize の各ステージへ振り分ける。振り分けは `required_rules` と `reading_stages` で指定する。
+  2. `route_registry.py read` の既定動作を「操作とステージに対する完全本文を返す。上限を超える場合は節単位で分割し、次の呼び出しを示す」に変える。`--seen` とハッシュ引数は内部で扱う。
+  3. CORE 第2項を新しい読み取り手順に合わせて書き換える。
+  4. 18操作で入口読み込み量を再測定し、6KB以下を確認する。
+- **ファイル**: `registry/operations.json`、`resources.json`、`route_registry.py`、`CORE.md`、`compiled_ai_skills.md`（生成）。
 
-## 段階4　Skill と参照の整理
+## 段階4　規則の単一所有と pin 文字列のハッシュ化
 
-1. `skills/econ-data/references`（`implementation-*.md` 8ファイル、`equity*.md`）で、`implementation.md` と `implementation-engines.md` の選択表が同じ内容を持つ箇所を特定し、選択表の所有者を1つに決める。
-2. `skills/econ-design/references/designs.md`（77KB）の見出し構造を確認し、参照時に節単位で読める構造にする。
-3. `skills/econ-writing/references` の `paper-workflow.md`（48KB）、`result-artifacts.md`（56KB）で、PROSE と重なる記述と、`scan-text` の検出箇所（`result-artifacts.md` 23件）を修正する。
-4. 修正した節ごとに `route_registry.py read` で到達性を確認する。
-- 受け入れ: 到達基準3と5。
+1. `policy_assets.py` の `PRIMARY_EXPRESSION_RULE` と `PRIMARY_STYLE_RULE`、`paragraph.py` の検証を、PROSE Common output 節のハッシュ照合に置き換える。
+2. `harness/meetings.md`、`quality/prose_rules.md`、`PROFILE.md` 3ファイルに残る重なりを PROSE への参照にする。
+3. 120文字以上の完全一致文を数え、0を確認する。
+- **先行確認**: `paragraph.py` の検証が過去の見本を読み込む経路を先に確認し、旧文字列で保存された成果物の読み込みを維持する。
 
-## 段階5　文書の集約
+## 段階5　エージェント定義とプラグイン定義の統合
 
-1. `docs/ai/integration.md`（28件の検出）と `plugin-integration.md` の内容を比較し、配置・同期・書き出し・フック設定の各節を1ファイルに集約する。
-2. `docs/ai/resources.md`（生成物）の参照元を確認し、生成の要否を決める。
-3. `README.md` の記述を、現行の入口（AGENTS.md → CORE → PROSE → 索引）と一致させる。
-- 受け入れ: 到達基準4と5。
+1. 役割名（`lead`、`implementer`、`retriever`、`specialist`、`reviewer`）を正とし、`terra`・`luna`・`astra` をモデル指定の別名として同一ファイルに統合する。モデル ID（`gpt-6-terra` 系）と推論強度は現行値を保持する。
+2. `placements.json` のエージェント定義10件を役割ごとの生成に変える。
+3. `plugin.json` と `.codex-plugin/plugin.json` を、1つの生成元から出力する。
+4. 配備用（`references/repository-policy/.codex/agents`）と本リポジトリ用（簡約形）の差を1節にまとめる。
+- **検証**: `--check`、3種の書き出し。
 
-## 段階6　ハーネスコードの構造整理
+## 段階6　ランタイム文書の統合
 
-1. 呼び出し元を持たない2定義（`local_checks.py: UTF8Text`、`research_artifacts.py: gallery_items`）を、全リポジトリの参照検索で確認して削除する。
-2. 1,000行超のモジュール（`state.py`、`codex_hooks.py`、`research_artifacts.py`、`research.py`、`paragraph.py`）について、責務ごとの節構成を図にし、重複する補助関数（パス検証、原子的書き込み、ハッシュ）を共通モジュールへ寄せる候補を列挙する。
-3. 候補のうち、呼び出し元が同一モジュール内に閉じ、実行しなくても依存関係を静的に確認できるものだけを移す。
-4. フックの注入量を `hooks/check.py` で各イベントについて測定し、Stop のレビュー依頼文（現在 2,227B）、UserPromptSubmit（約0.8KB）、SessionStart（約0.8KB）の内容を、受け手が行動を変える情報に限る。
-- 受け入れ: 研究実行の入口（`research.py`、`state.py`）の公開関数名と引数を維持する。
+1. CORE の「Economist role」と DECIDE の「Turn the question into an operation」の重なりを CORE に一本化する。
+2. `EXECUTION.md`（3KB）を CORE の完了節または各 Skill の実行手順へ統合する。
+3. `TEAM.md` の再開・使用量集計の節を、必要時のみ読む節に分離する。
+- **検証**: 全操作の `required_rules` が統合後の節IDを指す。
 
-## 段階7　テンプレートとプロファイル
+## 段階7　登録簿の簡約
 
-1. `tex/paper`（6ファイル）、`tex/slides`（5ファイル）を読み、ビルド設定の重複を整理する（ビルドは実行しない）。
-2. `profiles/top-five-en`（26ファイル）と `profiles/academic-ja` の見本は、採択済みの本文として維持し、`PROFILE.md` の選択表だけを整理する。
-3. `.github/ISSUE_TEMPLATE`、`docs/issue`、`.vscode`、`.devcontainer` の設定を、現行の入口と一致させる。
-- 受け入れ: 本文の見本を変更しない。
+1. 本文が同一の条件43件を統合する。
+2. 到達できない規則239件のうち、ID指定で読む見本・設定雛形を明示し、残りを精査する。
+3. 登録簿から生成できる手書き記述（Skill の操作一覧、入口）の残りを生成に移す。
 
-## 段階8　エージェント構成の確認
+## 段階8　制御層と研究実行層の分離
 
-1. `.codex/agents`（7ファイル、簡約形）と `references/repository-policy/.codex/agents`（8ファイル、配備用の詳細形）の役割を `docs/ai/integration.md` に1節で記す。
-2. モデル ID と推論強度の設定は利用者が管理する値として扱い、変更の要否を利用者に提示する。
-- 受け入れ: 両系統の違いが文書で説明される。
+1. 制御層8モジュールごとに、機能、要件が必要とする程度、最も単純な機構を表にする。
+2. `state` と `codex_hooks` の相互取り込みを、共有部分を `harness/control` 側の小モジュールに切り出して解消する。
+3. 研究実行層（`state`、`research`、`research_*`、`reproduction`）から制御層への取り込みを、フック経由のイベント通知だけにする。
+4. 公開関数名と引数を維持する。モジュールの移動は `import` 経路の静的確認で検証する。
+- **範囲**: 構造変更のみ。研究計算の数値は変えない。
 
-## 段階9　同期と最終検証
+## 段階9　Skill・参照・テンプレート・文書
 
-1. `python3 scripts/sync_common_core.py --source . --target ../econ-project` を読み取り比較で実行し、差分を提示する（`--apply` は利用者の指示後）。econ-project は本セッションの GitHub 範囲外にあるため、差分の確認は利用者の環境で行う。
-2. 全 Skill について `route_registry.py read` を各ステージで実行し、本文の欠落がないことを確認する。
-3. 到達基準の測定値を段階0と比較し、結果をコミット本文と最終報告に記す。
-4. 恒久テスト、監査、ベンチマークを新設しない。作業で作った一時スクリプトは scratchpad に置き、リポジトリに追加しない。
+1. `skills/econ-data/references` で、`implementation.md` と `implementation-engines.md` の選択表の所有者を1つに決める。
+2. `designs.md`（77KB）、`paper-workflow.md`（48KB）、`result-artifacts.md`（56KB）を節単位で読める構造に整え、`scan-text` の検出（`result-artifacts.md` 23件、`integration.md` 28件）を修正する。
+3. `docs/ai/` を、配備と同期、フックと設定、操作索引の3文書に集約する。
+4. `README.md` を現行の入口（AGENTS.md → CORE → PROSE → 索引）に一致させる。
+5. `tex/` と `profiles/` は、見本本文を変えずに選択表と設定の重複を整理する（ビルドは実行しない）。
 
-## 実施順と所要の目安
+## 段階10　同期と最終検証
 
-段階1 → 2 → 3 → 4 → 5 の順に進める。段階6〜8は段階5の後に独立して実施できる。段階9は最後に1回行う。各段階の変更範囲は登録簿と生成物で閉じており、途中の段階で止めても `--check` は通る。
+1. `python3 scripts/sync_common_core.py --source . --target ../econ-project` を読み取り比較で実行し、差分を利用者に提示する。`--apply` は利用者の指示後に実行する。
+2. 到達基準1〜13を段階0と比較し、結果を最終報告に記す。
+
+## 実施順
+
+段階1 → 2 → 3 → 4 → 5 → 6 → 7 を順に進める。段階8は段階7の後、段階9は段階4の後に独立して進められる。段階1と3は承認を得るまで保留し、その間に段階2、4、5、6、7を先行できる。
