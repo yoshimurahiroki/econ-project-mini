@@ -307,7 +307,7 @@
     },
     "resource:hook-wrapper": {
       "path": "hooks/check.py",
-      "sha256": "96bf70ad32602a4bea5fd930d55b7b150253a65f64a78a9280bed971e7983ae8"
+      "sha256": "f7d123012b1a991956adb64035e02133873a1ba106b11201c460a393ce775cf0"
     },
     "resource:integration": {
       "path": "docs/ai/integration.md",
