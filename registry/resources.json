@@ -4547,7 +4547,6 @@
       "section_id": "task-entry",
       "requires": [
         "prose.common-output",
-        "prose.revise-for-the-requested-language",
         "research.turn-the-question-into-an-operation"
       ]
     },
@@ -4556,8 +4555,7 @@
       "section_id": "economist-role",
       "requires": [
         "research.turn-the-question-into-an-operation",
-        "prose.common-output",
-        "prose.revise-for-the-requested-language"
+        "prose.common-output"
       ],
       "conditional_requires": [
         {
@@ -4574,7 +4572,6 @@
       "section_id": "authority-and-preserved-inputs",
       "requires": [
         "prose.common-output",
-        "prose.revise-for-the-requested-language",
         "research.turn-the-question-into-an-operation"
       ]
     },
@@ -4583,7 +4580,6 @@
       "section_id": "execution-records",
       "requires": [
         "prose.common-output",
-        "prose.revise-for-the-requested-language",
         "research.turn-the-question-into-an-operation"
       ]
     },
@@ -4592,7 +4588,6 @@
       "section_id": "completion-and-reporting",
       "requires": [
         "prose.common-output",
-        "prose.revise-for-the-requested-language",
         "research.turn-the-question-into-an-operation"
       ]
     },
@@ -6401,13 +6396,7 @@
     },
     "econ-writing.native-entry-contract": {
       "resource_id": "econ-writing",
-      "section_id": "native-entry-contract",
-      "requires": [
-        "prose.select-the-economic-argument",
-        "prose.connect-the-explanation",
-        "prose.select-the-profile",
-        "prose.finish-the-passage"
-      ]
+      "section_id": "native-entry-contract"
     },
     "latex-paper-template.all": {
       "resource_id": "latex-paper-template",
