@@ -6,11 +6,15 @@ Recover the request, existing materials, adopted decisions, result owner, scope,
 
 Apply each answer to affected requirements without reopening settled choices. A clear request needs no interview or approval round. For a complex change, distinguish observable requirements, adopted design and dependency-ordered implementation, including consequential interface/ownership/failure cases. Use existing specifications and [requirements mapping](../../../harness/state.md#adopted-specification-boundary) when persistence is needed. Return the requested brief or continue already-authorized execution.
 
+## Writing and material outputs
+
+For every writing or material output in this reference, including prompts, interview questions, contact drafts, reports, explanations, figures and slides at every scale, do not create prose or visual material: borrow and imitate. First search for and read the actual relevant passages with their surrounding sections and inspect the relevant pages, slides and exhibits in papers and slides from the five major economics journals dated 2020 or later, major economics handbooks, review papers and guides, economics textbooks, and economics course materials (lecture notes, course slides and handouts). Use relevant sources, without requiring every source type in each output. Map content selection, argument structure, style, vocabulary, transitions, endings, placement, design and appearance to actual source passages and elements; borrow and imitate them throughout. Make only surgical, necessary adjustments for established target facts, names, variables, units, citations, grammatical agreement and the specified medium; do not import the sources’ different empirical conditions or conclusions. Record source-to-output mappings and adjustments in the existing materials or work record, and compare every completed element with its source. If sources are insufficient, search and read further rather than fill gaps with free paraphrase, invented examples or original composition. Apply this to English and Japanese, short text, single words, translation, formatting and existing drafts; borrow Japanese expression from corresponding Japanese originals rather than newly translating English.
+
 ## Write the execution prompt
 
 Return a complete ready-to-copy prompt carrying the objective, actual task/targets, adopted criteria, constraints, authority, necessary order, outputs and completion conditions. Preserve quantities, prohibitions and prior decisions from the supplied draft. Resolve consequential conflicts from their source or needed user judgment; invent no requirement or deliverable.
 
-Include available original inputs or accessible versioned references. A hash without its body or an inaccessible path cannot supply the executor's input. Reusable templates may obtain instance materials later; retain placeholders only when a template is requested. Use the requested language and smallest clear structure. Add no compulsory stack or review gate.
+Include available original inputs or accessible versioned references. A hash without its body or an inaccessible path cannot supply the executor's input. Reusable templates may obtain instance materials later; retain placeholders only when a template is requested. Use the requested language and a source-mapped structure suited to the request. Add no compulsory stack or review gate.
 
 In CORE's review, follow the prompt as its executor and compare available input, next operation, resulting artifact and completion evidence with the original request. Deliver the prompt first. Drafting it does not execute its operations.
 
@@ -46,13 +50,13 @@ Retain preceding plan/argument versions. Bind an authorized amendment through it
 
 ## Discussion and interviews
 
-Choose discussion to resolve a real premise or decision. Identify the deciding actor, each participant's information and the comparison distinguishing explanations. Interview questions seek concrete choices, dates and contrasting cases tied to the model. Retain actual responses with attribution/date/source version through econ-literature, then connect them to the finding they establish.
+Choose discussion to resolve a real premise or decision. Identify the deciding actor, each participant's information and the comparison distinguishing explanations. Borrow and minimally adjust source-mapped interview questions to seek concrete choices, dates and contrasting cases tied to the model. Retain actual responses with attribution/date/source version through econ-literature, then connect them to the finding they establish.
 
 After discussion, extract the actual decision, actor, work, date and changed condition. Preserve proposals as proposals and apply authorized changes to affected arguments, tasks and artifacts.
 
 ## Contact drafts
 
-Return the complete message with recipient, purpose, timing, requested judgment/information and supporting material. Email, chat, invitations and reminders remain drafts unless the user specifically instructs sending through the actual destination operation.
+Return the complete source-mapped message with recipient, purpose, timing, requested judgment/information and supporting material, borrowing and minimally adjusting the actual source expressions. Email, chat, invitations and reminders remain drafts unless the user specifically instructs sending through the actual destination operation.
 
 ## Artifacts and integration
 

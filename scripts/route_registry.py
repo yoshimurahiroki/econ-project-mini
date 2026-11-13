@@ -125,7 +125,23 @@ def resolve_operation(routes, selector, mode=None, *, user_profile=None, project
         routes['condition_definitions'][cid].get('uses_profile', False) for cid in conditions
     )
     if uses_profile and profile == 'default-micro' and profile in routes['resources']:
-        merge_selection(selection, {profile: {'sections': [routes['sections'][profile]['principles']['heading']]}})
+        added, profile_selection = required_closure(routes, [profile + '.principles'], conditions, requested)
+        merge_selection(selection, profile_selection)
+        active_rules = list(dict.fromkeys([*active_rules, *added]))
+        origins.update({rule_id: requested for rule_id in added})
+    elif uses_profile and profile in routes['resources']:
+        resource = routes['resources'][profile]
+        source = Path(resource['source_path'])
+        if resource.get('resource_kind') != 'profile' and not (source.parts[0] == 'profiles' and source.name == 'PROFILE.md'):
+            raise ValueError('Selected resource is not a writing profile: ' + profile)
+        profile_rules = [rule_id for rule_id, rule in routes['rules'].items()
+                         if rule['resource_id'] == profile
+                         and routes['sections'][profile][rule['section_id']].get('whole_resource')]
+        added, profile_selection = required_closure(routes, profile_rules, conditions, requested)
+        merge_selection(selection, profile_selection)
+        merge_selection(selection, {profile: {'whole_resource': True}})
+        active_rules = list(dict.fromkeys([*active_rules, *added]))
+        origins.update({rule_id: requested for rule_id in added})
     result.update(requested_selector=requested,
                   canonical_operation=result.get('id', result['skill_id'] + ':' + result['mode']),
                   owner_skill=result['skill_id'], default_input=metadata.get('default_input', result.get('default_input')),
@@ -250,7 +266,7 @@ def native_index(routes, *, links=False, operation=None, family=None, query=None
              'Generated from registry/operations.json. Support continues the adopted task.', '',
              '## Read the pending operation', '',
              '1. **Selected operation → reader.** Read CORE and PROSE Common output, then select the final operation below. Find conditions with `python scripts/route_registry.py index --operation OPERATION --family FAMILY` or `--query TEXT`.',
-             '2. **Complete bodies → execution.** Run `python scripts/route_registry.py read OPERATION --stage STAGE --condition CONDITION --format compact`. Stages: entry classifies; contract adopts question/method/inputs; compose executes/writes; review interprets/repairs; finalize saves/delivers. Direct `read RULE_ID` returns that rule and prerequisites.',
+             '2. **Complete bodies → execution.** Run `python scripts/route_registry.py read OPERATION --stage STAGE --condition CONDITION --format compact`. Stages: entry classifies; contract adopts question/method/inputs; compose executes by borrowing, imitating and minimally adapting read sources for writing; review interprets/repairs; finalize saves/delivers. Direct `read RULE_ID` returns that rule and prerequisites.',
              '3. **Retained bodies → next stage.** Follow every `next_offset` under the same `content_sha256` and seen arguments. `bodies` identifies complete bodies and `reused` names omissions. Pass `--seen BODY_SHA256` only for complete matching bodies still in intact context. After compaction, handoff or model change read originals without seen arguments.',
              '4. **Runtime root → reader.** Deployed trees run `python .agents/scripts/route_registry.py --layout installed read OPERATION --stage STAGE --format compact`; expand incomplete snapshots from canonical source. Skill-scoped hosts read specialist `instructions.md` and common `project-work/references/shared/` bodies, acquiring the matching runtime bundle once for execution.', '']
     for op in routes['operations']:
@@ -357,7 +373,7 @@ def read_selected(routes, root, selector, *, layout='source', mode=None, conditi
         stage = stage or 'entry'
         active, selection = operation['active_rules'], operation['resource_sections']
         profile = operation.get('selected_profile')
-        if profile and profile != 'default-micro':
+        if profile and profile not in routes['resources']:
             custom_profile = Path(profile)
             if not custom_profile.is_absolute():
                 custom_profile = Path(root) / custom_profile
@@ -1093,7 +1109,7 @@ def generate_entries(root, routes=None, *, outputs=None):
         body = transform_entry_references(routes, owner, body)
         write_changed(path, body, previous)
     modes = [op['mode'] for op in routes['operations'] if op['owner_skill'] == 'econ-writing']
-    ui = 'interface:\n  display_name: "Economics Writing"\n  short_description: "Write, explain and revise natural academic prose"\n  default_prompt: "Use $econ-writing in ' + ', '.join(modes) + ' mode. Read CORE, the selected PROSE rules and mode; build the explanation before shortening and complete the integrated review."\npolicy:\n  allow_implicit_invocation: true\n'
+    ui = 'interface:\n  display_name: "Economics Writing"\n  short_description: "Find economics sources first; borrow and imitate prose and visuals"\n  default_prompt: "Use $econ-writing in ' + ', '.join(modes) + ' mode. Read CORE, the selected PROSE rules and mode. For every English or Japanese writing task, including short edits, translation, formatting and existing drafts, first search real 2020 onward top-five economics journal papers and slides, major economics handbooks, reviews, guides and textbooks, and economics course materials including lecture notes, course slides and handouts; read the relevant passages and surrounding context, pages, slides and figures. Map every content choice, structure, expression and visual element to a source; borrow and imitate it, making only the minimum adjustments needed for the confirmed task facts and medium. Use Japanese originals for Japanese expressions; do not transfer source findings or empirical conditions to the task. Record sources and adjustments, and compare every element with the originals. If sources are insufficient, continue searching and reading. Apply this without exceptions; complete the integrated review."\npolicy:\n  allow_implicit_invocation: true\n'
     write_changed(root / 'skills/econ-writing/agents/openai.yaml', ui)
     return routes
 
