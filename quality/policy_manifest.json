@@ -291,11 +291,11 @@
     },
     "resource:example-subscription-manuscript-en": {
       "path": "skills/econ-data/examples/subscription/manuscript-en.md",
-      "sha256": "de00a79a2e7e3ce151058277c93676e36d43d0339d051981288ca5b27ddb3fa0"
+      "sha256": "eec678052ad3563f36a7c3a656a8f71a904339e961cc9ac533f29f68fbb383b5"
     },
     "resource:example-subscription-materials": {
       "path": "skills/econ-data/examples/subscription/materials.py",
-      "sha256": "13041343f134062ab2fc62067e1b43e821b95de3e2acea74339e00f652f9dfb2"
+      "sha256": "f09d636f33e2a51cba2c28040dcfe3d68e56f835bc83cdf81cdd047d3edd282d"
     },
     "resource:example-subscription-specification": {
       "path": "skills/econ-data/examples/subscription/specification.json",
@@ -759,7 +759,7 @@
     },
     "resource:research-rct": {
       "path": "skills/econ-data/scripts/research_rct.R",
-      "sha256": "767ac0d1632cd422fc501810bb7a3bc7d1d483fe6abb6652aa2046cd794e6ac0"
+      "sha256": "868c8bd25d7a3d458da0414c58b9df643f52a3b5a3ec36911790035680b0539f"
     },
     "resource:research-reproduction": {
       "path": "harness/reproduction.py",

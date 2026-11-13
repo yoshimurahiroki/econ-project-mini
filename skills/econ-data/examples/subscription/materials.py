@@ -325,10 +325,7 @@ def build(root, run, output, language):
         # Each displayed comparison carries its own economic interpretation.
         for source, exhibit in (("table1", "result-1"), ("results", "result-2"), ("additional", "result-3")):
             if source in sections:
-                meetings.edit_section(bundle, exhibit,
-                    {"title": titles[source][not ja], "layout": "figure-left" if source == "additional" else "stack"},
-                    body=sections[source], expected_revision=meetings.load_meeting(bundle)[2])
-                meetings.edit_section(bundle, source, {"visible": False}, expected_revision=meetings.load_meeting(bundle)[2])
+                meetings.fold_into_exhibit(bundle, source, exhibit, layout="figure-left" if source == "additional" else "stack")
         if kind == "results":
             meetings.edit_section(bundle, "interpretation", {"visible": False}, expected_revision=meetings.load_meeting(bundle)[2])
     paper_entry = artifacts.gallery_items(root, registry_path, item_ids=[paper_calibration["id"]])[0]
