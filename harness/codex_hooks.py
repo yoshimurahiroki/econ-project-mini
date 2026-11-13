@@ -1624,12 +1624,24 @@ def _verify_completion_contract(directory, bound, message, observed):
     gate.require(not missing, 'required outputs or actual operations are incomplete: ' + json.dumps(missing))
 
 
+REVIEW_MIN_CHARACTERS = 200
+REVIEW_ARTIFACT_SUFFIXES = re.compile(r'\.(?:md|tex|qmd|txt|html|docx|pptx|pdf|bib)\b')
+
+
+def _has_user_facing_prose(message):
+    """A turn needs prose review when its answer is substantive or names a prose artifact."""
+    text = unicodedata.normalize('NFKC', message).strip()
+    return len(text) >= REVIEW_MIN_CHARACTERS or bool(REVIEW_ARTIFACT_SUFFIXES.search(text))
+
+
 def _review_final_prose(event, root, directory, *, session_record=None):
-    """Request one final revision, then always allow Stop re-entry."""
+    """Request one final revision on turns with user-facing prose, then always allow Stop re-entry."""
     if event.get('stop_hook_active') is True:
         return None
     message = event.get('last_assistant_message')
     gate.require(isinstance(message, str) and message.strip(), 'host assistant message is unavailable')
+    if not _has_user_facing_prose(message):
+        return None
     turn = event.get('turn_id')
     gate.require(isinstance(turn, str) and turn.strip(), 'missing host turn_id for prose review')
     if session_record is not None:

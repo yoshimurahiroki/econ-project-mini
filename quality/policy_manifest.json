@@ -11,11 +11,11 @@
     },
     "codex_hooks": {
       "path": "harness/codex_hooks.py",
-      "sha256": "b71ffb8227c2099dc8f373337985cddadd08113c672e787548123d7ea7fc04ff"
+      "sha256": "5cba14ee6f6185cb3aa1e2ea4e1f8e474603054fa8fd119d6bdb4826584b0bac"
     },
     "core": {
       "path": "runtime/CORE.md",
-      "sha256": "96ac329216729630d05aad6417778bf8297c1ed57f457af4477e22384be57903"
+      "sha256": "db76339dc9d62e336f851104c9ffcdacf64b935094ac1ecdcb506ea11df2ebb2"
     },
     "decide": {
       "path": "runtime/DECIDE.md",
