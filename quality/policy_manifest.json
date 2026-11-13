@@ -807,7 +807,7 @@
     },
     "resource:state-contract": {
       "path": "harness/state.md",
-      "sha256": "3406c97aa48643195a284045f2bad9d40032796e0a55e0de6450d2bbb503042d"
+      "sha256": "26c602550d35dc2915ddbf3d67398e9521004be190a5af9a92c3e03e42580bbb"
     },
     "resource:tool-pack-context-sh": {
       "path": "scripts/pack_context.sh",
@@ -919,7 +919,7 @@
     },
     "resource:writing-artifacts": {
       "path": "skills/econ-writing/references/artifact-writing.md",
-      "sha256": "7ddc431afc78bbb852d60dad928faebbdbb98f81f7560e81ac92fd7f086c2c7f"
+      "sha256": "84375abb91c48ebd9331d51f538bd2644b5e6601ebcb57629112672af91d2c3f"
     },
     "resource:writing-compose": {
       "path": "skills/econ-writing/references/compose.md",
