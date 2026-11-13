@@ -671,7 +671,7 @@
     },
     "resource:research-data": {
       "path": "skills/econ-data/scripts/research_data.py",
-      "sha256": "963fe956af170b097dc3ffce5fa6eaefe541a3ce78d82249e29603ff7548e6cf"
+      "sha256": "4e3e1f18a6c158d934a1555f8d93dde3b0c1e33d45c4d82429071a1e5f51fb3b"
     },
     "resource:research-data-guide": {
       "path": "skills/econ-data/references/research-data.md",
@@ -683,7 +683,7 @@
     },
     "resource:research-design": {
       "path": "skills/econ-design/scripts/research_design.py",
-      "sha256": "e1c6c65fe64598e8590ffebb11d41fe37d5f9f44c5d4c45f73b62530d74e9171"
+      "sha256": "a536593c08f46b5a82d3a87bf35144db6af2244938894376be7dd1cf2b1b890c"
     },
     "resource:research-dolo-dependencies": {
       "path": "skills/econ-data/scripts/requirements-dolo.txt",
@@ -695,7 +695,7 @@
     },
     "resource:research-dynamic": {
       "path": "skills/econ-data/scripts/research_dynamic.py",
-      "sha256": "d37790b601f9fbf7acf6def97d3f44840b19a3d1d0c2ea96abe167ec5a42f6a6"
+      "sha256": "1b32e624bcf4bbb3292472332ccb78872c12680d1eaa27c818f9ca901277e2b4"
     },
     "resource:research-dynamic-dependencies": {
       "path": "skills/econ-data/scripts/requirements-dynamic.txt",
@@ -703,7 +703,7 @@
     },
     "resource:research-estimator": {
       "path": "skills/econ-data/scripts/research.py",
-      "sha256": "b8eb1d8cd678f222988a8393a870b5e8c6b858370f902ec69dda85b46f7d1eef"
+      "sha256": "6662bfbb0a72c10ebff7efb12498676126d002ad78be2006513a8592eaf38347"
     },
     "resource:research-evidence": {
       "path": "harness/research_evidence.py",
@@ -739,7 +739,7 @@
     },
     "resource:research-markets": {
       "path": "skills/econ-data/scripts/research_markets.py",
-      "sha256": "13bef9bbb0cd67dd744b6317329c89c13ca832749ab0f508d8cf5074a771dc03"
+      "sha256": "a05e2bde853df0666c62826840f52b0b46b58428b2cc8c07074cda859669d11f"
     },
     "resource:research-markets-dependencies": {
       "path": "skills/econ-data/scripts/requirements-markets.txt",
@@ -959,7 +959,7 @@
     },
     "state": {
       "path": "harness/state.py",
-      "sha256": "6cfec58cc30af3bf465fdcb18cfdac5c5ad6d40555bdffda4334c57e43b52555"
+      "sha256": "8c52b277f699fa0643961dcad0ac5733b1da48d7a028675691598682bd1359dd"
     },
     "team": {
       "path": "runtime/TEAM.md",
