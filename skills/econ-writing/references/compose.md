@@ -2,7 +2,7 @@
 
 ## Compose
 
-Apply [PROSE Common output](../../../runtime/PROSE.md#common-output) to every element, however small.
+Apply [PROSE Common output](../../../runtime/PROSE.md#common-output) to every element.
 
 1. **Output: selected argument; consumer: draft.** Read `python scripts/route_registry.py read prose.common-output --format compact` from the runtime root. Select and closely imitate the actual argument structure of a matching original identified through the borrowing procedure, including its sequence of claims and evidence. Select supported results that change the mechanism, action ranking, allocation or economic magnitude, and fit them to that source structure through only the necessary adjustments. Retain scientific conditions and diagnostics in the source record. Recover the tested contrast or optimizing objective through [paper guidance](paper-workflow.md#compose-the-requested-section).
 2. **Output: result-bound draft; consumer: artifact.** Retrieve quantities, definitions and source identities through existing code. Generate numerical text, tables and figures from the same saved result. The [research renderer](../../../harness/research.md) binds semantic keys, units and formats to producing input, definition, code and execution versions. Follow [PROSE's language rules](../../../runtime/PROSE.md#revise-for-the-requested-language) and [paragraph evidence and inference](paragraph-workflow.md#compose-the-paragraph), using [selected saved evidence](paragraph-workflow.md#command-entry-points) for inference consuming additional results. Apply the same source mapping to Abstracts, slides, summaries and whole papers; use paper guidance for architecture.

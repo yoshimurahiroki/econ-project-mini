@@ -7,7 +7,7 @@ description: Write, revise, explain, translate or format economics prose, papers
 
 1. **Output: writing target; consumer: selected mode.** Recover the requested artifact, audience, language, medium, sources and confirmed facts. Choose the writing mode; execution-prompt creation uses project-work:prompt.
 2. **Output: applicable procedure; consumer: composition.** Activate `paper_reading` for assigned papers or `research_result_artifacts` for saved-result articles/slides. Read the selected mode, PROSE and [medium/render procedure](references/artifact-writing.md). Apply the [shared language rules](../../runtime/PROSE.md#revise-for-the-requested-language) throughout the work and final review.
-3. **Output: inspected source passages and correspondence; consumer: every writing operation.** Apply [PROSE Common output](../../runtime/PROSE.md#common-output) to every element in English and Japanese, however small: short text, single words, translation, formatting, existing drafts and visuals. Preserve the BODY of adopted fictional profiles and ground actual textual and visual choices in the real sources.
+3. **Output: inspected source passages and correspondence; consumer: every writing operation.** Apply [PROSE Common output](../../runtime/PROSE.md#common-output) to every element in English and Japanese,: short text, single words, translation, formatting, existing drafts and visuals. Preserve the BODY of adopted fictional profiles and ground actual textual and visual choices in the real sources.
 
 # Write the requested economics artifact
 

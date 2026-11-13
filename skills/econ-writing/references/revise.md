@@ -2,7 +2,7 @@
 
 ## Revise
 
-Apply [PROSE Common output](../../../runtime/PROSE.md#common-output) to every element, however small.
+Apply [PROSE Common output](../../../runtime/PROSE.md#common-output) to every element.
 
 Start from the author's original text and the requested scope. Recover its intended propositions and source-supported relations. For every change, including a single word or small correction, search and read matching eligible originals and borrow their content selection, logical order, connections and wording with only the necessary adjustments. Apply [PROSE's language rules](../../../runtime/PROSE.md#revise-for-the-requested-language), using corresponding Japanese originals for Japanese. Apply the common review to the revised text with the context needed to assess its connections.
 

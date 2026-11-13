@@ -1,6 +1,6 @@
 # Compose and deliver a research artifact
 
-Select the sections needed by the requested output under the [shared writing contract](../SKILL.md). Apply [PROSE Common output](../../../runtime/PROSE.md#common-output) to every element, however small.
+Select the sections needed by the requested output under the [shared writing contract](../SKILL.md). Apply [PROSE Common output](../../../runtime/PROSE.md#common-output) to every element.
 
 ## Generate articles and slides from results
 
@@ -15,7 +15,7 @@ For a theory or structural presentation, select the existing `model` or `structu
 3. **Output: composed page; consumer: renderer.** Borrow placement, design and appearance from inspected source pages and map each element to its source. Set body, bullets, table text and captions to a 28 pt baseline in screen slides, Beamer and native Slides; CSS 28 pt equals 37.33 px. Use the existing bundle's `title`, body, `artifacts` and `layout`. Use `stack` for a claim and a wide table; `figure-left` for a figure beside its interpretation; `figures` for comparable panels with common scales, selecting and adjusting the arrangement against inspected source pages. Place population, period and units beside the exhibit. Attach its explanatory body to the same section and set the consumed summary section's `visible` to `false`. Fit dense content by splitting its argument across pages while retaining source-grounded arrangements and 28 pt. Keep derivations and diagnostic commentary at their internal owners.
 4. **Output: inspected talk; consumer: audience.** Render through the existing path and inspect every changed page at presentation size. Compare every title, claim, exhibit, implication and visual element with its recorded source and necessary adjustments. Check that mathematical symbols, row labels and intervals are legible from the same view. Repair the producing layout or text through the same source-borrowing procedure, then inspect affected outputs against the adopted argument and duration.
 
-The existing [meeting template](../../../tex/slides/meeting_template.qmd) owns screen settings. The [Beamer source](../../../tex/slides/main.tex) and its generated [adapter](../../../tex/slides/pandoc_template.latex) share PDF typography. Adopt the model material's composition only where mapped to actual source material, within the user's 28 pt baseline. Inspect the actual rendered fonts and page size; a Beamer class option alone does not establish the body size.
+The existing [meeting template](../../../tex/slides/meeting_template.qmd) owns screen settings. The [Beamer source](../../../tex/slides/main.tex) and its generated [adapter](../../../tex/slides/pandoc_template.latex) share PDF typography. Adopt the model material's composition only where mapped to actual source material, within the user's 28 pt baseline. Inspect the actual rendered fonts and page size; the rendered fonts establish the body size.
 
 | Element | Screen slides | Beamer slides | HTML research document |
 |---|---|---|---|
@@ -25,7 +25,7 @@ The existing [meeting template](../../../tex/slides/meeting_template.qmd) owns s
 | Table | 28 pt, aligned numeric columns | 28 pt, 8 pt column padding | 16 px, horizontal rules |
 | Supporting quantity definition | 28 pt | 28 pt | 16 px |
 
-Use the selected font family consistently within each medium. A populated template carries the source-mapped question-to-answer sequence, borrowed prose, equations and saved exhibits. The [subscription material producer](../../econ-data/examples/subscription/materials.py) supplies a same-result bilingual example; run its [documented commands](../../econ-data/examples/subscription/README.md) to inspect the actual pages. Treat existing examples as technical references, not independent authority for prose or visuals: map each adopted element to the specified actual sources, including Japanese originals.
+Use the selected font family consistently within each medium. A populated template carries the source-mapped question-to-answer sequence, borrowed prose, equations and saved exhibits. The [subscription material producer](../../econ-data/examples/subscription/materials.py) supplies a same-result bilingual example; run its [documented commands](../../econ-data/examples/subscription/README.md) to inspect the actual pages. Treat existing examples as technical references and map each adopted element to the specified actual sources, including Japanese originals.
 
 ## Compose a research site
 
@@ -49,4 +49,4 @@ A local revision or translation uses its selected mode and surrounding premises 
 
 Select the paper guidance for the actual scientific argument: empirical identification and contrasts, structural estimation/equilibrium/welfare, or theory/proof. Bind numerical text, equations and exhibits through the selected [result contract](result-artifacts.md). Preserve estimated/calibrated/fixed parameter roles and each quantity's population, timing, units, denominator and scenario. Resolve a missing derivation or comparison through econ-design/data within the existing editing authority, then update affected passages and exhibits through the same source-borrowing procedure.
 
-For explanations, decision reports, proposals, progress reviews, meetings and records, search and read actual corresponding sources for the content selection, argument, wording and presentation appropriate to the requested purpose. Map each element and minimally adjust it to verified project facts, including decisions, basis, responsibility, timing and dependencies in existing project context. Do not independently compose an inference, meeting agenda or layout; return to search and reading when the source correspondence is missing.
+For explanations, decision reports, proposals, progress reviews, meetings and records, search and read actual corresponding sources for the content selection, argument, wording and presentation appropriate to the requested purpose. Map each element and minimally adjust it to verified project facts, including decisions, basis, responsibility, timing and dependencies in existing project context. Compose an inference, meeting agenda or layout from mapped sources; return to search and reading when the source correspondence is missing.

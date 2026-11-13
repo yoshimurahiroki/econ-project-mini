@@ -2,7 +2,7 @@
 
 ## Explain
 
-Apply [PROSE Common output](../../../runtime/PROSE.md#common-output) to every element, however small.
+Apply [PROSE Common output](../../../runtime/PROSE.md#common-output) to every element.
 
 Explain the specified paper, theory, institution, method or result at the requested depth, using source-supported mechanism and evidence.
 
