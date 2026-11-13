@@ -11,11 +11,11 @@
     },
     "codex_hooks": {
       "path": "harness/codex_hooks.py",
-      "sha256": "2fce492fbffd031a0f61819a1533b105171d90e59e31efdcf57f50d0559c5df3"
+      "sha256": "76ce9d20dc515d140e6aa5b54aded3dc6b713513c9a089c14abaa2ecf7731a8d"
     },
     "core": {
       "path": "runtime/CORE.md",
-      "sha256": "53924b11a27f94ffc97cccfea637144151ca1bb323e991d60e71f269562c70f6"
+      "sha256": "4702931db57841ef5486891bc446b947f9e70b7bfe225ab5de5bfd26ceb989f5"
     },
     "decide": {
       "path": "runtime/DECIDE.md",
@@ -311,7 +311,7 @@
     },
     "resource:integration": {
       "path": "docs/ai/integration.md",
-      "sha256": "1a4537912f86b4fffda0cb285f03df0e532e00b5b9bd11d2ac9e975533c0c2b3"
+      "sha256": "190369894a1c26556908398b3e96b8e792af6cd5dd0becaddd735cf59f12da86"
     },
     "resource:journal-priority": {
       "path": "skills/econ-literature/references/journal-priority.json",
@@ -507,7 +507,7 @@
     },
     "resource:native-index": {
       "path": "docs/ai/compiled_ai_skills.md",
-      "sha256": "c850ce370548aee4c11960bba69fc833b3491cf0c2fd286db8dfcb87d35f8df7"
+      "sha256": "d8a1690bafbd7d17408c0bbfae3ed24ff8f0e13652a47a5f9654b3edfbbaf1e5"
     },
     "resource:package-notices": {
       "path": "THIRD_PARTY_NOTICES.md",
@@ -807,7 +807,7 @@
     },
     "resource:state-contract": {
       "path": "harness/state.md",
-      "sha256": "9d1ce8d3e7bf3f591cee6049f27459fab08cc1c6a756f1374eb858273933df6f"
+      "sha256": "3406c97aa48643195a284045f2bad9d40032796e0a55e0de6450d2bbb503042d"
     },
     "resource:tool-pack-context-sh": {
       "path": "scripts/pack_context.sh",
@@ -955,7 +955,7 @@
     },
     "route_registry": {
       "path": "scripts/route_registry.py",
-      "sha256": "ce5774b46dc0dc9334a805fd8b485e96e26495ea9353cea1984123ce74e44b82"
+      "sha256": "dafbe785ddbcf84ccf6d1e45c89c1d418873788e6405ca9549ed40d779f38393"
     },
     "state": {
       "path": "harness/state.py",

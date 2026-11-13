@@ -266,9 +266,9 @@ def native_index(routes, *, links=False, operation=None, family=None, query=None
              'Generated from registry/operations.json. Support continues the adopted task.', '',
              '## Read the pending operation', '',
              '1. **Selected operation → reader.** Read CORE and PROSE Common output, then select the final operation below. Find conditions with `python scripts/route_registry.py index --operation OPERATION --family FAMILY` or `--query TEXT`.',
-             '2. **Complete bodies → execution.** Run `python scripts/route_registry.py read OPERATION --stage STAGE --condition CONDITION --format compact`. Stages: entry classifies; contract adopts question/method/inputs; compose executes by borrowing, imitating and minimally adapting read sources for writing; review interprets/repairs; finalize saves/delivers. Direct `read RULE_ID` returns that rule and prerequisites.',
-             '3. **Retained bodies → next stage.** Follow every `next_offset` under the same `content_sha256` and seen arguments. `bodies` identifies complete bodies and `reused` names omissions. Pass `--seen BODY_SHA256` only for complete matching bodies still in intact context. Stages after entry omit CORE and PROSE Common output. After compaction, handoff or model change read originals with `--restore` and without seen arguments.',
-             '4. **Runtime root → reader.** Deployed trees run `python .agents/scripts/route_registry.py --layout installed read OPERATION --stage STAGE --format compact`; expand incomplete snapshots from canonical source. Skill-scoped hosts read specialist `instructions.md` and common `project-work/references/shared/` bodies, acquiring the matching runtime bundle once for execution.', '']
+             '2. **Complete bodies → execution.** Run `python scripts/route_registry.py read OPERATION --stage STAGE --condition CONDITION`. Stages: entry classifies; contract adopts question/method/inputs; compose executes by borrowing, imitating and minimally adapting read sources for writing; review interprets/repairs; finalize saves/delivers. Direct `read RULE_ID` returns that rule and prerequisites.',
+             '3. **Continuation → next stage.** Each read returns its complete bodies; a non-null `next_offset` continues the same read with `--offset`. Stages after entry return their own bodies; `--restore` delivers CORE and PROSE Common output again after compaction, handoff or model change.',
+             '4. **Runtime root → reader.** Deployed trees run `python .agents/scripts/route_registry.py --layout installed read OPERATION --stage STAGE`; expand incomplete snapshots from canonical source. Skill-scoped hosts read specialist `instructions.md` and common `project-work/references/shared/` bodies, acquiring the matching runtime bundle once for execution.', '']
     for op in routes['operations']:
         label = op['skill_id'] + ' / ' + op['mode']
         if links:
@@ -296,7 +296,7 @@ def native_index(routes, *, links=False, operation=None, family=None, query=None
             if rid in routes['resources']:
                 path = posixpath.relpath(routes['resources'][rid]['source_path'], 'docs/ai')
                 lines.append(f'- [{rid}]({path})')
-        lines += ['', 'For local or extracted runtimes, go directly to a known `read OPERATION --condition CONDITION`. `index --operation OPERATION` lists its conditions and bodies; `index --resource RESOURCE_ID` lists a method hierarchy and prerequisites. Read pages through `next_offset` until null. `read RULE_ID` returns that rule with its prerequisites. Reuse complete same-version reads.', '']
+        lines += ['', 'For local or extracted runtimes, go directly to a known `read OPERATION --condition CONDITION`. `index --operation OPERATION` lists its conditions and bodies; `index --resource RESOURCE_ID` lists a method hierarchy and prerequisites. `read RULE_ID` returns that rule with its prerequisites.', '']
     return '\n'.join(lines) + '\n'
 
 
@@ -353,7 +353,7 @@ def extract_sections(text, selection, resource):
 
 
 def read_selected(routes, root, selector, *, layout='source', mode=None, conditions=(),
-                  user_profile=None, project_profile=None, offset=0, limit=16000, stage=None,
+                  user_profile=None, project_profile=None, offset=0, limit=48000, stage=None,
                   seen=(), compact=False, restore=False, kernel_delivered=False):
     """Deliver exact selected bodies; pagination never marks them as read.
 
@@ -1159,7 +1159,7 @@ if __name__ == '__main__':
             selected.add_argument('--stage', choices=('entry','contract','compose','review','finalize'),
                                   help='Read the current stage; operations default to entry, explicit rule IDs retain direct reads')
             selected.add_argument('--offset', type=int, default=0, help='Character offset returned by the preceding page')
-            selected.add_argument('--limit', type=int, default=16000, help='Maximum body characters per page')
+            selected.add_argument('--limit', type=int, default=48000, help='Maximum body characters per page')
             selected.add_argument('--format', choices=('json', 'compact'), default='compact')
             selected.add_argument('--seen', action='append', default=[], help='Hash of a complete body still present in this intact context')
             selected.add_argument('--kernel-delivered', action='store_true', help='Omit CORE and PROSE Common output that a hook packet already delivered')
