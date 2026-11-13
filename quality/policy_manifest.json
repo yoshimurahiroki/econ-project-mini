@@ -63,7 +63,7 @@
     },
     "registry_resources": {
       "path": "registry/resources.json",
-      "sha256": "84bf8e8df1cb198c6de35152a36ef910e029442cfb36243ea0b5bbe20de8de12"
+      "sha256": "abbb7ad6d6764f57780a0717a7a2ef08ef5f7d9024e61d7bb932b6207fbe102a"
     },
     "requirements_check": {
       "path": "harness/requirements_check.py",
@@ -955,7 +955,7 @@
     },
     "route_registry": {
       "path": "scripts/route_registry.py",
-      "sha256": "b150f182bca97fd4de27422188ed3231c4da89c146a15e5fd1223f1410de608c"
+      "sha256": "a1bd907c78026ab2bf14932a8b598153b4c7fe1c6875443c45d9ee4e6916cfae"
     },
     "state": {
       "path": "harness/state.py",

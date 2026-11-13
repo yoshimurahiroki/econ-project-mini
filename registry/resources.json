@@ -4930,33 +4930,33 @@
       "resource_id": "writing-compose",
       "section_id": "compose",
       "requires": [
-        "econ-writing.compose-for-the-medium-and-language",
-        "econ-writing.native-entry-contract"
+        "econ-writing.native-entry-contract",
+        "econ-writing.compose-for-the-medium-and-language"
       ]
     },
     "econ-writing.revise": {
       "resource_id": "writing-revise",
       "section_id": "revise",
       "requires": [
-        "prose.revise-for-the-requested-language",
-        "econ-writing.native-entry-contract"
+        "econ-writing.native-entry-contract",
+        "prose.revise-for-the-requested-language"
       ]
     },
     "econ-writing.translate": {
       "resource_id": "writing-translate",
       "section_id": "translate",
       "requires": [
-        "prose.revise-for-the-requested-language",
-        "econ-writing.native-entry-contract"
+        "econ-writing.native-entry-contract",
+        "prose.revise-for-the-requested-language"
       ]
     },
     "econ-writing.convert": {
       "resource_id": "writing-convert",
       "section_id": "convert",
       "requires": [
+        "econ-writing.native-entry-contract",
         "prose.revise-for-the-requested-language",
-        "econ-writing.compose-for-the-medium-and-language",
-        "econ-writing.native-entry-contract"
+        "econ-writing.compose-for-the-medium-and-language"
       ]
     },
     "econ-writing.guidance": {
@@ -5561,8 +5561,8 @@
       "resource_id": "writing-explain",
       "section_id": "explain",
       "requires": [
-        "prose.revise-for-the-requested-language",
-        "econ-writing.native-entry-contract"
+        "econ-writing.native-entry-contract",
+        "prose.revise-for-the-requested-language"
       ]
     },
     "econ-writing.profile": {
@@ -9181,13 +9181,7 @@
       "local-checks-guide": [
         "all"
       ],
-      "default-micro": [
-        "principles"
-      ],
       "knowledge-guide": [
-        "all"
-      ],
-      "top-five-en": [
         "all"
       ],
       "top-five-en-abstract-labor-public": [
@@ -9275,9 +9269,6 @@
         "all"
       ],
       "academic-ja-equipment-subsidy": [
-        "all"
-      ],
-      "academic-ja": [
         "all"
       ]
     },
@@ -9425,12 +9416,6 @@
       "review-procedure": [
         "all"
       ],
-      "default-micro": [
-        "all"
-      ],
-      "top-five-en": [
-        "all"
-      ],
       "top-five-en-abstract-labor-public": [
         "all"
       ],
@@ -9513,9 +9498,6 @@
         "all"
       ],
       "academic-ja-equipment-subsidy": [
-        "all"
-      ],
-      "academic-ja": [
         "all"
       ]
     },

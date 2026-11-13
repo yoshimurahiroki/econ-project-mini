@@ -389,8 +389,14 @@ def read_selected(routes, root, selector, *, layout='source', mode=None, conditi
         selection = {}
         active = []
         if stage != 'entry' and not restore:
-            kept = [row for row in refs if row['resource_id'] != 'core'
-                    and (row['resource_id'], row['section_id']) != ('prose', 'common-output')]
+            stages = routes['reading_stages']
+            def assigned(name):
+                return {(rid, sid) for rid, ids in stages.get(name, {}).items() for sid in ids}
+            delivered_at_entry = assigned('entry') - assigned(stage)
+            whole = {rid for rid, sid in delivered_at_entry if sid == 'all'}
+            kept = [row for row in refs
+                    if row['resource_id'] not in whole
+                    and (row['resource_id'], row['section_id']) not in delivered_at_entry]
             kernel_omitted = len(kept) != len(refs)
             refs = kept
         for row in refs:
