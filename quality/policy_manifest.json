@@ -291,11 +291,11 @@
     },
     "resource:example-subscription-manuscript-en": {
       "path": "skills/econ-data/examples/subscription/manuscript-en.md",
-      "sha256": "53dcec16535a36254a639b7786eeaa94ea8a344ec04d15e86ceb10af46a70e43"
+      "sha256": "4567ebf1ba4d9ed17ae1c9071fbd711a410734a57ad134c74f1ec7142c2e5d37"
     },
     "resource:example-subscription-materials": {
       "path": "skills/econ-data/examples/subscription/materials.py",
-      "sha256": "257c4d3f15d682a85ea91f6afa279abd667040c6adf3e0f8d7dd9ea002c45f75"
+      "sha256": "4118fc81dbd21e816112ff178f762b749496ace512bbdab2de948bfb0349bce0"
     },
     "resource:example-subscription-specification": {
       "path": "skills/econ-data/examples/subscription/specification.json",
@@ -651,7 +651,7 @@
     },
     "resource:research-artifacts": {
       "path": "harness/research_artifacts.py",
-      "sha256": "b0fa69dbb29457c0c90e3c89d59faeeeb741b93fdb849bacb87f66da4c4ec59c"
+      "sha256": "2a74bcb183f43e05e5d88a2bf172d0fdec33be87cabdbfb8cb06be37ab503b55"
     },
     "resource:research-causal": {
       "path": "skills/econ-data/scripts/research_causal.py",
