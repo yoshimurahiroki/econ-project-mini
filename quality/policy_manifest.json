@@ -919,7 +919,7 @@
     },
     "resource:writing-artifacts": {
       "path": "skills/econ-writing/references/artifact-writing.md",
-      "sha256": "dcb26ef8acf3ea553c8e5ece38315f9bee7a7de64006e66d2b6f9573476469c3"
+      "sha256": "fdbad87870f5f2231b96b69c63a9cff85e221a803016e26430cf7a8a1c39267d"
     },
     "resource:writing-compose": {
       "path": "skills/econ-writing/references/compose.md",
