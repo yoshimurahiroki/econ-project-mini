@@ -2115,7 +2115,7 @@ def latex_adapter(source, kind):
         source=replace_once(source,'\\bibliography{../bibliography}  % Bibliography file (usually \'*.bib\')', '$if(bibliography)$\\bibliography{$for(bibliography)$$bibliography$$sep$,$endfor$}$endif$')
     elif kind=='slides':
         # Pandoc's common preamble selects Babel's locale through the class option.
-        source=replace_once(source,'\\documentclass[unicode, mathserif, t, 12pt, aspectratio=169, unknownkeysallowed]{beamer}', '\\documentclass[unicode, mathserif, t, 12pt, unknownkeysallowed$if(babel-lang)$,$babel-lang$$endif$,aspectratio=$if(aspectratio)$$aspectratio$$else$169$endif$]{beamer}')
+        source=replace_once(source,'\\documentclass[unicode, t, 12pt, aspectratio=169, unknownkeysallowed]{beamer}', '\\documentclass[unicode, t, 12pt, unknownkeysallowed$if(babel-lang)$,$babel-lang$$endif$,aspectratio=$if(aspectratio)$$aspectratio$$else$169$endif$]{beamer}')
         source=replace_once(source,'\\usetheme[numbering=fraction]{metropolis}', '$if(theme)$\\usetheme{$theme$}$else$\\usetheme[numbering=fraction]{metropolis}$endif$')
         source=replace_once(source,'\\title[Footer title]{TITLE}\n\\subtitle{SUBTITLE}\n\\author{Author}\n\\institute{}\n\\date{\\today}', '$if(title)$\\title{$title$}$endif$\n$if(subtitle)$\\subtitle{$subtitle$}$endif$\n\\author{$for(author)$$author$$sep$ \\and $endfor$}\n$if(institute)$\\institute{$institute$}$endif$\n\\date{$if(date)$$date$$else$\\today$endif$}')
         source=replace_once(source,'\\usepackage{amsmath}\n\\begin{document}', '\\usepackage{amsmath}\n'+common+'\\AtBeginEnvironment{longtable}{\\normalsize\\setlength{\\tabcolsep}{8pt}\\renewcommand{\\arraystretch}{1.25}}\n\\begin{document}')

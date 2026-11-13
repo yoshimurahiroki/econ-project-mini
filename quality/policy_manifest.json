@@ -359,7 +359,7 @@
     },
     "resource:latex-slides-pandoc": {
       "path": "tex/slides/pandoc_template.latex",
-      "sha256": "a47d4168e3ed33d7db2ef1d0e84cfdf19f1041e9b89ba02cced40d2074563526"
+      "sha256": "94f38a648d36f01628d5f097ffed48b50da9ebeac39c0bab157d35ed0524b07f"
     },
     "resource:latex-slides-quarto": {
       "path": "tex/slides/quarto_template.qmd",
@@ -367,7 +367,7 @@
     },
     "resource:latex-slides-template": {
       "path": "tex/slides/main.tex",
-      "sha256": "0b41a5f7dde547b01babcad961daeb9de11d4becc6b833f1fc063d9a87362198"
+      "sha256": "3864a114b5aaa29d66748b6afb14a675dc818c66a3ec7bdf09925431c94e3682"
     },
     "resource:literature-methods": {
       "path": "skills/econ-literature/references/literature-methods.md",
@@ -651,7 +651,7 @@
     },
     "resource:research-artifacts": {
       "path": "harness/research_artifacts.py",
-      "sha256": "088c4a44daf3f4278f8e9bb910f703dcbd800a5ebadbbd642686d3c7a5810417"
+      "sha256": "b8cbd4adb10bc812cb1e80e835e6b6dc7b481a91dd6d7c6f80d11d3fae401231"
     },
     "resource:research-causal": {
       "path": "skills/econ-data/scripts/research_causal.py",

@@ -1,5 +1,5 @@
 % !TEX program = lualatex
-\documentclass[unicode, mathserif, t, 12pt, unknownkeysallowed$if(babel-lang)$,$babel-lang$$endif$,aspectratio=$if(aspectratio)$$aspectratio$$else$169$endif$]{beamer}
+\documentclass[unicode, t, 12pt, unknownkeysallowed$if(babel-lang)$,$babel-lang$$endif$,aspectratio=$if(aspectratio)$$aspectratio$$else$169$endif$]{beamer}
 %\includeonlyframes{current}
 
 \usepackage{color}
@@ -14,6 +14,7 @@
 \renewcommand{\bibsection}{}
 
 $if(theme)$\usetheme{$theme$}$else$\usetheme[numbering=fraction]{metropolis}$endif$
+\usefonttheme[onlymath]{serif}
 
 \definecolor{Waseda}{HTML}{922E41}
 \definecolor{Orange}{HTML}{CF4A30}
