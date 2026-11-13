@@ -122,6 +122,10 @@
 | 同資料の Quarto + LuaLaTeX による PDF 出力（日本語） | 成功 |
 | `tex/paper/ecta_template.tex` と `tex/slides/main.tex` の LaTeX ビルド | 成功 |
 | Julia のパッケージ導入（pkg.julialang.org） | 成功 |
+| 研究例の資料生成と Quarto 出力（housing・charging・subscription の日本語 14 件、英語 5 件の bundle を HTML・PDF） | 全件成功。subscription の日本語論文 PDF は修正前に失敗していた（`econsocart` が Babel の読む見出し名を定義せず、`\begin{document}` で停止）。論文 PDF から Babel の言語指定を外し、`meeting_template.qmd` の `\babeladjust` を Babel 読み込み時だけ実行する形にして解消。 |
+| スライドテンプレートの `mathserif` クラスオプション（beamer が廃止予定と警告） | `\usefonttheme[onlymath]{serif}` に置換。描画は同一。生成器 `research_artifacts.py` の置換元も更新。 |
+| `ruff` の F 系検査 | 未使用 import 7件を削除。残る6件は依存の存在確認を目的とする import で維持。 |
+| Markdown の相対リンク 782件 | 壊れたリンク0件（検出2件は数式の誤検出） |
 | 研究例 equipment（ruspy の GitHub 固定版）と commuting（estimatr 2.1.0 の GitHub 固定版） | 未実行。固定版の取得元 `github.com` と `codeload.github.com` が環境のネットワーク規則で拒否される |
 | `pixi` の導入と TinyTeX の導入 | 未実行。同じ理由で `github.com` のリリース配布と `prefix.dev` が拒否される |
 
