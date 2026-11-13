@@ -243,7 +243,7 @@
     },
     "resource:example-commuting-materials": {
       "path": "skills/econ-data/examples/commuting/materials.py",
-      "sha256": "1df26e205ee5997b97f1684e8548c9e83dcae6b68f20aaf6a06df21c33aaef0a"
+      "sha256": "ec1b7d371de3fd31a1ac5401359335f5147f6a86749bd26756fb6bb0c055549a"
     },
     "resource:example-commuting-specification": {
       "path": "skills/econ-data/examples/commuting/specification.json",
@@ -759,7 +759,7 @@
     },
     "resource:research-rct": {
       "path": "skills/econ-data/scripts/research_rct.R",
-      "sha256": "868c8bd25d7a3d458da0414c58b9df643f52a3b5a3ec36911790035680b0539f"
+      "sha256": "767ac0d1632cd422fc501810bb7a3bc7d1d483fe6abb6652aa2046cd794e6ac0"
     },
     "resource:research-reproduction": {
       "path": "harness/reproduction.py",
