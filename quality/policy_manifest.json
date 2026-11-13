@@ -11,7 +11,7 @@
     },
     "codex_hooks": {
       "path": "harness/codex_hooks.py",
-      "sha256": "3cb1edab2d602daed3e5bc7066de8a123b1ae7833adb5a9db8440d80b0d096bc"
+      "sha256": "b71ffb8227c2099dc8f373337985cddadd08113c672e787548123d7ea7fc04ff"
     },
     "core": {
       "path": "runtime/CORE.md",
@@ -47,7 +47,7 @@
     },
     "prose": {
       "path": "runtime/PROSE.md",
-      "sha256": "32d07143fa7ec06acebcfa7dc65a4cc8a2ea2f788e4eead6fd923d3df1c42a0f"
+      "sha256": "fd9a545105ac00008dbc6757889dd1a78f19cdf9e40483afe9feac6485bee57b"
     },
     "prose_guide": {
       "path": "quality/prose_rules.md",
