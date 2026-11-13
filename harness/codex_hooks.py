@@ -1672,7 +1672,7 @@ def _review_final_prose(event, root, directory, *, session_record=None):
     reader = root / ('.agents/scripts/route_registry.py' if installed else 'scripts/route_registry.py')
     read_command = ('python ' + shlex.quote(str(reader)) + ' --root ' + shlex.quote(str(root)) +
                     (' --layout installed' if installed else '') +
-                    ' read prose.finish-the-passage --format compact')
+                    ' read prose.finish-the-passage')
     return {'decision': 'block', 'reason': (
         'Perform one final review this turn.\n'
         '1. Output: review assignment -> one fresh native subagent. Supply the actual request, complete '

@@ -11,11 +11,11 @@
     },
     "codex_hooks": {
       "path": "harness/codex_hooks.py",
-      "sha256": "76ce9d20dc515d140e6aa5b54aded3dc6b713513c9a089c14abaa2ecf7731a8d"
+      "sha256": "0b5f2bda0f7a37492ab18102416098d0f81963053002b2e978804d536a4e0a7d"
     },
     "core": {
       "path": "runtime/CORE.md",
-      "sha256": "4702931db57841ef5486891bc446b947f9e70b7bfe225ab5de5bfd26ceb989f5"
+      "sha256": "569d5c6638f578ab0e0e7450c5c8edf4a98958917b02324ebcba130d60d706f4"
     },
     "decide": {
       "path": "runtime/DECIDE.md",
@@ -71,7 +71,7 @@
     },
     "resource:academic-ja": {
       "path": "profiles/academic-ja/PROFILE.md",
-      "sha256": "a17625993658a59953472e3d7cf442ccb6ed7212c6bf9d037832858013acabd1"
+      "sha256": "b442cdaf454e03298861f7a4d8bc9e149075e09d3889c5b02368fa29bb3b730e"
     },
     "resource:academic-ja-attention-plan-choice": {
       "path": "profiles/academic-ja/attention-plan-choice.md",
@@ -163,7 +163,7 @@
     },
     "resource:econ-data": {
       "path": "skills/econ-data/SKILL.md",
-      "sha256": "0efa12e1e1d08c0eec5da8ebc79e4274dbbae2959a6d33d7aaede9ef600d67a3"
+      "sha256": "4bb02aa6d7386e96fea5d57b195e0c3ad96025c621d03f8d77aae64198fb94e3"
     },
     "resource:econ-design": {
       "path": "skills/econ-design/SKILL.md",
@@ -311,7 +311,7 @@
     },
     "resource:integration": {
       "path": "docs/ai/integration.md",
-      "sha256": "190369894a1c26556908398b3e96b8e792af6cd5dd0becaddd735cf59f12da86"
+      "sha256": "f7a5107b55aa67acaa80eccaf5e280a3436af0af2019ef7e5fd2b5b6085f89f5"
     },
     "resource:journal-priority": {
       "path": "skills/econ-literature/references/journal-priority.json",
@@ -815,7 +815,7 @@
     },
     "resource:top-five-en": {
       "path": "profiles/top-five-en/PROFILE.md",
-      "sha256": "0258ef24458a4db02e35138aed6cd5d25e6822a4915387f201ab0a7ddd5ad196"
+      "sha256": "42a33cee931d464f22e669be2a81c650808e388d0cc7016582d73a3e035e1510"
     },
     "resource:top-five-en-abstract-econometrics": {
       "path": "profiles/top-five-en/abstract-econometrics.md",
@@ -955,7 +955,7 @@
     },
     "route_registry": {
       "path": "scripts/route_registry.py",
-      "sha256": "dafbe785ddbcf84ccf6d1e45c89c1d418873788e6405ca9549ed40d779f38393"
+      "sha256": "21d1fbff9ea408348cf48464e58927aaf9f79370fdb6c2f72235315d5b2f48ac"
     },
     "state": {
       "path": "harness/state.py",

@@ -226,7 +226,7 @@ def native_index(routes, *, links=False, operation=None, family=None, query=None
         selected = resolve_operation(routes, operation)
         lines = ['# ' + selected['canonical_operation'], '', selected['description'], '',
                  'Select the conditions actually present in the request. `read ' + selected['canonical_operation']
-                 + ' --stage STAGE --condition CONDITION --format compact` delivers the current stage\'s complete bodies and prerequisites.', '',
+                 + ' --stage STAGE --condition CONDITION` delivers the current stage\'s complete bodies and prerequisites.', '',
                  '| Condition | Direct required bodies | Optional examples |', '| --- | --- | --- |']
         candidates = [cid for cid, definition in routes['condition_definitions'].items()
                       if definition.get('applies_to', '*') == '*'
@@ -400,6 +400,8 @@ def read_selected(routes, root, selector, *, layout='source', mode=None, conditi
                     and (row['resource_id'], row['section_id']) not in delivered_at_entry]
             kernel_omitted = len(kept) != len(refs)
             refs = kept
+        kernel_first = {'core': 0, 'prose': 1}
+        refs = sorted(refs, key=lambda row: kernel_first.get(row['resource_id'], 2))
         for row in refs:
             locator = routes['sections'][row['resource_id']][row['section_id']]
             merge_selection(selection, {row['resource_id']: {'whole_resource': True}
@@ -1160,7 +1162,7 @@ if __name__ == '__main__':
                                   help='Read the current stage; operations default to entry, explicit rule IDs retain direct reads')
             selected.add_argument('--offset', type=int, default=0, help='Character offset returned by the preceding page')
             selected.add_argument('--limit', type=int, default=48000, help='Maximum body characters per page')
-            selected.add_argument('--format', choices=('json', 'compact'), default='compact')
+            selected.add_argument('--format', choices=('text', 'compact', 'json'), default='text', help='text prints the bodies; compact and json print the delivery record')
             selected.add_argument('--seen', action='append', default=[], help='Hash of a complete body still present in this intact context')
             selected.add_argument('--kernel-delivered', action='store_true', help='Omit CORE and PROSE Common output that a hook packet already delivered')
             selected.add_argument('--restore', action='store_true', help='Deliver CORE and PROSE Common output at a stage after entry (context loss, handoff, model change)')
@@ -1179,8 +1181,13 @@ if __name__ == '__main__':
                                conditions=args.condition, user_profile=args.user_profile,
                                project_profile=args.project_profile, offset=args.offset, limit=args.limit,
                                stage=args.stage or (None if args.operation in routes['rules'] else 'entry'),
-                               seen=args.seen, compact=args.format == 'compact', restore=args.restore, kernel_delivered=args.kernel_delivered)
-        print(json.dumps(result, ensure_ascii=False, indent=2))
+                               seen=args.seen, compact=args.format != 'json', restore=args.restore, kernel_delivered=args.kernel_delivered)
+        if args.format == 'text':
+            print(result['text'], end='')
+            if result['next_offset'] is not None:
+                print('\nnext_offset: ' + str(result['next_offset']))
+        else:
+            print(json.dumps(result, ensure_ascii=False, indent=2))
     else:
         result = resolve_operation(routes, args.operation, args.mode,
                                    user_profile=args.user_profile, project_profile=args.project_profile,
