@@ -24,7 +24,7 @@ import time
 import unicodedata
 import xml.etree.ElementTree as ET
 from pathlib import Path
-from urllib.error import HTTPError, URLError
+from urllib.error import HTTPError
 from urllib.parse import quote, urlencode
 from urllib.request import Request, urlopen
 

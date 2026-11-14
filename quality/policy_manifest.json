@@ -287,7 +287,7 @@
     },
     "resource:literature-search-tool": {
       "path": "skills/econ-literature/scripts/literature_search.py",
-      "sha256": "84991aa7600ca08e5cce4aa1a29a345d9ffa10022a94bbaa88710b01bb3af8fc"
+      "sha256": "a3c0a7d0394acd9432fe9eb3f8bc756d0162fec0f22eb47f5fe5cd6cf484b978"
     },
     "resource:local-checks-guide": {
       "path": "harness/local_checks.md",
