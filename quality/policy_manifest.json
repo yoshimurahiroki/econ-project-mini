@@ -55,7 +55,7 @@
     },
     "registry_resources": {
       "path": "registry/resources.json",
-      "sha256": "e23e6d9d85b5cb6dde044b5a1e01f0cdfea3fdeafc1968526cb9217cae6e8293"
+      "sha256": "590472cf5fbbc20ddb1c645da3b47cc488a2c074cd5dbc188b7d4cd8e271a787"
     },
     "requirements_check": {
       "path": "harness/requirements_check.py",
@@ -99,7 +99,7 @@
     },
     "resource:data-engine-selection": {
       "path": "skills/econ-data/references/implementation-engines.md",
-      "sha256": "9a0dd130fe211891d06f07cc8ed2f6477bb14bcff5fca0d0bd100542bf1422c6"
+      "sha256": "ae6e3f6f8214a8388a96c5c8cb7c42dd71624586edcd385bc630631db2a1fec0"
     },
     "resource:data-estimate-template": {
       "path": "skills/econ-data/templates/estimate_ladder.py",
@@ -119,7 +119,7 @@
     },
     "resource:data-results": {
       "path": "skills/econ-data/references/reproducible-workflow.md",
-      "sha256": "7d3c499ca57e070ad1aab20249c5aed3acc32cb837881361ee39281bb990a54c"
+      "sha256": "30c8b8e76a3e57776ec25f929a87e3f8795ccd1c391577b7150d685c2458b2a2"
     },
     "resource:data-source": {
       "path": "skills/econ-data/references/implementation-data.md",
@@ -143,7 +143,7 @@
     },
     "resource:design-methods": {
       "path": "skills/econ-design/references/designs.md",
-      "sha256": "c3f0ce4c3478776ceb7578046978de0117e8dbb3ceec5f21e18854a6e73d5519"
+      "sha256": "51ac583abcd3a0ccd5d26bb8f4ae89f097abafbb0951c9dd60890d298a287c13"
     },
     "resource:design-modeling": {
       "path": "skills/econ-design/references/modeling.md",
@@ -215,7 +215,7 @@
     },
     "resource:example-charging": {
       "path": "skills/econ-data/examples/charging/README.md",
-      "sha256": "80616a0b896444f7ca1e9a762ff745fdfffa983ea84430eb17c3d056778c5b98"
+      "sha256": "e8fe12a9b7af7e0a60644c79dc17a567b7332ab12217428059420c4669d3a979"
     },
     "resource:example-charging-code": {
       "path": "skills/econ-data/examples/charging/run.py",
@@ -231,7 +231,7 @@
     },
     "resource:example-commuting": {
       "path": "skills/econ-data/examples/commuting/README.md",
-      "sha256": "9ff4ceb71bef763aa3051417f00e310f79bf34fc87dad4132ebeed5c0ab74c51"
+      "sha256": "69e8ea4d1a2062ff32062e3f35d095c20da96a207637ebc0e14977dfbca60689"
     },
     "resource:example-commuting-code": {
       "path": "skills/econ-data/examples/commuting/run.py",
@@ -247,7 +247,7 @@
     },
     "resource:example-equipment": {
       "path": "skills/econ-data/examples/equipment/README.md",
-      "sha256": "f108b243259b6f04addd51fe0c992d942f420ef4e7284e14feccaddfac2aa2a3"
+      "sha256": "c409a4063aa5ba4cef13e12044ccf3592b8b7dfc26db0dd96d5956a55460b001"
     },
     "resource:example-equipment-code": {
       "path": "skills/econ-data/examples/equipment/run.py",
@@ -263,7 +263,7 @@
     },
     "resource:example-housing": {
       "path": "skills/econ-data/examples/housing/README.md",
-      "sha256": "7736959fa9c916a3f9ea4f2ac56021b398db5ccd2c72acef6672f2dbd3ddbfc8"
+      "sha256": "f404b1e58eb05aaf200f2d5341ea20803b4d198af151ea138b98465fa04bc816"
     },
     "resource:example-housing-code": {
       "path": "skills/econ-data/examples/housing/run.py",
@@ -279,7 +279,7 @@
     },
     "resource:example-subscription": {
       "path": "skills/econ-data/examples/subscription/README.md",
-      "sha256": "53e59a8972bdca59085e719a87f718594d19f145081e86514ac771221683eddb"
+      "sha256": "3d74c5fdc0c47d053c274b7cf03838e3f6faf3e13b0565fa37f8ef221ba965ae"
     },
     "resource:example-subscription-code": {
       "path": "skills/econ-data/examples/subscription/run.py",
@@ -523,7 +523,7 @@
     },
     "resource:paper-workflow": {
       "path": "skills/econ-writing/references/paper-workflow.md",
-      "sha256": "7e6cc06aa826c63271f869e21cb9110c615ca1eb5adcbae9f3ec86da669b72f3"
+      "sha256": "a0105d409c12faa8fac62c52cd6ccd1be883b6865865e75b8dd263d5901f2ba6"
     },
     "resource:paragraph-schema": {
       "path": "harness/paragraph.schema.json",
@@ -531,7 +531,7 @@
     },
     "resource:paragraph-workflow": {
       "path": "skills/econ-writing/references/paragraph-workflow.md",
-      "sha256": "92de31be704d48a4799a7e5da6daf20ceb7b1d050e4e3d439f83ad221a06e607"
+      "sha256": "d511ce7902cae6c71bf5f5fa9ec4295c30e415d0112fe54dbde33180b9b70115"
     },
     "resource:plugin-integration-guide": {
       "path": "docs/ai/plugin-integration.md",
@@ -779,7 +779,7 @@
     },
     "resource:result-artifacts": {
       "path": "skills/econ-writing/references/result-artifacts.md",
-      "sha256": "09a4a007662b971f8bf26998a8d0b4f7ca5d588cb243bdd6050d17a8aad8e7cc"
+      "sha256": "4ca0f55344bb80b8fd69c48c5cc909170eae6f4a4672226e161e5c0b209aea43"
     },
     "resource:review-methods": {
       "path": "skills/econ-review/references/oversight.md",
@@ -815,15 +815,15 @@
     },
     "resource:writing-artifacts": {
       "path": "skills/econ-writing/references/artifact-writing.md",
-      "sha256": "b964615e4983cff4c3b4ac384f4add984d8d9e6397347456470a6aaa7b116c50"
+      "sha256": "5ef295247faf35f14983c2a7ea49c51bfd04c3613e62cb37646fefd13cbf383f"
     },
     "resource:writing-compose": {
       "path": "skills/econ-writing/references/compose.md",
-      "sha256": "22106f9dbc055af95a0cfef146dc4c9c668698b8278f115fa007c4cda304499f"
+      "sha256": "66ad0594dea2de3cfe405042765ab81b0f9f5b033b065bcb0bb40f77df383d57"
     },
     "resource:writing-convert": {
       "path": "skills/econ-writing/references/convert.md",
-      "sha256": "ab62a6ad5c0fab081929c993682c2be4fb1ed7a1e52e774082c7f81f93ff224c"
+      "sha256": "0076e492c8dd940fe94743b4544bd01ba4d40fae7e1e2685784a194da91f8df0"
     },
     "resource:writing-explain": {
       "path": "skills/econ-writing/references/explain.md",
@@ -839,7 +839,7 @@
     },
     "resource:writing-revise": {
       "path": "skills/econ-writing/references/revise.md",
-      "sha256": "b61e93aab5755b879ab6f502e7263349055cc74e006d78bf639fa9e065adc575"
+      "sha256": "3790e3115614b009fd51cdb53e595ac2ce179ff1d3d139367892ed8893bb9800"
     },
     "resource:writing-translate": {
       "path": "skills/econ-writing/references/translate.md",
@@ -859,7 +859,7 @@
     },
     "team": {
       "path": "runtime/TEAM.md",
-      "sha256": "eef8515665bdb35380fe1d14644c5e8c92cbd8583c7d12fd903883aab02fc69c"
+      "sha256": "0a35d53fbf3d4b62553404324641a37677d180ef0cc98ba16c44b9151c031921"
     }
   }
 }
