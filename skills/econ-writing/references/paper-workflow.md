@@ -156,7 +156,7 @@ Borrow every element of the finished response structure, ordering and wording fr
 
 ## Choose and explain descriptive exhibits
 
-Define the comparison the reader must recover, then select its already calculated quantities through [the result lifecycle](../../econ-data/references/reproducible-workflow.md#carry-analysis-results-into-tables-figures-and-prose). Bind each displayed object to its saved value, unit and population. A change in measurement, sample, weights or aggregation belongs to [the data owner](../../econ-data/references/workflow.md#produce-the-result-by-dependency); a change in labels or page arrangement redraws the same quantities.
+Define the comparison the reader must recover, then select its already calculated quantities through [the result lifecycle](../../econ-data/references/reproducible-workflow.md#carry-analysis-results-into-tables-figures-and-prose). Bind each displayed object to its saved value, unit and population. A change in measurement, sample, weights or aggregation belongs to [the data owner](../../econ-data/references/workflow.md); a change in labels or page arrangement redraws the same quantities.
 
 | Question | Required observations | Source-bound representation and defining quantity |
 | --- | --- | --- |

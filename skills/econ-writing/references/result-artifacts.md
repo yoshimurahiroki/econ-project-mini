@@ -191,7 +191,7 @@ The manuscript's whole-file hash pins the delivered version. Each claim fingerpr
 
 Supply the author letter only through `review.author_response` together with `review.response_after`, a hash-pinned separately saved assessment of the current evidence. The command validates that assessment and its criteria before reading the letter, and returns `response-comparison-required` with unchanged evidence findings. Compare the letter's assertions with those findings. A new determining fact returns to the same evidence and assessment path and changes the verdict there. This selected file dependency controls the packet contents and runs in the existing reviewer Agent.
 
-To generate a requested response from the completed revision, supply the current assessment with each finding's `changes` and `references`, then select `review.response_draft` through the same review entry point. It returns the original comment and passage, current revision, supporting evidence and response text. Use [econ-review's response contract](../../econ-review/references/review.md#locate-and-repair-the-cause) for the language, finding selection and source correspondence.
+To generate a requested response from the completed revision, supply the current assessment with each finding's `changes` and `references`, then select `review.response_draft` through the same review entry point. It returns the original comment and passage, current revision, supporting evidence and response text. Use [econ-review's response contract](../../econ-review/references/review.md) for the language, finding selection and source correspondence.
 
 Compose the finished response with the existing writing host after revising the actual manuscript and assessing its changed claims:
 
