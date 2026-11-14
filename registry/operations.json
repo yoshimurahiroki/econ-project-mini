@@ -1285,9 +1285,7 @@
       "applies_to": "*"
     },
     "example_subscription_allocation": {
-      "required_rules": [
-        "example-subscription.all"
-      ],
+      "required_rules": [],
       "applies_to": [
         "econ-data:execute",
         "econ-design:design",
@@ -1296,9 +1294,7 @@
       ]
     },
     "example_equipment_renewal": {
-      "required_rules": [
-        "example-equipment.all"
-      ],
+      "required_rules": [],
       "applies_to": [
         "econ-data:execute",
         "econ-design:design",
@@ -1307,9 +1303,7 @@
       ]
     },
     "example_housing_transport": {
-      "required_rules": [
-        "example-housing.all"
-      ],
+      "required_rules": [],
       "applies_to": [
         "econ-data:execute",
         "econ-design:design",
@@ -1318,9 +1312,7 @@
       ]
     },
     "example_charging_market": {
-      "required_rules": [
-        "example-charging.all"
-      ],
+      "required_rules": [],
       "applies_to": [
         "econ-data:execute",
         "econ-design:design",
@@ -1329,9 +1321,7 @@
       ]
     },
     "example_commuting_market": {
-      "required_rules": [
-        "example-commuting.all"
-      ],
+      "required_rules": [],
       "applies_to": [
         "econ-data:execute",
         "econ-design:design",
