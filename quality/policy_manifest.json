@@ -47,15 +47,15 @@
     },
     "registry_operations": {
       "path": "registry/operations.json",
-      "sha256": "be2cdfa9b6412ffc902405cafac8ab8e24a13e92276841aef78d3a74ad5ac83e"
+      "sha256": "f007d594af3bd8e127dc362d88e9d72e1783515b6016da8e9583a2028ddc2acc"
     },
     "registry_placements": {
       "path": "registry/placements.json",
-      "sha256": "1ea4c11e439faa77d265f75f57622fa8e633aa5b2b1c80570904a75c06c2ff80"
+      "sha256": "7891f1516ffa74cd7acc96fa7b38b60484012d48795b1359052f798b15b68eaf"
     },
     "registry_resources": {
       "path": "registry/resources.json",
-      "sha256": "590472cf5fbbc20ddb1c645da3b47cc488a2c074cd5dbc188b7d4cd8e271a787"
+      "sha256": "ce8a340fff8568ff8fd58780b080cbbc47316a99a91424c5869c7feb54b284f9"
     },
     "requirements_check": {
       "path": "harness/requirements_check.py",
@@ -119,7 +119,7 @@
     },
     "resource:data-results": {
       "path": "skills/econ-data/references/reproducible-workflow.md",
-      "sha256": "30c8b8e76a3e57776ec25f929a87e3f8795ccd1c391577b7150d685c2458b2a2"
+      "sha256": "0eb8daf59154d7b3ee8c71e5dae4e40bc2e5d2ab6e23badd40898fa718d9bd7a"
     },
     "resource:data-source": {
       "path": "skills/econ-data/references/implementation-data.md",
@@ -143,7 +143,7 @@
     },
     "resource:design-methods": {
       "path": "skills/econ-design/references/designs.md",
-      "sha256": "51ac583abcd3a0ccd5d26bb8f4ae89f097abafbb0951c9dd60890d298a287c13"
+      "sha256": "765d61f6b99994c691bcc9cee1bafabc5fca1a73217e2381dcd9afab9e77a0d1"
     },
     "resource:design-modeling": {
       "path": "skills/econ-design/references/modeling.md",
@@ -212,86 +212,6 @@
     "resource:equity-sources": {
       "path": "skills/econ-data/scripts/equity_sources.py",
       "sha256": "e904110035f2aff4e1ff53ca36f36c8443e7db2910612b4ac5e00d47afbd28ca"
-    },
-    "resource:example-charging": {
-      "path": "skills/econ-data/examples/charging/README.md",
-      "sha256": "e8fe12a9b7af7e0a60644c79dc17a567b7332ab12217428059420c4669d3a979"
-    },
-    "resource:example-charging-code": {
-      "path": "skills/econ-data/examples/charging/run.py",
-      "sha256": "c4186bd1e6c4e8b8f5e6f15977503362601fba103ff1777189cc43f69c9a2e57"
-    },
-    "resource:example-charging-materials": {
-      "path": "skills/econ-data/examples/charging/materials.py",
-      "sha256": "9f02674335b0361957ac79a58a554eb9594a5b60927e3757440acd5b10d40f70"
-    },
-    "resource:example-charging-specification": {
-      "path": "skills/econ-data/examples/charging/specification.json",
-      "sha256": "a42c51a863a8f04330a3c6d30b4e62fcffb934d805b3107ac3eedfd6c56a56b8"
-    },
-    "resource:example-commuting": {
-      "path": "skills/econ-data/examples/commuting/README.md",
-      "sha256": "69e8ea4d1a2062ff32062e3f35d095c20da96a207637ebc0e14977dfbca60689"
-    },
-    "resource:example-commuting-code": {
-      "path": "skills/econ-data/examples/commuting/run.py",
-      "sha256": "59c811378d1358b81299a6e6d6a71505b835d5b575286e699c627d44f84d5240"
-    },
-    "resource:example-commuting-materials": {
-      "path": "skills/econ-data/examples/commuting/materials.py",
-      "sha256": "4b2cc6c21d5d263b11b836ef6cd899fba52f20691d1f27002143744ddec1007d"
-    },
-    "resource:example-commuting-specification": {
-      "path": "skills/econ-data/examples/commuting/specification.json",
-      "sha256": "a2367eaf3196c0de5093120f14dcfe56b671fac2627e7888ce32e732612420ff"
-    },
-    "resource:example-equipment": {
-      "path": "skills/econ-data/examples/equipment/README.md",
-      "sha256": "c409a4063aa5ba4cef13e12044ccf3592b8b7dfc26db0dd96d5956a55460b001"
-    },
-    "resource:example-equipment-code": {
-      "path": "skills/econ-data/examples/equipment/run.py",
-      "sha256": "c6b9e9d2ecd8510b26efdc8565bd0ba0d7139b6724aa28d67d00d3938db2f3cf"
-    },
-    "resource:example-equipment-materials": {
-      "path": "skills/econ-data/examples/equipment/materials.py",
-      "sha256": "091e4ddb2098c943dec9625576316d2ec112dee0d4c2c8368c78d8014c10ca4d"
-    },
-    "resource:example-equipment-specification": {
-      "path": "skills/econ-data/examples/equipment/specification.json",
-      "sha256": "19ab5a61e77c45a512b61848bad1df60f6eaefb498c170f2aac0edac13297823"
-    },
-    "resource:example-housing": {
-      "path": "skills/econ-data/examples/housing/README.md",
-      "sha256": "f404b1e58eb05aaf200f2d5341ea20803b4d198af151ea138b98465fa04bc816"
-    },
-    "resource:example-housing-code": {
-      "path": "skills/econ-data/examples/housing/run.py",
-      "sha256": "5af8ace771f2211af738d231f713ed5f88077cb9dd80ba9d929f33e4c7028010"
-    },
-    "resource:example-housing-materials": {
-      "path": "skills/econ-data/examples/housing/materials.py",
-      "sha256": "6c887d1faf3af44c6551c2c99fa6d49defaa9da221999dac3a6ee51e65547da3"
-    },
-    "resource:example-housing-specification": {
-      "path": "skills/econ-data/examples/housing/specification.json",
-      "sha256": "d41edc844fe2f63665cb07f662dcd78bd29e5535a7e7aac00d9b02cec24bfa05"
-    },
-    "resource:example-subscription": {
-      "path": "skills/econ-data/examples/subscription/README.md",
-      "sha256": "3d74c5fdc0c47d053c274b7cf03838e3f6faf3e13b0565fa37f8ef221ba965ae"
-    },
-    "resource:example-subscription-code": {
-      "path": "skills/econ-data/examples/subscription/run.py",
-      "sha256": "cfd12c3e262a515c3548769a0d9ec7e3b809c2722ffdf6bbf03bfc5b01f8a5df"
-    },
-    "resource:example-subscription-materials": {
-      "path": "skills/econ-data/examples/subscription/materials.py",
-      "sha256": "f39156b08891b522ff0ece528c34d2ac09fdeaf99bd7046a3d5d01dc5fe58534"
-    },
-    "resource:example-subscription-specification": {
-      "path": "skills/econ-data/examples/subscription/specification.json",
-      "sha256": "78e9683ff4c9398bf6f06b3b80833ef4aeb851cc5a6a2860bf562b6d59b2f752"
     },
     "resource:hook-registration": {
       "path": "hooks/hooks.json",
@@ -371,7 +291,7 @@
     },
     "resource:meeting-materials": {
       "path": "harness/meetings.md",
-      "sha256": "773ec89d7997bb5c4891059439636547a48196559f8ea4eff82d057f33e01df7"
+      "sha256": "f8ff33721ab0c2f4b2d29d7c4fd71d9face9d8ea10f261a5a850f5d604c0c8e2"
     },
     "resource:meeting-quarto-template": {
       "path": "tex/slides/meeting_template.qmd",
@@ -775,7 +695,7 @@
     },
     "resource:resource-guide": {
       "path": "docs/ai/resources.md",
-      "sha256": "85644afedd4500ef0f34c6cd95dd12a57dfee28ba2badc964eef81051ab726ea"
+      "sha256": "247354f309b13461dfd77c3d56429d70f1c6a128391b8de205c3cba23dca511e"
     },
     "resource:result-artifacts": {
       "path": "skills/econ-writing/references/result-artifacts.md",
@@ -815,7 +735,7 @@
     },
     "resource:writing-artifacts": {
       "path": "skills/econ-writing/references/artifact-writing.md",
-      "sha256": "5ef295247faf35f14983c2a7ea49c51bfd04c3613e62cb37646fefd13cbf383f"
+      "sha256": "706584799265fa185dd767f3da869e8b3d8dd86589b308913a274679d34f7b71"
     },
     "resource:writing-compose": {
       "path": "skills/econ-writing/references/compose.md",
