@@ -47,7 +47,7 @@
     },
     "registry_operations": {
       "path": "registry/operations.json",
-      "sha256": "419e327a53462b872e2748d543a966ae09d231319077b73958e0f487e97caff8"
+      "sha256": "be2cdfa9b6412ffc902405cafac8ab8e24a13e92276841aef78d3a74ad5ac83e"
     },
     "registry_placements": {
       "path": "registry/placements.json",
@@ -55,7 +55,7 @@
     },
     "registry_resources": {
       "path": "registry/resources.json",
-      "sha256": "5b61e016c2d17f8b1e184e1bf66e72672d051a1662007a1a21df81f8d7ca2dcf"
+      "sha256": "38b09c9ab0d0ce5edc689b3c4ff4b777ec2b0c9c182c8d09adf9baae3d183d61"
     },
     "requirements_check": {
       "path": "harness/requirements_check.py",

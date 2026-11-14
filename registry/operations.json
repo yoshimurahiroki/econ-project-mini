@@ -340,7 +340,7 @@
         "paper-workflow.establish-the-argument-from-the-research",
         "paper-workflow.design-the-papers-argument",
         "paper-workflow.compose-the-requested-section",
-        "prose.hierarchical-argument-and-paragraph-composition"
+        "prose.select-the-economic-argument"
       ],
       "applies_to": "*"
     },
@@ -354,7 +354,7 @@
       "required_rules": [
         "paper-workflow.establish-the-argument-from-the-research",
         "paper-workflow.design-the-papers-argument",
-        "prose.hierarchical-argument-and-paragraph-composition"
+        "prose.select-the-economic-argument"
       ],
       "applies_to": "*"
     },
@@ -691,7 +691,7 @@
         "argument-engine.all",
         "paragraph-schema.all",
         "argument-schema.all",
-        "prose.hierarchical-argument-and-paragraph-composition"
+        "prose.select-the-economic-argument"
       ],
       "applies_to": "*"
     },
