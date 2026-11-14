@@ -1917,13 +1917,13 @@
         "whole_resource": true
       },
       "purpose-and-input": {
-        "heading": "Purpose and input"
+        "whole_resource": true
       },
       "output": {
-        "heading": "Output"
+        "whole_resource": true
       },
       "select-the-operation": {
-        "heading": "Select the operation"
+        "whole_resource": true
       }
     },
     "econ-data": {
@@ -1931,13 +1931,13 @@
         "whole_resource": true
       },
       "purpose-and-input": {
-        "heading": "Purpose and input"
+        "whole_resource": true
       },
       "deliver-the-data-operation-and-its-economic-meaning": {
-        "heading": "Deliver the data operation and its economic meaning"
+        "whole_resource": true
       },
       "select-the-operation": {
-        "heading": "Select the operation"
+        "whole_resource": true
       }
     },
     "econ-literature": {
@@ -1945,10 +1945,10 @@
         "whole_resource": true
       },
       "purpose-and-input": {
-        "heading": "Purpose and input"
+        "whole_resource": true
       },
       "select-the-source-operation": {
-        "heading": "Select the source operation"
+        "whole_resource": true
       }
     },
     "econ-writing": {
@@ -1956,10 +1956,10 @@
         "whole_resource": true
       },
       "output": {
-        "heading": "Output"
+        "whole_resource": true
       },
       "native-entry-contract": {
-        "heading": "Native entry contract"
+        "whole_resource": true
       }
     },
     "econ-review": {
@@ -1967,7 +1967,7 @@
         "whole_resource": true
       },
       "purpose-and-input": {
-        "heading": "Purpose and input"
+        "whole_resource": true
       }
     },
     "design-methods": {
@@ -3137,13 +3137,13 @@
         "whole_resource": true
       },
       "ownership-and-input": {
-        "heading": "Ownership and input"
+        "whole_resource": true
       },
       "select-the-needed-procedure": {
-        "heading": "Select the needed procedure"
+        "whole_resource": true
       },
       "return": {
-        "heading": "Return"
+        "whole_resource": true
       }
     },
     "knowledge-retrieval": {
@@ -3216,7 +3216,7 @@
         "whole_resource": true
       },
       "purpose-and-entry": {
-        "heading": "Purpose and entry"
+        "whole_resource": true
       }
     },
     "project-practice": {
@@ -3433,13 +3433,13 @@
         "heading": "Explain"
       },
       "read-and-select-the-argument": {
-        "heading": "Read and select the argument"
+        "whole_resource": true
       },
       "develop-the-connected-explanation": {
-        "heading": "Develop the connected explanation"
+        "whole_resource": true
       },
       "complete-the-requested-explanation": {
-        "heading": "Complete the requested explanation"
+        "whole_resource": true
       }
     },
     "writing-profile": {
@@ -3450,19 +3450,19 @@
         "heading": "Profile"
       },
       "select-source-passages": {
-        "heading": "Select source passages"
+        "whole_resource": true
       },
       "derive-principles-and-worked-examples": {
-        "heading": "Derive principles and worked examples"
+        "whole_resource": true
       },
       "use-a-requested-opening-or-comparison": {
-        "heading": "Use a requested opening or comparison"
+        "whole_resource": true
       },
       "save-the-profile": {
-        "heading": "Save the profile"
+        "whole_resource": true
       },
       "organize-selective-reading": {
-        "heading": "Organize selective reading"
+        "whole_resource": true
       }
     },
     "writing-artifacts": {

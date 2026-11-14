@@ -55,7 +55,7 @@
     },
     "registry_resources": {
       "path": "registry/resources.json",
-      "sha256": "38b09c9ab0d0ce5edc689b3c4ff4b777ec2b0c9c182c8d09adf9baae3d183d61"
+      "sha256": "49a5d3960be86835a0e56cd1b9732b79d01dc44aa728cffa42bcf85452712463"
     },
     "requirements_check": {
       "path": "harness/requirements_check.py",
