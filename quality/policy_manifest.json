@@ -99,7 +99,7 @@
     },
     "resource:data-audit-template": {
       "path": "skills/econ-data/templates/data_audit.py",
-      "sha256": "25509f2b2333ed3dd45c9f5d6a9b7dec9564b905ac7d08a34f9941bb23926d51"
+      "sha256": "a2ca078245e6066f931393042f28e9db46f0cd37e20b1b4969508e22b498b34e"
     },
     "resource:data-descriptive": {
       "path": "skills/econ-data/references/implementation-descriptive.md",
@@ -119,7 +119,7 @@
     },
     "resource:data-implementation": {
       "path": "skills/econ-data/references/implementation.md",
-      "sha256": "3b13bc0153ed9e81b680283464ec652e14750af9dc152d6d042e8bae308a805c"
+      "sha256": "8cdbbdcfe0534af666363e8da0a1c041daca8eebfe30a22aa3ee326c62f6a811"
     },
     "resource:data-native-calls": {
       "path": "skills/econ-data/references/implementation-calls.md",
@@ -131,7 +131,7 @@
     },
     "resource:data-preparation": {
       "path": "skills/econ-data/references/data-preparation.md",
-      "sha256": "1e0324b714868da570807b98867a4f0c264dba81ba14661f8658388e5a54977a"
+      "sha256": "dae44bc32bc205698740fd8fc8169c8c8eb3e794f4c06a31207caf5fd5ec0bd2"
     },
     "resource:data-results": {
       "path": "skills/econ-data/references/reproducible-workflow.md",
@@ -175,7 +175,7 @@
     },
     "resource:econ-data": {
       "path": "skills/econ-data/SKILL.md",
-      "sha256": "b385b2ea02a716c03adbb2ee22fc809a8586c8ce461c1ddb2256a291eb3c985f"
+      "sha256": "2d8d868878ecae29047fdfc043341224268ff21e89d8a0437a632d2cd7b1ec08"
     },
     "resource:econ-design": {
       "path": "skills/econ-design/SKILL.md",
@@ -235,7 +235,7 @@
     },
     "resource:hook-wrapper": {
       "path": "hooks/check.py",
-      "sha256": "5a6fbe07171d5354bb2af402dc5cef4f8e3362a5b57ec76f9cb057d69fb8234d"
+      "sha256": "e75b7271b281f949a5e76c99a659d418a9ecd1106f2ae0108b1a6048ead27de1"
     },
     "resource:integration": {
       "path": "docs/ai/integration.md",
@@ -483,7 +483,7 @@
     },
     "resource:paper-workflow": {
       "path": "skills/econ-writing/references/paper-workflow.md",
-      "sha256": "cbc2986ec1471fa70830078d56a218c04681fad713c3b11145bb8dcad380ea6b"
+      "sha256": "c7062534b52bbcefc7ef600b6084e5b30464db7f1255ecc789772b479a821fcb"
     },
     "resource:paragraph-schema": {
       "path": "harness/paragraph.schema.json",

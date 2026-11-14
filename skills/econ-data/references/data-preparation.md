@@ -5,7 +5,7 @@ From received files to clean tables, analysis variables, descriptive tables and 
 ## P0. Rules without exceptions
 
 1. **Code only.** Files and cells are never edited by hand; received files are never overwritten.
-2. **Four layers.** `data/raw/` (received, read-only) → `data/intermediate/` (types and structure fixed, meaning unchanged, one table per observation unit) → `data/analysis/` (analysis variables and sample) → `outputs/` (tables, figures, `outputs/qa/` checks). Each layer is rebuilt from the one before by one command.
+2. **Four layers.** `data/raw/` (received files and `research_data.py acquire` snapshots, read-only) → `data/intermediate/` (types and structure fixed, meaning unchanged, one table per observation unit) → `data/analysis/` (analysis variables and sample) → `outputs/` (tables, figures, `outputs/qa/` checks). `research_data.py` writes each build to a new directory inside its layer (`data/analysis/<name>-<version>/`). Each layer is rebuilt from the one before by one command.
 3. **Unit first.** Before any transformation, write what one row is and its key, for every table.
 4. **Data never decide research choices.** Imputation, deletion of outliers or impossible values, winsorizing, value corrections, deletion of records, choice of controls, aggregation rules, base years and weights come only from the worksheet's section 4 or from the user ([user]), and are written before the variable's values are inspected. Imputation, outlier deletion, winsorizing and corrections additionally require [user] or the source's own documentation (codebook, provider's correction list). Without them the step stops with status BLOCK and the question goes to the user.
 5. **Measured values stay.** Every derived value is a new column; the original column is kept.
@@ -19,6 +19,8 @@ From received files to clean tables, analysis variables, descriptive tables and 
 | FLAG | values computable but need review (out-of-range, extreme) | keep the values, record count and keys, continue with non-destructive steps only |
 | BLOCK | missing or duplicate keys, unexpected row growth, information lost in a type conversion, an unspecified research choice, a confidentiality risk | stop the step and its dependents, record it, ask the user |
 | NOT_RUN | data or software unavailable | record as not run |
+
+A BLOCK or NOT_RUN fills the worksheet as follows: section 5 lists the commands run, the failed check and its status; section 6 has `Decision: none (BLOCK at P<n>: <check>)`, `Switches when: the user decides <question>`, `Specification changes: none`; section 7 has `Deliverable and its path: BLOCK report to the user (status, open decision, rebuild command)`; the header has `Status: open` and `Next action: user decision on <question>`.
 
 Order of authority when sources disagree: the user's specification and worksheet section 4 > questionnaire, official codebook and provider definitions > verified metadata > values in the data. A conflict with a higher source is BLOCK.
 
@@ -55,7 +57,7 @@ It records shape, types, missing and zero counts, ranges and quantiles, codes ou
 ## P3. Keys and tidy tables
 
 1. One column per variable, one row per observation, one table per observation unit; the key is unique and complete.
-2. Duplicate keys: decide whether rows are different periods, versions, transactions or submissions (extend the key) or true duplicate ingestion (remove only when the submission ID or the provider establishes it). `drop_duplicates()` without that evidence is forbidden.
+2. Duplicate keys: decide whether rows are different periods, versions, transactions or submissions (extend the key) or true duplicate ingestion (remove only when the submission ID or the provider establishes it). `drop_duplicates()` without that evidence is forbidden. In `assemble`, `duplicates` with policy `identical` removes only verified identical rows; policy `select` (keep the first or last version) requires the provider's version rule or [user].
 3. Wide to long: one concept across years becomes `id, year, value`; repeated sub-units (children, transactions) become their own table. Long to wide only for display, after checking `(index, columns)` is unique; `pivot_table` with an aggregation function on duplicated cells is forbidden.
 4. After every reshape compare row counts, key uniqueness and non-missing cell counts with the input; reverse the reshape and compare where possible.
 5. Implicit missing rows (a unit–period absent from the table) are made explicit only against a documented frame of units and periods, flagged `observed=False`, and never filled with zero.
@@ -82,7 +84,7 @@ It records shape, types, missing and zero counts, ranges and quantiles, codes ou
 
 ## P6. Analysis variables
 
-Each variable has a definition line in the `assemble` specification (`definitions`: unit, definition, version, source fields, role) before it is built.
+Each variable has a definition line in the `assemble` specification (`definitions`: unit, definition, version, source fields, role) before it is built. In `assemble`, these options require worksheet section 4 or [user]: `on_invalid: "missing"` (turns unparsable values into missing), `replace: true` (overwrites a column), `log1p` and `ihs` transformations, and every sample `filters` or `complete_cases` rule.
 
 | Construction | Rule | Check |
 | --- | --- | --- |
@@ -155,4 +157,4 @@ Release only when all hold:
 | empty figure or tiny N | add placeholder points | report the empty group and its N; skip the figure |
 | missing package or data | fabricate output | NOT_RUN with the missing dependency |
 
-A fix reruns its step and every later step from the raw files. The report to the user gives: status (PASS, FLAG, BLOCK or NOT_RUN); inputs (files, periods, units, rows); outputs (paths of clean and analysis data, definitions, checks, tables, figures); changes (corrections, recodes, constructed variables, excluded records with their rule); checks (keys, joins, reshapes, missingness, units, N in tables and figures, rebuild); open issues with the decision each needs; the rebuild command.
+A fix reruns its step and every later step from the raw files. The checks, changes (corrections, recodes, constructed variables, excluded records with their rule) and inputs are saved in `outputs/qa/`. The report to the user gives only: the status (PASS, FLAG, BLOCK or NOT_RUN), the output paths, the open decisions with the question each needs, and the rebuild command.

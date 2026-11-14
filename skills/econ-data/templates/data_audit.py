@@ -21,8 +21,9 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-# 1. READ: declared reading options. Identifiers, codes and anything not used for arithmetic are strings.
-READ = {'dtype': {'firm_id': 'string', 'industry': 'string'}, 'encoding': 'utf-8'}
+# 1. READ: every column is read as text and only empty cells are missing, so parsing failures and missing
+#    codes are counted here instead of being converted silently by the reader. Set encoding and separator.
+READ = {'dtype': 'string', 'keep_default_na': False, 'na_values': [''], 'encoding': 'utf-8', 'sep': ','}
 # 2. KEY: the columns that identify one row (the observation unit).
 KEY = ['firm_id', 'year']
 # 3. CODEBOOK: per column, allowed categories and the codes that mean missing (from the source documentation only).
@@ -58,7 +59,7 @@ def checked_merge(left, right, keys, validate, how='left'):
             raise ValueError(f'{name} table has {int(missing.sum())} rows with missing keys {keys}')
     merged = left.merge(right, on=keys, how=how, validate=validate, indicator=True,
                         suffixes=('_left', '_right'))
-    if how == 'left' and len(merged) != len(left):
+    if how == 'left' and validate in ('one_to_one', '1:1', 'many_to_one', 'm:1') and len(merged) != len(left):
         raise ValueError(f'left merge changed the row count: {len(left)} -> {len(merged)}')
     counts = merged['_merge'].value_counts().to_dict()
     clashes = [c for c in merged.columns if c.endswith(('_left', '_right'))]
