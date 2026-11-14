@@ -2640,10 +2640,10 @@
         "whole_resource": true
       },
       "causal-scope": {
-        "heading": "Causal scope"
+        "whole_resource": true
       },
       "method-selection": {
-        "heading": "Method selection"
+        "whole_resource": true
       }
     },
     "research-markets-dependencies": {
