@@ -11,7 +11,7 @@ git clone https://github.com/yoshimurahiroki/econ-project-mini.git
 cd econ-project-mini
 ```
 
-コーディングエージェントの作業場所をこのフォルダーにし、[AGENTS.md](AGENTS.md)を入口にする。依頼には、研究上の問い、対象データ・資料、欲しい成果物、変更する範囲を添える。操作が決まっている場合はその担当Skillとモードへ進み、担当を探す場合は[操作一覧](docs/ai/compiled_ai_skills.md)を使う。必要な本文の取得と実行・完了の共通規則は[CORE](runtime/CORE.md)、表現は[PROSE](runtime/PROSE.md)にある。
+コーディングエージェントの作業場所をこのフォルダーにし、[AGENTS.md](AGENTS.md)を入口にする。依頼には、研究上の問い、対象データ・資料、欲しい成果物、変更する範囲を添える。作業は[経済学者の手順](runtime/ECONOMIST.md)に沿って、状況と利害、問い、機構と予測、推定対象と識別、実行、解釈、表現の順に進み、各段階の結果を`work/<topic>.md`に残す。文章・スライドは[WRITING](runtime/WRITING.md)に従う。
 
 | Skill | 担当する作業 |
 | --- | --- |
@@ -22,6 +22,17 @@ cd econ-project-mini
 | [econ-review](skills/econ-review/SKILL.md) | 主張・計算・成果物の評価と指定範囲の修正 |
 | [econ-knowledge](skills/econ-knowledge/SKILL.md) | 主担当が必要とする理論・モデル・判断条件の参照 |
 | [project-work](skills/project-work/SKILL.md) | 要件・作業方針、実行プロンプト、案件への参加・運営 |
+
+## 手本ライブラリーを用意する
+
+論構成は英語の論文・報告スライドから、日本語の語彙・接続表現・文末・リズムは日本語の講義資料・教科書・ディスカッションペーパーから借りる。手持ちのPDFを各自のライブラリーに登録する。ライブラリーはリポジトリの外（`$ERS_EXEMPLARS`または利用者のデータディレクトリ）に置く。
+
+```sh
+python3 skills/econ-writing/scripts/exemplars.py add ~/papers ~/lectures
+python3 skills/econ-writing/scripts/exemplars.py outline --lang en --function introduction --query "minimum wage"
+python3 skills/econ-writing/scripts/exemplars.py find --lang ja --kind prose --query "需要 均衡"
+python3 skills/econ-writing/scripts/exemplars.py style --lang ja --kind slide
+```
 
 ## 計算・文書作成の環境
 
