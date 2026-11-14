@@ -119,7 +119,7 @@ python scripts/export_project.py --generate-index docs/ai/compiled_ai_skills.md
 
 The export-project:v1 JSON block in repo_context.md supports version, writing_profile and files. Each file entry contains a repository-relative path and unique flat output filename. The persistent writing_profile can be a registered profile ID or a repository-relative custom profile. --style-profile overrides it for this snapshot only; an absolute custom profile path is also supported. Existing configuration stays as written.
 
-English output uses the [English economics writing profiles](../../profiles/top-five-en/PROFILE.md) and Japanese output the [Japanese economics writing profiles](../../profiles/academic-ja/PROFILE.md). Each profile states the borrowing procedure and lists fictional samples assembled from borrowed sentences of real originals; the identity of each original stays in the private working record. Pass a registered sample ID to `--style-profile` when exporting and `--user-profile` when reading.
+English output uses the [English economics writing profiles](../../profiles/top-five-en/PROFILE.md) and Japanese output the [Japanese economics writing profiles](../../profiles/academic-ja/PROFILE.md). Each profile states the borrowing procedure and the conventions for its language; the identity of each original stays in the private working record.
 
 Use econ-writing:profile (or its econ-style compatibility alias) to create or revise a profile. A profile takes effect when adopted; creating or saving it is separate. Switch the persistent preference only when the user requests adoption.
 
