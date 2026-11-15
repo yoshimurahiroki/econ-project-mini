@@ -1,52 +1,60 @@
-# English economics paper profiles
+# English economics writing profile
 
 Profile family: top-five-en. Language: English.
 
-## Principles
+## Use
 
-Search for and read the relevant passage and its surrounding section, pages, slides, figures and tables in original sources before composing or revising. Sources include papers and slides from the five leading economics journals published since 2020, major economics handbooks, review articles and guides, economics textbooks, and economics course materials, including lecture notes, course slides and handouts. Map every element of content selection, argument structure, style, vocabulary, transitions, sentence endings, placement, design and appearance to its source; borrow and imitate the corresponding material. For Japanese, use corresponding Japanese originals. Make only the adjustments required for the confirmed facts, names, notation, period, quantities, citations, grammar and medium of the current task; retain the current study’s evidence and conclusions. Record source-to-output mappings and adjustments in the existing working record and check every finished element against its source. Search and read further when coverage is missing. Apply this process to all writing, slides and materials, including short edits, single words, translation and existing drafts. Do not create prose or materials, freely paraphrase, invent examples, or fill gaps without sources. Do not import a source study’s empirical conditions or conclusions into the current task. Exclude disclaimers, hedging, concessions, qualifications, ornamentation, cautious or conservative phrasing, ambiguity, redundancy, weak phrasing, supplementary annotations, and not-A, not-A-but-B and equivalent contrastive rhetoric. Avoid exaggeration and abstract value judgments. Select direct, natural academic expressions from the relevant originals while preserving the current task’s scientific facts, definitions, conditions, quantities, uncertainty and attribution; this preservation does not permit the prohibited rhetoric. Do not relabel invented human-facing prose examples as technical examples.
+This profile fixes notation, numbers, exhibits, citations and layout for English papers, notes and slides. Argument structure, paragraph moves and wording come from English exemplars through [WRITING](../../runtime/WRITING.md) sections 1 and 3; where an exemplar and this profile differ on wording, the exemplar wins. Length follows the content of the worksheet and the exemplar of the same genre.
 
-Select and read the complete sample matching the current passage’s function and research field. Ground adopted expressions and visual elements in the original sources. The 25 body files contain the user-adopted English samples. Preserve their text, equations, headings and table contents. Profile selection and usage instructions belong in this index and the routing registry.
+## 1. Characters and notation
 
-## Select a profile
+- US English, a serial comma, curly quotation marks, an en dash for ranges and the minus sign − for negative values.
+- Define an acronym with its full term at first use in the abstract and again in the main text; use one spelling, term, symbol and unit for each object throughout.
+- Digits for measurements, counts, dates, section labels and ordered results; a leading zero before a decimal (0.357); commas in integers from 4 digits; years without grouping.
+- A space between a number and its unit; percent in prose, % in tables, percentage points for a change in a proportion.
 
-Each row is a separate selectable writing profile. The registered profile ID is `top-five-en-` followed by the filename stem; the example ID uses `top-five-en.` followed by the same stem. Read the complete selected body through the existing profile or example reader.
+## 2. Numbers
 
-```sh
-python scripts/route_registry.py read econ-writing:compose --user-profile top-five-en-introduction-empirical --stage compose --format compact
-python scripts/route_registry.py read top-five-en-field-spatial.all --format compact
-```
+- An estimate, its standard error and its interval share one scale and one number of decimals; a table column uses one number of decimals.
+- Display precision follows the precision of the estimates; round once from the saved value; p < 0.001 below that value.
+- The currency, price base year and scale of a monetary result are stated at its first appearance.
 
-| Function | Field | Profile body |
-|---|---|---|
-| abstract | labor and public economics | [abstract-labor-public](abstract-labor-public.md) |
-| abstract | microeconomic theory | [abstract-micro-theory](abstract-micro-theory.md) |
-| abstract | industrial organization and identification | [abstract-io-identification](abstract-io-identification.md) |
-| abstract | urban and spatial economics | [abstract-spatial](abstract-spatial.md) |
-| abstract | econometrics | [abstract-econometrics](abstract-econometrics.md) |
-| abstract | field experiments and development | [abstract-field-experiment](abstract-field-experiment.md) |
-| abstract | macro and finance | [abstract-macro-finance](abstract-macro-finance.md) |
-| introduction | applied microeconomics | [introduction-empirical](introduction-empirical.md) |
-| introduction | microeconomic theory | [introduction-theory](introduction-theory.md) |
-| institutional setting | applied microeconomics | [empirical-institution](empirical-institution.md) |
-| data | applied microeconomics | [empirical-data](empirical-data.md) |
-| conceptual framework | applied microeconomics | [empirical-framework](empirical-framework.md) |
-| empirical strategy | applied microeconomics | [empirical-strategy](empirical-strategy.md) |
-| results: older workers | applied microeconomics | [empirical-older-workers](empirical-older-workers.md) |
-| results: firms and younger workers | applied microeconomics | [empirical-firms-younger-workers](empirical-firms-younger-workers.md) |
-| mechanisms and heterogeneity | applied microeconomics | [empirical-mechanisms](empirical-mechanisms.md) |
-| conclusion | applied microeconomics | [empirical-conclusion](empirical-conclusion.md) |
-| field sections | microeconomic theory | [field-micro-theory](field-micro-theory.md) |
-| field sections | industrial organization | [field-io-demand](field-io-demand.md) |
-| field sections | econometrics | [field-econometrics](field-econometrics.md) |
-| field sections | spatial economics | [field-spatial](field-spatial.md) |
-| field sections | macro and finance | [field-macro-finance](field-macro-finance.md) |
-| field sections | field experiments | [field-experiment](field-experiment.md) |
-| field sections | computational methods | [field-computation](field-computation.md) |
-| field sections | economic history | [field-history](field-history.md) |
+## 3. Symbols and equations
 
-## Read connected sections
+- Standard symbols unless the model defines others: i for a unit, t for time, j for a group or alternative, β for a coefficient, ε for a disturbance.
+- Define each symbol in the sentence that introduces it; the symbols of a displayed equation are defined in the "where" clause after it.
+- Displayed equations are numbered at the right margin and cited as equation (1).
 
-For the empirical study, read the labor/public abstract, empirical introduction, and empirical sections in this order: institution, data, framework, strategy, older workers, firms and younger workers, mechanisms, conclusion.
+## 4. Tables
 
-For microeconomic theory, read the theory abstract, theory introduction, and microeconomic-theory field profile. For the remaining fields, select the corresponding abstract and field profile where available.
+- A numbered noun-phrase title, outcome labels above the columns, column numbers (1), (2), (3).
+- Coefficient and its parenthesized standard error on consecutive rows; no significance stars.
+- Below the coefficients: observations, fixed effects, controls, sample, weights; X marks an included block.
+- Portrait, at most 9 columns including row headings, horizontal rules only, numbers aligned at the decimal point, Panel A and Panel B for subtables, full column headings.
+- Notes: one sentence giving the estimator by column and the standard-error type, from the saved specification; nothing else.
+
+## 5. Figures
+
+- A numbered noun-phrase title, axis labels with quantity and unit, the legend in the order of the series.
+- Intervals as whiskers or a band, labelled with the level and method from the saved result.
+- Colour-blind-safe colours paired with distinct markers; vector PDF; panels labelled a, b, c.
+- Notes: the interval level and type, from the saved result; nothing else.
+
+## 6. Citations and references
+
+- Author (Year) as the grammatical subject; (Author Year) for attribution; two authors by both surnames, three or more by the first surname and et al.; grouped citations by year, then surname, separated by semicolons.
+- The bibliography is alphabetical and generated from the citation keys: articles with author, year, title, journal, volume (issue), pages, DOI; books with author, year, title, edition, publisher; working papers with author, year, title, series and number, institution, date, URL.
+
+## 7. Layout
+
+- **Papers:** the Econometrica template in `tex/paper` (econsocart, LuaLaTeX); table titles above tables, figure titles below figures, each exhibit after the paragraph that first cites it; appendices A, B, C with equations (A.1), tables A1 and figures A1.
+- **Slides:** 16:9, 960 × 540 pt, body 28 pt, headings 32 pt, title 40 pt, with labels, tables and captions at body size; the metropolis theme and Waseda colours of `tex/slides`; page number at the lower right.
+- **Slide content:** a noun-phrase heading, one claim, its exhibit or equation with a one-line reading and the magnitude with its unit; content that does not fit moves to the next slide at the same type size.
+
+## 8. Genres
+
+- Decision proposals and pre-analysis plans: [proposals](../../skills/econ-writing/references/proposals.md).
+- Talks and meeting materials: [slides and materials](../../skills/econ-writing/references/artifact-writing.md).
+- Papers: [paper workflow](../../skills/econ-writing/references/paper-workflow.md).
+- Referee responses: each comment quoted, then the response, then the exact section, page or line of the change.
+- Research briefs: the conclusion with its magnitude first, then the evidence, the mechanism and the action.

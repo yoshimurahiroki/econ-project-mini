@@ -8,6 +8,8 @@ Python and R versions, selected package closures and environment-file hashes are
 
 The economics exposition, research examples and numerical method specifications are independently authored. Their cited scientific sources retain their own authorship; installed packages retain the licenses and notices supplied by their distributions.
 
+Public repositories that informed the research procedures include [Auto-Empirical-Research-Skills](https://github.com/brycewang-stanford/Auto-Empirical-Research-Skills), [EconAgentSkills](https://github.com/JonasWeinert/EconAgentSkills), [AER-Skills](https://github.com/brycewang-stanford/AER-Skills), [applied-micro-skills](https://github.com/kennethkhoocy/applied-micro-skills), [DIME](https://github.com/worldbank/dime-standards), [econ-project-templates](https://github.com/OpenSourceEconomics/econ-project-templates), [econ-writing-skills](https://github.com/mimaowang/econ-writing-skills), [theoretical-economics-paper-writing](https://github.com/h-lu/theoretical-economics-paper-writing), [econ-paper-review-skill](https://github.com/hanlulong/econ-paper-review-skill), [modelsummary](https://github.com/vincentarelbundock/modelsummary) and [pytask](https://github.com/pytask-dev/pytask).
+
 The workspace also includes the following MIT-licensed agent skill packs under
 `.github/agent-plugins/`, copied from their public repositories:
 

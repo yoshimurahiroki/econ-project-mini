@@ -1,11 +1,87 @@
 ---
 title: "Title"
-author: "Author"
-abstract: "Abstract."
+author:
+  - "First Author"
+support: "[fill: acknowledgments and funding, as supplied by the authors]"
+abstract: |
+  [fill: moves of the exemplar abstract: question; data or model; identifying variation or model operation; main magnitude with its unit and interval; mechanism or welfare consequence]
 keywords:
-  - keyword
+  - "[fill: keyword]"
 ---
 
-# Introduction
+<!-- Each [fill: ...] names the function of a paragraph. Its sentences follow the paragraph of the same
+function in an English exemplar (exemplars.py outline / find) and its content comes from the worksheet;
+delete sections and exhibits the paper does not use. -->
 
-Text.
+# Introduction {#sec-introduction}
+
+[fill: the decision or fact that makes the question matter, with its magnitude (worksheet 1)]
+
+[fill: the question and the economic mechanism at stake: actors, choices and the competing predictions (worksheet 2-3)]
+
+[fill: setting, data and the comparison that separates the predictions (worksheet 4)]
+
+[fill: main results, one paragraph each: estimate with interval and unit, and the mechanism it supports (worksheet 6)]
+
+[fill: the economic magnitude or decision the results imply (worksheet 6)]
+
+[fill: contribution: for each literature, its benchmark estimate or result and what this paper changes]
+
+# Institutional Setting {#sec-setting}
+
+[fill: the rule, its timing, the agents it reaches and the margin of choice it moves]
+
+# Data {#sec-data}
+
+[fill: sources, linkage, unit of observation, period, sample rules and outcome construction] @tbl-summary reports summary statistics.
+
+|                  | [fill: group] | [fill: group] | [fill: group] |
+|:-----------------|:-------------:|:-------------:|:-------------:|
+|                  | (1)           | (2)           | (3)           |
+| [fill: variable] | [fill: mean]  | [fill: mean]  | [fill: mean]  |
+|                  | [[fill: sd]]  | [[fill: sd]]  | [[fill: sd]]  |
+| *N*              | [fill: n]     | [fill: n]     | [fill: n]     |
+
+: [fill: title] {#tbl-summary}
+
+*Notes.* [fill: what the columns report, with the unit]
+
+# Conceptual Framework {#sec-framework}
+
+[fill: agents, objectives, choice sets, information and equilibrium; the competing mechanisms and the prediction that separates them (worksheet 3)]
+
+::: {#prp-main}
+[fill: prediction]
+:::
+
+# Empirical Strategy {#sec-strategy}
+
+[fill: estimand in the framework's terms, the identifying variation and the comparison group (worksheet 4)]
+
+$$
+\text{[fill: estimating equation of the chosen method, as written on its method card]}
+$$ {#eq-main}
+
+[fill: definitions of the symbols that are specific to this paper; inference and the level of clustering]
+
+# Results {#sec-results}
+
+[fill: main result: estimate, interval, unit, population and period; the prediction it supports and the one it rejects]
+
+|                   | (1)              | (2)              |
+|:------------------|:----------------:|:----------------:|
+| [fill: regressor] | [fill: estimate] | [fill: estimate] |
+|                   | ([fill: se])     | ([fill: se])     |
+| *N*               | [fill: n]        | [fill: n]        |
+
+: [fill: title] {#tbl-main}
+
+*Notes.* [fill: estimator by column and standard-error type]
+
+# Mechanisms {#sec-mechanisms}
+
+[fill: the test of @prp-main; the counterfactual, incidence or welfare calculation]
+
+# Conclusion {#sec-conclusion}
+
+[fill: the answer, its magnitude and the decision it informs]

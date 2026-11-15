@@ -2,10 +2,8 @@
 
 Generated from the resource and placement registries. Use this catalog only for requested distribution or maintenance.
 
-- core: runtime/CORE.md
-- prose: runtime/PROSE.md
-- research: runtime/DECIDE.md
-- execution: runtime/EXECUTION.md
+- core: runtime/ECONOMIST.md
+- prose: runtime/WRITING.md
 - team: runtime/TEAM.md
 - econ-design: skills/econ-design/SKILL.md
 - econ-data: skills/econ-data/SKILL.md
@@ -94,26 +92,6 @@ Generated from the resource and placement registries. Use this catalog only for 
 - research-reproduction: harness/reproduction.py
 - research-causal-dependencies: skills/econ-data/scripts/requirements-causal.txt
 - research-causal: skills/econ-data/scripts/research_causal.py
-- example-subscription: skills/econ-data/examples/subscription/README.md
-- example-subscription-code: skills/econ-data/examples/subscription/run.py
-- example-subscription-specification: skills/econ-data/examples/subscription/specification.json
-- example-subscription-materials: skills/econ-data/examples/subscription/materials.py
-- example-equipment: skills/econ-data/examples/equipment/README.md
-- example-equipment-code: skills/econ-data/examples/equipment/run.py
-- example-equipment-specification: skills/econ-data/examples/equipment/specification.json
-- example-equipment-materials: skills/econ-data/examples/equipment/materials.py
-- example-housing: skills/econ-data/examples/housing/README.md
-- example-housing-code: skills/econ-data/examples/housing/run.py
-- example-housing-specification: skills/econ-data/examples/housing/specification.json
-- example-housing-materials: skills/econ-data/examples/housing/materials.py
-- example-charging: skills/econ-data/examples/charging/README.md
-- example-charging-code: skills/econ-data/examples/charging/run.py
-- example-charging-specification: skills/econ-data/examples/charging/specification.json
-- example-charging-materials: skills/econ-data/examples/charging/materials.py
-- example-commuting: skills/econ-data/examples/commuting/README.md
-- example-commuting-code: skills/econ-data/examples/commuting/run.py
-- example-commuting-specification: skills/econ-data/examples/commuting/specification.json
-- example-commuting-materials: skills/econ-data/examples/commuting/materials.py
 - research-rct: skills/econ-data/scripts/research_rct.R
 - models-causal: skills/econ-design/references/causal-models.md
 - research-markets-dependencies: skills/econ-data/scripts/requirements-markets.txt
@@ -189,7 +167,6 @@ Generated from the resource and placement registries. Use this catalog only for 
 - latex-paper-quarto: tex/paper/quarto_template.qmd
 - latex-slides-quarto: tex/slides/quarto_template.qmd
 - package-notices: THIRD_PARTY_NOTICES.md
-- knowledge-storage-requirements: scripts/requirements-knowledge-storage.txt (complete source distribution only)
 - project-work: skills/project-work/SKILL.md
 - project-practice: skills/project-work/references/practice.md
 - vscode-extension-recommendations: .vscode/extensions.json (complete source distribution only)
@@ -205,7 +182,6 @@ Generated from the resource and placement registries. Use this catalog only for 
 - meeting-templates: tex/slides/meeting_templates.json
 - meeting-cloud-workflow: .github/workflows/meetings.yml (complete source distribution only)
 - research-task-form: .github/ISSUE_TEMPLATE/research-task.yml (complete source distribution only)
-- economics-writing-comparison: docs/ai/economics-writing-comparison.md (complete source distribution only)
 - research-respy-dependencies: skills/econ-data/scripts/requirements-respy.txt
 - research-lifecycle-dependencies: skills/econ-data/scripts/requirements-lifecycle.txt
 - research-dolo-dependencies: skills/econ-data/scripts/requirements-dolo.txt
@@ -259,33 +235,20 @@ Generated from the resource and placement registries. Use this catalog only for 
 - data-worked-examples: skills/econ-data/references/implementation-examples.md
 - review-procedure: skills/econ-review/references/review.md
 - top-five-en: profiles/top-five-en/PROFILE.md
-- top-five-en-abstract-labor-public: profiles/top-five-en/abstract-labor-public.md
-- top-five-en-abstract-micro-theory: profiles/top-five-en/abstract-micro-theory.md
-- top-five-en-abstract-io-identification: profiles/top-five-en/abstract-io-identification.md
-- top-five-en-abstract-spatial: profiles/top-five-en/abstract-spatial.md
-- top-five-en-abstract-econometrics: profiles/top-five-en/abstract-econometrics.md
-- top-five-en-abstract-field-experiment: profiles/top-five-en/abstract-field-experiment.md
-- top-five-en-abstract-macro-finance: profiles/top-five-en/abstract-macro-finance.md
-- top-five-en-introduction-empirical: profiles/top-five-en/introduction-empirical.md
-- top-five-en-introduction-theory: profiles/top-five-en/introduction-theory.md
-- top-five-en-empirical-institution: profiles/top-five-en/empirical-institution.md
-- top-five-en-empirical-data: profiles/top-five-en/empirical-data.md
-- top-five-en-empirical-framework: profiles/top-five-en/empirical-framework.md
-- top-five-en-empirical-strategy: profiles/top-five-en/empirical-strategy.md
-- top-five-en-empirical-older-workers: profiles/top-five-en/empirical-older-workers.md
-- top-five-en-empirical-firms-younger-workers: profiles/top-five-en/empirical-firms-younger-workers.md
-- top-five-en-empirical-mechanisms: profiles/top-five-en/empirical-mechanisms.md
-- top-five-en-empirical-conclusion: profiles/top-five-en/empirical-conclusion.md
-- top-five-en-field-micro-theory: profiles/top-five-en/field-micro-theory.md
-- top-five-en-field-io-demand: profiles/top-five-en/field-io-demand.md
-- top-five-en-field-econometrics: profiles/top-five-en/field-econometrics.md
-- top-five-en-field-spatial: profiles/top-five-en/field-spatial.md
-- top-five-en-field-macro-finance: profiles/top-five-en/field-macro-finance.md
-- top-five-en-field-experiment: profiles/top-five-en/field-experiment.md
-- top-five-en-field-computation: profiles/top-five-en/field-computation.md
-- top-five-en-field-history: profiles/top-five-en/field-history.md
-- example-subscription-manuscript-en: skills/econ-data/examples/subscription/manuscript-en.md
-- academic-ja-childcare-employment: profiles/academic-ja/childcare-employment.md
-- academic-ja-attention-plan-choice: profiles/academic-ja/attention-plan-choice.md
-- academic-ja-equipment-subsidy: profiles/academic-ja/equipment-subsidy.md
 - academic-ja: profiles/academic-ja/PROFILE.md
+- design-modeling: skills/econ-design/references/modeling.md
+- design-simulation-template: skills/econ-design/templates/simulate_model.py
+- data-empirical: skills/econ-data/references/empirical.md
+- data-estimate-template: skills/econ-data/templates/estimate_ladder.py
+- worksheet: runtime/WORKSHEET.md
+- literature-search-tool: skills/econ-literature/scripts/literature_search.py
+- context-readme: runtime/context/README.md
+- context-japan: runtime/context/japan.md
+- models-causal-did-cards: skills/econ-design/references/causal-models/did.md
+- models-causal-rdiv-cards: skills/econ-design/references/causal-models/rd-iv-experiments.md
+- models-causal-ml-cards: skills/econ-design/references/causal-models/ml-heterogeneity.md
+- models-causal-outcomes-cards: skills/econ-design/references/causal-models/outcomes-bounds-sensitivity.md
+- models-causal-regression-cards: skills/econ-design/references/causal-models/regression-engines.md
+- writing-proposals: skills/econ-writing/references/proposals.md
+- data-preparation: skills/econ-data/references/data-preparation.md
+- data-audit-template: skills/econ-data/templates/data_audit.py

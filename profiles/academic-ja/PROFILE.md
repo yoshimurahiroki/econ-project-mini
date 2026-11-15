@@ -1,24 +1,56 @@
-# Japanese economics writing profiles
+# Japanese economics writing profile
 
 Profile family: academic-ja. Language: Japanese.
 
-## Principles
+## Use
 
-Search for and read the relevant passage and its surrounding section, pages, slides, figures and tables in original sources before composing or revising. Sources include papers and slides from the five leading economics journals published since 2020, major economics handbooks, review articles and guides, economics textbooks, and economics course materials, including lecture notes, course slides and handouts. Map every element of content selection, argument structure, style, vocabulary, transitions, sentence endings, placement, design and appearance to its source; borrow and imitate the corresponding material. For Japanese, use corresponding Japanese originals. Make only the adjustments required for the confirmed facts, names, notation, period, quantities, citations, grammar and medium of the current task; retain the current study’s evidence and conclusions. Record source-to-output mappings and adjustments in the existing working record and check every finished element against its source. Search and read further when coverage is missing. Apply this process to all writing, slides and materials, including short edits, single words, translation and existing drafts. Do not create prose or materials, freely paraphrase, invent examples, or fill gaps without sources. Do not import a source study’s empirical conditions or conclusions into the current task. Exclude disclaimers, hedging, concessions, qualifications, ornamentation, cautious or conservative phrasing, ambiguity, redundancy, weak phrasing, supplementary annotations, and not-A, not-A-but-B and equivalent contrastive rhetoric. Avoid exaggeration and abstract value judgments. Select direct, natural academic expressions from the relevant originals while preserving the current task’s scientific facts, definitions, conditions, quantities, uncertainty and attribution; this preservation does not permit the prohibited rhetoric. Do not relabel invented human-facing prose examples as technical examples.
+This profile fixes notation, numbers, terms, exhibits, citations and layout for Japanese papers, notes, briefs, meeting materials and slides. Japanese output is native-language working material in Top Five form. Argument structure comes from English exemplars ([WRITING](../../runtime/WRITING.md) section 1); connectives, sentence endings, vocabulary, rhythm and explanation order come from Japanese exemplars ([WRITING](../../runtime/WRITING.md) section 2), and an English draft is never translated. Where an exemplar and this profile differ on wording, the exemplar wins. Length follows the content of the worksheet and the exemplar of the same genre.
 
-These three profiles contain the samples adopted from the user’s uploaded manuscript. Read the complete selected sample and ground adopted Japanese expressions and visual elements in corresponding Japanese originals. The body files retain the uploaded Japanese prose. Equations, mathematical variables and Greek letters use LaTeX notation. Keep selection instructions in this index.
+## 1. Characters and punctuation
 
-## Select a profile
+- Papers, notes, briefs and meeting documents use 「，．」; slides use 「、」 and end bullets as the slide exemplars do.
+- Latin letters, Arabic numerals, operators, equations and numeric intervals are half-width; Japanese parentheses are full-width.
+- No space between Japanese characters; a half-width space between a number and a Latin unit; 年・月・人・件・円・% follow the number directly.
+- Digits for quantities, dates, sample sizes and exhibit numbers; grouping commas from 4 digits; the minus sign 「−」 and the range dash 「–」.
 
-| Writing task | Profile ID | Complete sample |
-|---|---|---|
-| Explain an institution, identification, estimates and policy calculations | `academic-ja-childcare-employment` | [夕刻預かり事業と母親の就業](childcare-employment.md) |
-| Explain a choice model, identification, estimation and counterfactual demand | `academic-ja-attention-plan-choice` | [料金プラン選択における注意の推定](attention-plan-choice.md) |
-| Review empirical studies through their settings, methods and estimates | `academic-ja-equipment-subsidy` | [設備更新補助の投資効果](equipment-subsidy.md) |
+## 2. Numbers
 
-Each row is a separate registered writing profile and example. Use `academic-ja.` followed by the filename stem as the example ID. Select the complete sample closest to the current writing task.
+- An estimate, its standard error and its interval share one scale and one number of decimals; a table column uses one number of decimals.
+- Display precision follows the precision of the estimates; round once from the saved value; p < 0.001 below that value.
+- Differences in proportions are in percentage points; the currency, price base year and scale of a monetary result are stated at its first appearance.
 
-```sh
-python scripts/route_registry.py read academic-ja-attention-plan-choice.all --format compact
-python scripts/route_registry.py read econ-writing:compose --user-profile academic-ja-equipment-subsidy --stage compose --format compact
-```
+## 3. Terms
+
+- One standard term per concept across text, tables, equations and slides; the first occurrence gives 「日本語術語（原語，略語）」, and later occurrences use the abbreviation.
+- Technical distinctions are kept: 推定値 (a reported number), 推定結果 (a display of results), 推定量 (an estimator); 処置群 and 対照群; 識別; 厚生.
+- Software, package and variable names keep their original spelling; katakana spellings データ, モデル, パラメータ, クラスター.
+
+## 4. Symbols and equations
+
+- Standard symbols unless the model defines others: i for a unit, t for time, β for a coefficient, ε for a disturbance; each symbol is defined where it is introduced.
+- Equations are numbered through the document and cited as 式(1); exhibits as 表1 and 図1; sections as 第2節.
+
+## 5. Tables and figures
+
+- Tables: a numbered title, column numbers (1), (2), (3), the coefficient with its parenthesized standard error on the next row, no significance stars; observations, fixed effects, controls and weights below, with X for an included block; portrait, at most 9 columns, horizontal rules only, Panel A and Panel B for subtables.
+- Table notes: one sentence giving the estimator by column and the standard-error type, from the saved specification; nothing else. Figure notes: the interval level and type only.
+- Figures: axis labels with quantity and unit; intervals labelled with the level and method from the saved result; vector PDF; panels labelled a, b, c.
+
+## 6. Citations and references
+
+- 「著者（年）」 as the subject of a sentence and 「（著者 年）」 for attribution, with a half-width space between author and year; two Japanese authors joined by 「・」, three or more by the first author and 「ほか」; the reference list gives every author.
+- Entries: articles with author, year, title, journal, volume, issue, pages, DOI; books with author, year, title, publisher; working papers with author, year, title, series, number, institution, URL.
+
+## 7. Layout
+
+- **Papers:** the Econometrica template in `tex/paper` (econsocart, LuaLaTeX, Harano Aji fonts for Japanese); exhibits after the paragraph that first cites them; page numbers centred at the foot.
+- **Slides:** 16:9, body 32 pt, headings 36 pt, title 44 pt, with labels, tables and captions at body size (Japanese type is set larger than English because a character carries more content); the metropolis theme and Waseda colours of `tex/slides`; page number at the lower right.
+- **Slide content:** a noun-phrase heading, one claim, its exhibit or equation with a one-line reading and the magnitude with its unit; content that does not fit moves to the next slide at the same type size.
+
+## 8. Genres
+
+- Decision proposals and pre-analysis plans: [proposals](../../skills/econ-writing/references/proposals.md).
+- Talks and meeting materials: [slides and materials](../../skills/econ-writing/references/artifact-writing.md).
+- Papers: [paper workflow](../../skills/econ-writing/references/paper-workflow.md).
+- Referee responses: each comment quoted, then the response, then the exact section, page or line of the change.
+- Research briefs: the conclusion with its magnitude first, then the evidence, the mechanism and the action.

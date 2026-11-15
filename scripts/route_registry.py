@@ -197,8 +197,8 @@ def select_reading_sections(routes, manifest, stage, role=None, reader_id=None, 
     # A current-stage body needs its prerequisites now, including prerequisites
     # assigned to another stage. Future unrelated bodies remain deferred.
     seeds = [key for row in result for key in row['rule_ids']]
-    # Every entry stage, including a bounded task starting mid-workflow, restores
-    # the kernel. Only explicit complete-body --seen evidence suppresses it.
+    # Selection always includes the kernel; the reader omits it after entry
+    # unless restore is requested.
     if 'core' in adopted and 'kernel.all' in routes['rules']:
         seeds.append('kernel.all')
     conditions = manifest.get('selection', {}).get('conditions', [])
@@ -226,7 +226,7 @@ def native_index(routes, *, links=False, operation=None, family=None, query=None
         selected = resolve_operation(routes, operation)
         lines = ['# ' + selected['canonical_operation'], '', selected['description'], '',
                  'Select the conditions actually present in the request. `read ' + selected['canonical_operation']
-                 + ' --stage STAGE --condition CONDITION --format compact` delivers the current stage\'s complete bodies and prerequisites.', '',
+                 + ' --stage STAGE --condition CONDITION` delivers the current stage\'s complete bodies and prerequisites.', '',
                  '| Condition | Direct required bodies | Optional examples |', '| --- | --- | --- |']
         candidates = [cid for cid, definition in routes['condition_definitions'].items()
                       if definition.get('applies_to', '*') == '*'
@@ -265,10 +265,10 @@ def native_index(routes, *, links=False, operation=None, family=None, query=None
     lines = ['# Economics operation index', '',
              'Generated from registry/operations.json. Support continues the adopted task.', '',
              '## Read the pending operation', '',
-             '1. **Selected operation → reader.** Read CORE and PROSE Common output, then select the final operation below. Find conditions with `python scripts/route_registry.py index --operation OPERATION --family FAMILY` or `--query TEXT`.',
-             '2. **Complete bodies → execution.** Run `python scripts/route_registry.py read OPERATION --stage STAGE --condition CONDITION --format compact`. Stages: entry classifies; contract adopts question/method/inputs; compose executes by borrowing, imitating and minimally adapting read sources for writing; review interprets/repairs; finalize saves/delivers. Direct `read RULE_ID` returns that rule and prerequisites.',
-             '3. **Retained bodies → next stage.** Follow every `next_offset` under the same `content_sha256` and seen arguments. `bodies` identifies complete bodies and `reused` names omissions. Pass `--seen BODY_SHA256` only for complete matching bodies still in intact context. After compaction, handoff or model change read originals without seen arguments.',
-             '4. **Runtime root → reader.** Deployed trees run `python .agents/scripts/route_registry.py --layout installed read OPERATION --stage STAGE --format compact`; expand incomplete snapshots from canonical source. Skill-scoped hosts read specialist `instructions.md` and common `project-work/references/shared/` bodies, acquiring the matching runtime bundle once for execution.', '']
+             '1. **Selected operation → reader.** Read runtime/ECONOMIST.md (the economist procedure) and runtime/WRITING.md, then select the final operation below. Find conditions with `python scripts/route_registry.py index --operation OPERATION --family FAMILY` or `--query TEXT`.',
+             '2. **Complete bodies → execution.** Run `python scripts/route_registry.py read OPERATION --stage STAGE --condition CONDITION`. Stages: entry classifies; contract adopts question/method/inputs; compose executes by borrowing, imitating and minimally adapting read sources for writing; review interprets/repairs; finalize saves/delivers. Direct `read RULE_ID` returns that rule and prerequisites.',
+             '3. **Continuation → next stage.** Each read returns its complete bodies; a non-null `next_offset` continues the same read with `--offset`. Stages after entry return their own bodies; `--restore` delivers ECONOMIST and WRITING again after compaction, handoff or model change.',
+             '4. **Runtime root → reader.** Deployed trees run `python .agents/scripts/route_registry.py --layout installed read OPERATION --stage STAGE`; expand incomplete snapshots from canonical source. Skill-scoped hosts read specialist `instructions.md` and common `project-work/references/shared/` bodies, acquiring the matching runtime bundle once for execution.', '']
     for op in routes['operations']:
         label = op['skill_id'] + ' / ' + op['mode']
         if links:
@@ -296,7 +296,7 @@ def native_index(routes, *, links=False, operation=None, family=None, query=None
             if rid in routes['resources']:
                 path = posixpath.relpath(routes['resources'][rid]['source_path'], 'docs/ai')
                 lines.append(f'- [{rid}]({path})')
-        lines += ['', 'For local or extracted runtimes, go directly to a known `read OPERATION --condition CONDITION`. `index --operation OPERATION` lists its conditions and bodies; `index --resource RESOURCE_ID` lists a method hierarchy and prerequisites. Read pages through `next_offset` until null. `read RULE_ID` returns that rule with its prerequisites. Reuse complete same-version reads.', '']
+        lines += ['', 'For local or extracted runtimes, go directly to a known `read OPERATION --condition CONDITION`. `index --operation OPERATION` lists its conditions and bodies; `index --resource RESOURCE_ID` lists a method hierarchy and prerequisites. `read RULE_ID` returns that rule with its prerequisites.', '']
     return '\n'.join(lines) + '\n'
 
 
@@ -353,9 +353,13 @@ def extract_sections(text, selection, resource):
 
 
 def read_selected(routes, root, selector, *, layout='source', mode=None, conditions=(),
-                  user_profile=None, project_profile=None, offset=0, limit=16000, stage=None,
-                  seen=(), compact=False):
-    """Deliver exact selected bodies; pagination never marks them as read."""
+                  user_profile=None, project_profile=None, offset=0, limit=48000, stage=None,
+                  seen=(), compact=False, restore=False, kernel_delivered=False):
+    """Deliver exact selected bodies; pagination never marks them as read.
+
+    Stages after entry omit the kernel (ECONOMIST and WRITING) that entry
+    delivered; restore=True delivers it again after context loss.
+    """
     import hashlib
     if offset < 0 or limit < 1:
         raise ValueError('Reading offset must be nonnegative and limit positive')
@@ -365,6 +369,7 @@ def read_selected(routes, root, selector, *, layout='source', mode=None, conditi
     if unknown:
         raise ValueError('Unknown condition: ' + ', '.join(sorted(unknown)))
     custom_profile = None
+    kernel_omitted = False
     if selector in routes['rules']:
         active, selection = required_closure(routes, [selector], conditions, selector)
     else:
@@ -383,6 +388,20 @@ def read_selected(routes, root, selector, *, layout='source', mode=None, conditi
             'selection': {'conditions': list(conditions)}}, stage)
         selection = {}
         active = []
+        if (stage != 'entry' or kernel_delivered) and not restore:
+            stages = routes['reading_stages']
+            def assigned(name):
+                return {(rid, sid) for rid, ids in stages.get(name, {}).items() for sid in ids}
+            delivered_at_entry = (assigned('entry') - assigned(stage) if stage != 'entry' else
+                {('core', 'all'), ('prose', 'common-output'), ('research', 'turn-the-question-into-an-operation')})
+            whole = {rid for rid, sid in delivered_at_entry if sid == 'all'}
+            kept = [row for row in refs
+                    if row['resource_id'] not in whole
+                    and (row['resource_id'], row['section_id']) not in delivered_at_entry]
+            kernel_omitted = len(kept) != len(refs)
+            refs = kept
+        kernel_first = {'core': 0, 'prose': 1}
+        refs = sorted(refs, key=lambda row: kernel_first.get(row['resource_id'], 2))
         for row in refs:
             locator = routes['sections'][row['resource_id']][row['section_id']]
             merge_selection(selection, {row['resource_id']: {'whole_resource': True}
@@ -443,6 +462,8 @@ def read_selected(routes, root, selector, *, layout='source', mode=None, conditi
             commands = [shlex.join(['python', str(helper), 'plan', kid, '--read']) for kid in knowledge]
             delivered.append('# Selected method knowledge\n\nRead the complete bodies and prerequisites before adoption:\n'
                              + '\n'.join(commands))
+    if kernel_omitted:
+        delivered.insert(0, 'ECONOMIST and WRITING were delivered earlier; rerun with `--restore` if they are absent from context.')
     text = '\n\n'.join(delivered) + ('\n' if delivered or not body_hashes else '')
     if offset > len(text):
         raise ValueError('Reading offset exceeds the selected body')
@@ -450,7 +471,8 @@ def read_selected(routes, root, selector, *, layout='source', mode=None, conditi
     if compact:
         return {'content_sha256': hashlib.sha256(text.encode('utf-8')).hexdigest(),
                 'offset': offset, 'next_offset': end if end < len(text) else None,
-                'bodies': body_hashes, 'reused': reused, 'text': text[offset:end]}
+                'bodies': body_hashes, 'reused': reused,
+                'omitted': ['core', 'prose#common-output'] if kernel_omitted else [], 'text': text[offset:end]}
     result = {'selector': selector, 'stage': stage, 'required_rules': active,
             'adopted_required_rules': adopted_rules, 'sources': sources,
             'content_sha256': hashlib.sha256(text.encode('utf-8')).hexdigest(),
@@ -1082,13 +1104,13 @@ def generate_entries(root, routes=None, *, outputs=None):
     guide += [f"- {rid}: {r['source_path']}" + (' (complete source distribution only)' if r.get('source_distribution_only') else '') for rid, r in routes['resources'].items()]
     write_changed(root / 'docs/ai/resources.md', '\n'.join(guide) + '\n')
     write_changed(root / 'docs/ai/project_instructions.txt', entry_contract(routes,
-        '../../runtime/CORE.md', '../../runtime/PROSE.md', 'compiled_ai_skills.md') + '\n')
+        '../../runtime/ECONOMIST.md', '../../runtime/WRITING.md', 'compiled_ai_skills.md') + '\n')
     for pointer in routes['placements']['policy_pointers']:
         path = root / pointer['source_path']
         template = routes['placements']['pointer_templates'][pointer['template_id']]
         body = template.format(
-            core=os.path.relpath(root / 'runtime/CORE.md', path.parent),
-            prose=os.path.relpath(root / 'runtime/PROSE.md', path.parent),
+            core=os.path.relpath(root / 'runtime/ECONOMIST.md', path.parent),
+            prose=os.path.relpath(root / 'runtime/WRITING.md', path.parent),
             operations=os.path.relpath(root / 'registry/operations.json', path.parent),
             index=os.path.relpath(root / 'docs/ai/compiled_ai_skills.md', path.parent))
         write_changed(path, body)
@@ -1100,8 +1122,8 @@ def generate_entries(root, routes=None, *, outputs=None):
         entry_pattern = r'<!-- BEGIN GENERATED ENTRY -->.*?<!-- END GENERATED ENTRY -->'
         if re.search(entry_pattern, body, re.S):
             entry = ('<!-- BEGIN GENERATED ENTRY -->\n## Native entry contract\n\n' +
-                entry_contract(routes, '../../runtime/CORE.md',
-                    '../../runtime/PROSE.md', '../../docs/ai/compiled_ai_skills.md') +
+                entry_contract(routes, '../../runtime/ECONOMIST.md',
+                    '../../runtime/WRITING.md', '../../docs/ai/compiled_ai_skills.md') +
                 '\n<!-- END GENERATED ENTRY -->')
             body = re.sub(entry_pattern, lambda _: entry, body, flags=re.S)
         block = generated_mode_block(routes, owner)
@@ -1109,8 +1131,15 @@ def generate_entries(root, routes=None, *, outputs=None):
         body = transform_entry_references(routes, owner, body)
         write_changed(path, body, previous)
     modes = [op['mode'] for op in routes['operations'] if op['owner_skill'] == 'econ-writing']
-    ui = 'interface:\n  display_name: "Economics Writing"\n  short_description: "Find economics sources first; borrow and imitate prose and visuals"\n  default_prompt: "Use $econ-writing in ' + ', '.join(modes) + ' mode. Read CORE, the selected PROSE rules and mode. For every English or Japanese writing task, including short edits, translation, formatting and existing drafts, first search real 2020 onward top-five economics journal papers and slides, major economics handbooks, reviews, guides and textbooks, and economics course materials including lecture notes, course slides and handouts; read the relevant passages and surrounding context, pages, slides and figures. Map every content choice, structure, expression and visual element to a source; borrow and imitate it, making only the minimum adjustments needed for the confirmed task facts and medium. Use Japanese originals for Japanese expressions; do not transfer source findings or empirical conditions to the task. Record sources and adjustments, and compare every element with the originals. If sources are insufficient, continue searching and reading. Apply this without exceptions; complete the integrated review."\npolicy:\n  allow_implicit_invocation: true\n'
+    ui = 'interface:\n  display_name: "Economics Writing"\n  short_description: "Find economics sources first; borrow and imitate prose and visuals"\n  default_prompt: "Use $econ-writing in ' + ', '.join(modes) + ' mode. Read runtime/ECONOMIST.md, runtime/WRITING.md and the selected mode. Content comes from the worksheet; argument structure from English exemplars and Japanese expression from Japanese exemplars (exemplars.py outline, find, style). Read the rendered output against WRITING before finishing."\npolicy:\n  allow_implicit_invocation: true\n'
     write_changed(root / 'skills/econ-writing/agents/openai.yaml', ui)
+    root_manifest = root / 'plugin.json'
+    if root_manifest.is_file() and (root / '.codex-plugin').is_dir():
+        manifest = json.loads(root_manifest.read_text(encoding='utf-8'))
+        codex = {key: manifest[key] for key in ('name', 'version', 'description', 'author', 'keywords')}
+        codex['interface'] = {**manifest['extensions']['com.openai']['interface'], 'capabilities': []}
+        codex['skills'] = './skills'
+        write_changed(root / '.codex-plugin/plugin.json', json.dumps(codex, ensure_ascii=False, indent=2) + '\n')
     return routes
 
 
@@ -1139,9 +1168,11 @@ if __name__ == '__main__':
             selected.add_argument('--stage', choices=('entry','contract','compose','review','finalize'),
                                   help='Read the current stage; operations default to entry, explicit rule IDs retain direct reads')
             selected.add_argument('--offset', type=int, default=0, help='Character offset returned by the preceding page')
-            selected.add_argument('--limit', type=int, default=16000, help='Maximum body characters per page')
-            selected.add_argument('--format', choices=('json', 'compact'), default='compact')
+            selected.add_argument('--limit', type=int, default=48000, help='Maximum body characters per page')
+            selected.add_argument('--format', choices=('text', 'compact', 'json'), default='text', help='text prints the bodies; compact and json print the delivery record')
             selected.add_argument('--seen', action='append', default=[], help='Hash of a complete body still present in this intact context')
+            selected.add_argument('--kernel-delivered', action='store_true', help='Omit ECONOMIST and WRITING that a hook packet already delivered')
+            selected.add_argument('--restore', action='store_true', help='Deliver ECONOMIST and WRITING at a stage after entry (context loss, handoff, model change)')
     args = parser.parse_args()
     if args.command == 'index' and (args.family or args.query or args.all_conditions) and not args.operation:
         parser.error('condition filters require --operation')
@@ -1157,8 +1188,13 @@ if __name__ == '__main__':
                                conditions=args.condition, user_profile=args.user_profile,
                                project_profile=args.project_profile, offset=args.offset, limit=args.limit,
                                stage=args.stage or (None if args.operation in routes['rules'] else 'entry'),
-                               seen=args.seen, compact=args.format == 'compact')
-        print(json.dumps(result, ensure_ascii=False, indent=2))
+                               seen=args.seen, compact=args.format != 'json', restore=args.restore, kernel_delivered=args.kernel_delivered)
+        if args.format == 'text':
+            print(result['text'], end='')
+            if result['next_offset'] is not None:
+                print('\nnext_offset: ' + str(result['next_offset']))
+        else:
+            print(json.dumps(result, ensure_ascii=False, indent=2))
     else:
         result = resolve_operation(routes, args.operation, args.mode,
                                    user_profile=args.user_profile, project_profile=args.project_profile,

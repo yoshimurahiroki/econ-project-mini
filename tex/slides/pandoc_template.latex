@@ -1,5 +1,5 @@
 % !TEX program = lualatex
-\documentclass[unicode, mathserif, t, 12pt, unknownkeysallowed$if(babel-lang)$,$babel-lang$$endif$,aspectratio=$if(aspectratio)$$aspectratio$$else$169$endif$]{beamer}
+\documentclass[unicode, t, 12pt, unknownkeysallowed$if(babel-lang)$,$babel-lang$$endif$,aspectratio=$if(aspectratio)$$aspectratio$$else$169$endif$]{beamer}
 %\includeonlyframes{current}
 
 \usepackage{color}
@@ -7,13 +7,14 @@
 \usepackage{comment}
 \usepackage{natbib}
 
-\usepackage[haranoaji,deluxe]{luatexja-preset}
+\usepackage[haranoaji,deluxe,scale=1]{luatexja-preset}
 \usepackage{appendixnumberbeamer}
 \renewcommand{\kanjifamilydefault}{\gtdefault}
 \renewcommand{\refname}{}
 \renewcommand{\bibsection}{}
 
 $if(theme)$\usetheme{$theme$}$else$\usetheme[numbering=fraction]{metropolis}$endif$
+\usefonttheme[onlymath]{serif}
 
 \definecolor{Waseda}{HTML}{922E41}
 \definecolor{Orange}{HTML}{CF4A30}
@@ -21,18 +22,29 @@ $if(theme)$\usetheme{$theme$}$else$\usetheme[numbering=fraction]{metropolis}$end
 \setbeamercolor{frametitle}{bg=Waseda}
 \geometry{paperwidth=960bp,paperheight=540bp}
 \setbeamersize{text margin left=54bp,text margin right=54bp}
-\newcommand{\ersbodyfontsize}{28}
+\newif\ifersjapanese
+$if(japanese)$\ersjapanesetrue$endif$
+\ifersjapanese
+  \newcommand{\ersbodyfontsize}{32}\newcommand{\ersbodyleading}{40}
+  \newcommand{\ersframetitlefont}{\fontsize{36}{44}\selectfont}
+  \newcommand{\erstitlefont}{\fontsize{44}{54}\selectfont}
+  \DeclareMathSizes{32}{32}{22}{16}
+\else
+  \newcommand{\ersbodyfontsize}{28}\newcommand{\ersbodyleading}{35}
+  \newcommand{\ersframetitlefont}{\fontsize{32}{40}\selectfont}
+  \newcommand{\erstitlefont}{\fontsize{40}{48}\selectfont}
+  \DeclareMathSizes{28}{28}{20}{14}
+\fi
 \makeatletter
-\renewcommand\normalsize{\@setfontsize\normalsize{\ersbodyfontsize}{35}}
+\renewcommand\normalsize{\@setfontsize\normalsize{\ersbodyfontsize}{\ersbodyleading}}
 \makeatother
-\DeclareMathSizes{28}{28}{20}{14}
 \setbeamerfont{normal text}{size=\normalsize}
 \setbeamerfont{itemize/enumerate body}{size=\normalsize}
 \setbeamerfont{itemize/enumerate subbody}{size=\normalsize}
 \setbeamerfont{itemize/enumerate subsubbody}{size=\normalsize}
-\setbeamerfont{title}{size=\fontsize{40}{48}\selectfont}
-\setbeamerfont{subtitle}{size=\fontsize{28}{35}\selectfont}
-\setbeamerfont{frametitle}{size=\fontsize{32}{40}\selectfont,series=\bfseries}
+\setbeamerfont{title}{size=\erstitlefont}
+\setbeamerfont{subtitle}{size=\normalsize}
+\setbeamerfont{frametitle}{size=\ersframetitlefont,series=\bfseries}
 \setbeamerfont{author}{size=\normalsize}
 \setbeamerfont{institute}{size=\normalsize}
 \setbeamerfont{date}{size=\normalsize}
@@ -46,41 +58,32 @@ $if(subtitle)$\subtitle{$subtitle$}$endif$
 $if(institute)$\institute{$institute$}$endif$
 \date{$if(date)$$date$$else$\today$endif$}
 
+%%%%% SLOTS
+\providecommand{\slot}[1]{{\color{gray}\itshape\ensuremath{\langle}#1\ensuremath{\rangle}}}
 %%%%% DOCUMENT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \usepackage{amsmath}
 $if(bibliography)$$else$\let\econbibstyle\bibliographystyle
 \renewcommand{\bibliographystyle}[1]{}
 $endif$$common.latex()$
 $if(bibliography)$$else$\let\bibliographystyle\econbibstyle
-$endif$$for(header-includes)$
+$endif$$if(standalone-renderer)$$for(header-includes)$
 $header-includes$
 $endfor$
-\AtBeginEnvironment{longtable}{\normalsize\setlength{\tabcolsep}{8pt}\renewcommand{\arraystretch}{1.25}}
+$endif$\AtBeginEnvironment{longtable}{\normalsize\setlength{\tabcolsep}{8pt}\renewcommand{\arraystretch}{1.25}}
 \begin{document}
 
 \begin{frame}[plain,b]
  \titlepage
 \end{frame}
 
-\begin{comment}
-\begin{frame}{目次}
-    \tableofcontents
-\end{frame}
-\end{comment}
-
-
 $body$
 
 \appendix
-
-
 
 $if(bibliography)$\begin{frame}{References}
     \normalsize
     \bibliography{$for(bibliography)$$bibliography$$sep$,$endfor$}
     % Bibliography style is set to ecta-fullname by the renderer.
-
-    \nocite{*}
 \end{frame}$endif$
 
 \end{document}
