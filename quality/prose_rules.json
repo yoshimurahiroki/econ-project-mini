@@ -1,0 +1,117 @@
+{
+  "version": "2.0",
+  "owner": "prose.common-output",
+  "purpose": "Recurring locators for source-grounded semantic review under PROSE; inspect every element against read sources, preserve scientific definitions, conditions, quantities, uncertainty and attribution, and exclude the rhetoric prohibited by Common output.",
+  "categories": {
+    "uncertainty": {
+      "rule_id": "prose.common-output",
+      "step": 2
+    },
+    "negative-contrast": {
+      "rule_id": "prose.common-output",
+      "step": 3
+    },
+    "defensive-framing": {
+      "rule_id": "prose.common-output",
+      "step": 4
+    },
+    "disclaimer": {
+      "rule_id": "prose.common-output",
+      "step": 4
+    },
+    "supplement": {
+      "rule_id": "prose.common-output",
+      "step": 4
+    },
+    "ornament": {
+      "rule_id": "prose.common-output",
+      "step": 4
+    }
+  },
+  "rules": [
+    {
+      "id": "en-uncertainty",
+      "language": "en",
+      "category": "uncertainty",
+      "pattern": "\\b(?:probably|perhaps|possibly|may|might|uncertain(?:ty)?)\\b",
+      "action": "review"
+    },
+    {
+      "id": "ja-uncertainty",
+      "language": "ja",
+      "category": "uncertainty",
+      "pattern": "可能性|かもしれ|と思われ|と考えられ|不確実|不確か",
+      "action": "review"
+    },
+    {
+      "id": "en-negative-contrast",
+      "language": "en",
+      "category": "negative-contrast",
+      "pattern": "\\b(?:not|never|neither|cannot|distinguish(?:es|ed|ing)?|differ(?:s|ed)? from)\\b",
+      "action": "review"
+    },
+    {
+      "id": "ja-negative-contrast",
+      "language": "ja",
+      "category": "negative-contrast",
+      "pattern": "ではな|でなく|区別|異な|違う|見られな|認められな",
+      "action": "review"
+    },
+    {
+      "id": "en-defensive-framing",
+      "language": "en",
+      "category": "defensive-framing",
+      "pattern": "\\b(?:however|although|admittedly|cautio(?:n|us)|conservative|subject to|it depends|in my opinion)\\b",
+      "action": "review"
+    },
+    {
+      "id": "ja-defensive-framing",
+      "language": "ja",
+      "category": "defensive-framing",
+      "pattern": "ただし|とはいえ|もちろん|留保|慎重|保守的|注意|一概に|個人的には",
+      "action": "review"
+    },
+    {
+      "id": "en-disclaimer",
+      "language": "en",
+      "category": "disclaimer",
+      "pattern": "\\b(?:disclaimer|for informational purposes|at your own risk|consult a professional|no guarantees?)\\b",
+      "action": "review"
+    },
+    {
+      "id": "ja-disclaimer",
+      "language": "ja",
+      "category": "disclaimer",
+      "pattern": "免責|参考情報|参考までに|自己責任|専門家に相談|保証でき|保証しな",
+      "action": "review"
+    },
+    {
+      "id": "en-supplement",
+      "language": "en",
+      "category": "supplement",
+      "pattern": "\\b(?:side note|addendum|postscript|for completeness|note that|it is worth noting)\\b|\\\\footnote\\b",
+      "action": "review"
+    },
+    {
+      "id": "ja-supplement",
+      "language": "ja",
+      "category": "supplement",
+      "pattern": "補足|注釈|追記|念のため|付け加え",
+      "action": "review"
+    },
+    {
+      "id": "en-ornament",
+      "language": "en",
+      "category": "ornament",
+      "pattern": "\\b(?:groundbreaking|game changer|remarkably|crucial|great question|in conclusion|i hope this helps)\\b",
+      "action": "review"
+    },
+    {
+      "id": "ja-ornament",
+      "language": "ja",
+      "category": "ornament",
+      "pattern": "画期的|飛躍的|極めて重要|示唆に富む|素晴らしい質問|以上を踏まえると|お役に立てれば",
+      "action": "review"
+    }
+  ]
+}

@@ -1,0 +1,122 @@
+# Local IDE configuration
+
+## Native Codex hooks
+
+UserPromptSubmit starts the state owner automatically once per session in private plugin data, with no task or work contract. Startup failure blocks that prompt and reports the error without automatic retry. Ordinary actions need no state registration. Callbacks continue to record and restore context on every event. Stop requests one semantic revision of the final response and created or materially edited user-facing local artifacts by blocking the first completion. The continued host launches and waits for one native revision subagent when available; otherwise it performs the pass itself and reports the actual result. This uses the host's configured authentication and usage allowance, not a separate API-key setup. Re-entry is always allowed, including on check or hook errors. Other checks and errors are advisory; the host's approval and access controls still apply. Identical check warnings are displayed at most twice per host turn. SessionStart callbacks without a turn ID use the active task, or the session at startup.
+
+Preview, write and check the existing lifecycle handlers at project scope:
+
+```sh
+bash scripts/setup_ide_mcp.sh --codex-hooks --client codex
+bash scripts/setup_ide_mcp.sh --codex-hooks --client codex --write
+bash scripts/setup_ide_mcp.sh --codex-hooks --client codex --check
+```
+
+Add `--scope user` to use `CODEX_HOME`, or `~/.codex` when unset. Both scopes preserve unrelated configuration and use the existing atomic plan and ownership record. The command refuses conflicting edited handlers or inline hooks at the same configuration layer. Review and trust the resulting hooks through the native Codex controls; installation does not grant trust. The existing plugin uses its packaged hook definition independently. Work cloud and Chat use their supported Skill and context paths; a local configuration does not turn on unsupported hooks.
+
+The [state manual](../../../harness/state.md#governing-context) defines callback restoration and saved-packet retrieval; [CORE](../../../runtime/CORE.md#task-entry) owns required reading and authority. Native sandbox, approval and destination controls retain their host responsibilities.
+
+The registered compaction handlers follow the published CLI contract: `PostCompact` marks pending restoration, and `SessionStart(source=compact)` supplies complete governing text to the continuation. Bind the selected operation through the [existing context command](../../../harness/state.md#governing-context). The host's PostCompact output controls stopping and messages; model-context restoration uses SessionStart. Review changed hook definitions through the client's native trust controls. Cloud sessions use their exposed context/state mechanisms and retain the same full-reading requirement.
+
+Keep standard automatic compaction and stable instruction/tool ordering. The inspected OpenAI remote V2 path uses its standard compaction trigger; `compact_prompt` is consumed by the local summarization path. This template preserves the standard compaction prompt and threshold. Compare host-provided `total` and `body_after_prefix` settings through an actual supported setting and completed-task usage measurement; preserve model, reasoning effort, permissions and all binding text.
+
+The guarded GitHub branch-update and plugin-update connectors use registered call schemas and exact object targets. When optional task state or a completion contract is bound, it checks the corresponding required action, external target, authority and holds. Unknown connector calls and opaque wrapper code remain unresolved within that binding. Native execution and destination owners retain their authorization checks.
+
+<a id="native-sol-terra-luna-and-astra"></a>
+
+## Native roles and model selection
+
+[TEAM](../../../runtime/TEAM.md#native-model-roles) owns role assignment and inherited authority. Five native templates carry its input, operation and return steps into each host.
+
+1. **Assignment → role.** Read `cat runtime/TEAM.md`. Carry the adopted economic frame, fixed specification, sources, write scope and completion criterion into the selected role. Launch `reviewer` for the existing once-per-turn Stop request or an explicit user review assignment, with fresh bounded context.
+2. **Role → launch fields.** Read the actual host's available models and supported efforts. Select lead/reviewer high, implementer medium, retriever low and specialist highest supported effort through native fields. Generic files inherit host settings; the parent supplies supported authorized overrides at launch. Preserve tighter host/user choices. Before: “Call the worker a specialist.” After: “Pass the unresolved core and prior repair; set its supported model and highest effort in the launch fields.”
+3. **Return → parent.** Retain the requested settings and actual returned identity with the artifact and verification. The parent integrates the result under TEAM; model labels locate assignments.
+
+Preview, apply and check the existing native configuration workflow:
+
+```sh
+bash scripts/setup_ide_mcp.sh --agent-team --client codex
+bash scripts/setup_ide_mcp.sh --agent-team --client codex --write
+bash scripts/setup_ide_mcp.sh --agent-team --client codex --check
+```
+
+`--codex-team` remains a compatibility spelling. Ordinary setup preserves primary model, provider, login, effort and explicit subagent defaults. It installs inherited `.codex/agents/{lead,implementer,retriever,specialist,reviewer}.toml` and the explicit Terra/Luna/Astra aliases for implementer/retriever/specialist. Select the OpenAI preset to write model and effort fields into all five generic Codex roles:
+
+```sh
+bash scripts/setup_ide_mcp.sh --agent-team --client codex --openai-preset --write
+```
+
+| Selected preset role | Model | Effort |
+|---|---|---|
+| Primary / lead | `gpt-6.1-terra` | `high` |
+| Default child / implementer | `gpt-6.1-terra` | `medium` |
+| Retriever | `gpt-6-luna` | `low` |
+| Specialist | `gpt-6.1-terra` | `ultra` |
+| Reviewer | `gpt-6.1-terra` | `high` |
+
+These requested values match the inspected Work launch schema. Confirm the selected CLI/provider advertises them before using the preset; its model catalog owns supported efforts. The legacy aliases request Terra medium, Luna low and Astra ultra. Project setup preserves the project provider assignment; user-scope preset setup includes the example's provider. A conflicting user-owned value preserves the whole configuration before writes. Preview/apply/check use the same selected flags, including `--openai-preset`. Ordinary setup projects inherited roles again through the existing ownership merge. Codex gives role model fields precedence over per-call model arguments; select an inherited role or edit its native fields for another authorized model. Configuration generation performs local file operations.
+
+The root agent settings enable native delegation, bound V1 depth to two edges and share three child slots across the whole session. Existing tighter depth and concurrency settings remain tighter; larger settings are reduced to these adopted bounds. The legacy `max_threads` spelling is retained. At upstream revision `3a2788e6fc897fc4dd40185225167af9a9f13754`, V1 enforces `agents.max_depth`; V2 ignores it. Both share the session registry across descendants. V2 translates `agents.max_concurrent_threads_per_session = 3` to an internal root-inclusive budget of four; its dedicated `features.multi_agent_v2.max_concurrent_threads_per_session` has separate precedence. When present, the generator reduces a larger dedicated root-inclusive budget to four and preserves tighter values; unsupported edited TOML layouts are refused before writes. Keep existing host constraints and TEAM's whole-hierarchy budget, including a bridge worker, instead of assigning a new three-slot pool to each parent. Native role projection does not apply role-local provider, depth or concurrency fields.
+
+Codex CLI and IDE use `CODEX_HOME`, otherwise `~/.codex`, for user configuration. Trusted project configuration layers the repository's settings over that setup. The existing generator supports user installation through `--scope user`; its generated-content ownership, conflict checks, atomic writes and rollback apply at the selected scope. Existing MCP declarations and unrelated model/permission settings retain their ownership.
+
+Claude Code, OpenCode and Gemini CLI native adapters use the same five generic source templates through the existing generator:
+
+```sh
+bash scripts/setup_ide_mcp.sh --agent-team --client claude --write
+bash scripts/setup_ide_mcp.sh --agent-team --client opencode --write
+bash scripts/setup_ide_mcp.sh --agent-team --client gemini --write
+```
+
+Claude files are `.claude/agents/*.md` with native `name`, `description` and `model: inherit`; tool settings are omitted to retain host tools. OpenCode files are `.opencode/agents/*.md` with `mode: subagent`, native descriptions and no model override. Use each host's supported per-role model field for an explicit selection. These operations generate native adapters only, leaving MCP configurations unchanged. Gemini files are `.gemini/agents/*.md` with native names and descriptions and no model or tool override. Its documented recursion protection prevents subagents from invoking other subagents, so they return that dependency to the parent lead for reassignment. Use the same fallback on any host that cannot nest its children. Other hosts retain TEAM and their actual documented delegation/model controls; no independent runtime is installed.
+
+Select `native_agent_configuration_requested` when configuring native agent roles or exporting their templates:
+
+```sh
+python scripts/export_project.py --task econ-data \
+  --condition native_agent_configuration_requested \
+  --format flat --output /tmp/native-team-flat-new
+python scripts/export_project.py --task econ-data \
+  --condition native_agent_configuration_requested \
+  --format deployed --output /tmp/native-team-deployed-new
+```
+
+Flat output carries `CODEX_AGENT_{lead,implementer,retriever,specialist,reviewer,terra,luna,astra}.toml` and `CONFIG_codex.example.toml`. Deployed output maps those native templates to `.codex/agents/`. The complete source distribution supplies the configuration generator; `--layout installed` consumes the same registered deployment mappings. Every child inherits its parent's permissions, provider and source access; an explicit role choice never expands that authority.
+
+ChatGPT Work uses its exposed native schema: fresh `fork_turns="none"` with the necessary brief, and omitted model/effort fields for inheritance or supported explicit overrides when selected. The inspected CLI V1 spells fresh context `fork_context=false`; CLI V2 uses `fork_turns="none"`. Local TOML does not configure Work. A fixed primary can retain one lead bridge for substantive work while it handles transport; count that bridge among the shared worker slots.
+
+## Preview and selected application
+
+Python 3.11+ is required. Run `bash scripts/setup_ide_mcp.sh` for a read-only structural diff. It previews registered clients, omitting an absent devcontainer. Values are not printed in diffs. Select narrower targets with repeated `--client`, for example:
+
+```sh
+bash scripts/setup_ide_mcp.sh --client cursor --client codex
+bash scripts/setup_ide_mcp.sh --write --client cursor --client codex
+bash scripts/setup_ide_mcp.sh --check --client cursor --client codex
+```
+
+`--write` always requires explicit client selection. `--check` returns 1 for differences, 0 for a match. `--print` prints generated MCP JSON without applying it. Modes are mutually exclusive; unknown arguments return 2 before writes. The client names and paths come from `registry/placements.json`, through the shared registry loader's `placements.configuration.configuration_clients`. Paths resolve against this project root, regardless of the caller's working directory. A selected devcontainer must already exist and contain a customization's `settings.mcpServers` object. All selected targets, enabled integrations, and ownership state are parsed before application.
+
+## Ownership, recovery, and credentials
+
+The generator preserves existing model, agent, permission, editor, and manual MCP settings. `.agents/state/mcp-generated.json` records the previous generated server values for JSON and TOML. An unchanged generated entry can be updated or removed. A changed or deleted entry is preserved and released from generated ownership; a deleted entry is not recreated on subsequent runs. Existing manual entries with matching names win. Older name-only state or TOML generation comments do not establish content ownership, so unverifiable legacy entries are preserved. No automatic destructive legacy migration is performed.
+
+Before application, the helper rechecks every selected file and ownership state, then rechecks each file immediately before replacing it. On a caught write failure, it restores earlier files only when their current bytes still match this invocation's write. Concurrent edits observed during recheck or recovery are preserved and reported. Replacement is atomic per file; this is not a filesystem-wide transaction or a process-crash recovery journal. An unrelated writer in the final check-to-replace interval cannot be excluded without a shared locking protocol.
+
+Runtime configuration and ownership state stay local and ignored. Generated credentials remain environment or secret-store references. Optional integrations are enabled by `BRAVE_API_KEY`, `EXA_API_KEY`, `GITHUB_PERSONAL_ACCESS_TOKEN`, `DATABASE_URL`, `ENABLE_GOOGLE_DRIVE_MCP=1`, or `ENABLE_CONTEXT_MCP=1`. Google Drive requires the existing `secrets/credentials.json`; context integrations require both local executables. Secret values are never copied from the environment into generated files. Do not place private endpoints or secrets in public examples.
+
+Economics Checked Artifacts has no default server. Enable it only with both `ENABLE_ECONOMICS_CHECKED_MCP=1` and `ECONOMICS_CHECKED_MCP_URL`, selecting Git-ignored local clients. See [private endpoint setup](../plugin-integration.md#checked-artifacts-connection). The generator performs no authentication or data submission.
+
+## Extensions and scoped context
+
+`bash scripts/setup_extensions.sh --client code` previews extensions. Add `--write` to install for that selected CLI. Supported clients are `code`, `cursor`, `code-insiders`, `agy-ide`, and `antigravity-ide`. The helper reads the canonical `.vscode/extensions.json`; `bash scripts/setup_extensions.sh --sync` generates the two hosts' devcontainer extension lists. Installation skips installed IDs, aggregates failed IDs, and returns nonzero if a required listing, parse, or installation fails. It does not silently fall back to a different installed IDE.
+
+`bash scripts/pack_context.sh --output /tmp/fresh-context.txt runtime/CORE.md skills/econ-data/SKILL.md` packs only explicitly selected local paths. The output must be fresh and outside the project. No external collector, package runner, or network call is used. Secret directories, environment files, local IDE configuration directories, state stores, credential/key files, and binary databases are excluded; direct selection of excluded paths fails. Broad explicitly selected directories still require the caller to know their contents: filename exclusions cannot detect arbitrary secrets embedded in ordinary source documents. Select the smallest relevant paths.
+
+## Native delegation limits
+
+Local Codex/Claude settings do not configure ChatGPT Work; legacy role presets remain in [configuration](#native-roles-and-model-selection).
+
+Preserve a bridge lead's observed identity and count it in capacity when a host route requires one.
+
+Normally allow two delegation edges within the host's shared capacity, including waiting parents and bridges, reserving room for a necessary descendant.

@@ -1,0 +1,170 @@
+# Project integration
+
+`econ-project-mini` owns shared research instructions, tools and the authored economics library. Read this document for requested distribution, synchronization, configuration, installation or state migration. The active runtime and selected specialist own ordinary research.
+
+## Current research and reading path
+
+Responsibilities: CORE owns scope, reading and completion; [PROSE](../../runtime/PROSE.md) expression; [DECIDE](../../runtime/DECIDE.md) economic decisions; [TEAM](../../runtime/TEAM.md) delegation and resumption; [EXECUTION](../../runtime/EXECUTION.md) files and operations. Skills own specialist procedures; knowledge units own definitions, equations and model conditions. Registries select their canonical bodies.
+
+Seven Skills select specialist work, method references and knowledge supply scientific bodies, and the existing registries select their applicable stage/case. Examples and administration stay optional.
+
+Design dependencies require applied formulation; consequential result dependencies require interpretation. Their existing saved records bind application to source versions. Ordinary research uses the selected specialist; this document is for integration and distribution.
+
+## Select complete rule bodies
+
+CORE owns complete-body reading, reuse and retrieval commands. `reading_stages` selects explicit sections within the adopted case closure; `all` expands only adopted sections. Operation reads default to entry, while direct rule-ID reads return their complete dependencies. The compact response returns required text, complete-body identities and pagination. `--format json` adds selection/source details; `resolve` returns the adopted rule closure. Registries validate locators and stage declarations.
+
+Known operations go directly to their pending stage with `--format compact`. Every stage restores the kernel; reuse complete same-version bodies still in context via `--seen BODY_SHA256`. The response names reused sections and resolves prerequisites. After context loss restore originals without seen arguments. Use the operation/resource index for unresolved conditions or methods. Schema-3 conditions declare `applies_to`; operation indexes filter them and read/resolve enforce the same applicability. Purpose choices come from operation metadata. Shared scientific methods remain available across specialists; workflow-specific conditions route to their declared owners. Family-wide cases retain complete references; identified methods select individual bodies. At contract, bound method conditions print exact `knowledge.py plan ID --read` commands using the selected layout's reader; follow them before adoption. GitHub project operations select `project_github_operations`.
+
+A deployed snapshot retains registries, reader and selected bodies; `--layout installed` resolves it for reading/re-export. Expand incomplete snapshots from canonical source. Distribution selects `distribution_sync`, `distribution_plugin` or `distribution_snapshot` for its actual destination.
+
+Native callbacks reuse complete matching bodies observed in the intact context; new/lost contexts restore original bodies and adopted decisions. Hosts without that evidence retain full delivery. A hash/receipt does not establish reading. Oversized callback `text` stays in its saved packet with locator/hash and must be opened; delivery events, lifecycle stops and source checks are implemented by the existing adapters.
+
+## Economics knowledge source and retrieval
+
+The authored catalog/chapters own content. `knowledge.py build` generates units, indexes, semantic views and manifest once after source edits; export/sync consume that saved generation. The [knowledge retrieval owner](../../skills/econ-knowledge/references/retrieval.md) defines search, prerequisite bodies, model bindings, task cache and external-source acquisition.
+
+Runtime projections retain manifest, closure and body identities. The knowledge Skill owns retrieval; plugin collections live once at runtime-root `knowledge/references`, outside Skill directories. Native readers and the complete execution bundle retain all bodies and dependency indexes; executor-free cloud reads follow the installed entrance's pinned Git references. Specialist Skills keep scientific execution. Administrative manifests establish identity without requiring their full text in the working context.
+
+## Supplied document defaults
+
+New LaTeX papers use the supplied Econometrica template and its original class, configuration and full-name bibliography style. New slides use the supplied Beamer/metropolis layout, Waseda colors and Harano Aji Japanese setup. Preserve the five supplied files' exact bytes, comments, intended placeholders and license notices. The artifact helper produces Pandoc adapters for Quarto and result-bound LaTeX/PDF generation from these templates.
+
+The shared build helper preloads fontspec for the journal class, processes bibliographies when the auxiliary closure requests citations and restores the preceding PDF on failure. Make and the LaTeX Workshop recipe use that helper; shared editor defaults disable magic-comment compiler selection. Raw registered assets preserve their bytes through source, portable and Skill-bundle generation. Existing research contents, scientific results, bibliographies and private settings keep their ownership.
+
+## Writing and visual source policy
+
+Do not invent or compose prose or materials: borrow and imitate. For every English or Japanese paper, document, slide, Beamer artifact, short passage, single-word edit, label, translation or revision, first search for and read the relevant original section and its surrounding text, and inspect the relevant pages, slides, figures and tables. Search 2020-or-later Top Five journal papers and slides, major economics handbooks, review articles and guides, economics textbooks, and economics course materials, including lecture notes, course slides and handouts. Select sources relevant to the task; each output need not use every source type.
+
+Map every element of the output to the corresponding real source passage or visual element: content selection, argument structure, style, vocabulary, transitions, sentence endings, placement, design and appearance. Borrow and closely imitate those elements, making only surgical, necessary adjustments for the task's established facts, names, variables and notation, subjects and periods, numbers and units, citations, grammatical agreement, and the specified medium and 28pt slide body text. Do not transfer a source's different empirical conditions or conclusions. Japanese expressions come from corresponding Japanese originals, not newly made literal translations of English drafts. Record the source-to-output correspondence and necessary adjustments in the existing materials, specification or work record, and check every finished element against its original. If sources are insufficient, resume searching and reading; do not fill gaps with invented examples, free paraphrase, or independently created structure, layout or design. Apply this procedure at every scale and in every mode and medium.
+
+The supplied templates and their exact bytes remain intact. When using them, ground the resulting arrangement and visual treatment in inspected real sources and make only the necessary adjustments consistent with the specified medium and template requirements.
+
+## Common core
+
+`econ-project-mini` owns the shared source. Public and private destinations consume the registered common files and retain their own manifests, connections and project data. Account-specific plugin releases and authenticated services belong to the selected private destination. The existing synchronizer stores its machine receipt in `docs/ai/common-core.json`, separately from these operating instructions. It records source and destination identities, the current synchronization source commit and exact managed hashes and modes.
+
+The resource source paths in [resource registry](../../registry/resources.json) define default shared instructions and tools. When the knowledge catalog is shared, the existing exporter's `knowledge_assets(..., source_assets=True)` validates and adds the complete canonical collection: catalog, chapters, unit bodies, domain indexes, semantic views and manifest. Entries marked sync=false remain project-owned. The synchronizer copies the same source-relative paths between repositories; it does not install deployment mappings. Each user chooses the source, destinations and paths. Origins are identified by their complete host/owner/repository path. Repositories with separate histories and different owners are supported.
+
+`quality/policy_manifest.json` is generated for its target repository and has `sync=false`. Synchronization validates the resulting resource and operation catalog in memory; the destination's exporter then regenerates the manifest from its actual project context, integration guide and common files. For an earlier receipt that owns this path, release that ownership with `--release quality/policy_manifest.json` while retaining the local file and index. Complete target generation before using its runtime policy. Explicit path selection retains the synchronizer's ownership checks, including protection of previously released paths.
+
+Compare before applying. Supply the reviewed source HEAD and every destination HEAD. A working source also requires the comparison's `common_content_id` through `--expect-source-content`. Commit and push are separate operations.
+
+```sh
+SOURCE=/path/to/shared-template
+TARGET=/path/to/research-repository
+
+python scripts/sync_common_core.py --source "$SOURCE" --target "$TARGET"
+
+python scripts/sync_common_core.py --source "$SOURCE" --target "$TARGET" --apply \
+  --expect-source-head "$(git -C "$SOURCE" rev-parse HEAD)" \
+  --expect-head github.com/example/research-repository="$(git -C "$TARGET" rev-parse HEAD)"
+```
+
+The default is a read-only comparison of the route-derived common paths. Repeat `--target` for multiple destinations or `--path` for an explicit subset. The source and destination roots must be distinct and match their Git origins and pinned HEADs. Keep mini and full dependency definitions, lockfiles and environment settings project-owned; synchronize their common research instructions and code. Ordinary startup, research work and environment setup do not synchronize.
+
+A first synchronization adopts absent files. Existing files require an explicit `--claim 'HOST/OWNER/REPO:PATH=SHA256:MODE'` using the destination fingerprint reported by comparison. This claim establishes ownership of that particular path at that particular version. The three-way comparison then checks the previous receipt, current destination and new source. Uncommitted, staged and committed custom changes are protected. Resolve only the reported paths and claim their reviewed current fingerprints when choosing to replace them. Synchronization never stages files or clears the index.
+
+Use `--migrate-receipt` to migrate a v1 receipt whose recorded source commit, blob, hash and mode can be verified. Source switching requires a separate reviewed ownership decision. Each v2 receipt records the source identity, input commit, selected hashes and modes, adoption state and destination identity. The same guarded apply migrates an older embedded receipt into the machine JSON and removes only its block from this guide. Deleted paths and redundant per-path commit history are omitted after their authorized deletion; current fingerprints retain the ownership baseline. It contains no host paths or credential-bearing URLs. Project context, integration prose, research records and environment dependencies remain project-owned.
+
+Use `--release PATH` to relinquish receipt ownership while retaining the local file and index. Released paths cannot be copied or deleted by subsequent synchronization. The explicit --release-local-configs option releases the declared LOCAL_CONFIG_PATHS; combine it with explicit --path entries when also copying common files. Remove public tracking separately with `git rm --cached -- PATH`; keep the runtime file locally and distribute its public example definition. The [configuration examples](config-templates/README.md) are managed common files; runtime MCP configurations and their generation state are local.
+
+Deletions require `--delete PATH` with that source path absent. Moves require `--move OLD=NEW` with source OLD absent and NEW present. Existing destination paths still require their recorded baseline or a matching ownership claim. These operations stay within the explicitly selected paths.
+
+The script checks all destinations before writing. It compares shared source inputs, repository identity and indexes at the start and final publication boundaries; immediately before each write it compares that target's content, index, repository identity and configuration. Previously written targets are checked at the final boundary. Writes use optimistic per-file atomic replacement, not a filesystem-wide transaction. It writes receipts after content, verifies the result and rolls back only its own unchanged writes on failure while retaining concurrent user changes. Exit codes are 0 for equality or successful application, 1 for comparison differences and 2 for a refused or incomplete operation.
+
+Git `core.filemode=false` supports content updates and replay at the existing tracked mode. A mode transition requires `core.filemode=true` in a filesystem that tracks execute bits. The synchronizer refuses that transition and leaves index metadata unchanged.
+
+## Standalone Project snapshots
+
+Run from the extracted source tree; no Git repository, origin, commit, installed skills, network or model execution is needed.
+
+```sh
+python scripts/export_project.py --task econ-writing --mode compose --output /tmp/bounded-writing-new
+python scripts/export_project.py --task econ-writing --mode compose \
+  --condition whole_paper_abstract_introduction_or_section_architecture \
+  --support econ-writing:explain --output /tmp/paper-writing-new
+python scripts/export_project.py --task econ-edit --output /tmp/revision-new
+python scripts/export_project.py --task econ-writing --mode translate \
+  --condition example_ja_revision_translation --output /tmp/translation-new
+```
+
+`--task` accepts a specialist, operation ID, or compatibility alias. `--mode` selects a specialist mode; the default is declared in registry/operations.json. `econ-assertive` maps to writing/guidance and `econ-edit` or EDIT to writing/revise. `econ-workflow` exports the runtime boundary and asks the current task to resolve its specialist owner; `econ-handoff` exports the handoff resources for the existing result owner. Neither creates another specialist.
+
+Without `--task` or `--skills`, the snapshot includes all registered operations and their required resources. `--skills` selects the named Skills and all their modes. Conditional resources remain inactive unless selected. `--support SKILL[:MODE]`, `--condition CONDITION` and `--references RESOURCE_ID` are repeatable. Reference selection also accepts an exact source/deployment path registered in registry/resources.json. Conditions are exact registry identifiers; misspellings fail. The operation registry defines conditions and required rule IDs; the resource registry maps each rule to its section and mandatory dependencies, and maps example IDs to language and function. Resolve their closure once per content version before rendering. Empty section selections add no body; they cannot supply a required rule. Requested headings include descendants and declared section dependencies. Missing required rules identify the rule and originating operation.
+
+Ordinary writing includes CORE, the required PROSE sections, the chosen writing mode and exactly one selected writing profile. Profile priority is explicit `--style-profile`, adopted project preference, then default-micro. Examples are selected by language/function need. Whole-paper workflows are conditional and absent from a bounded writing snapshot. ECON_INDEX.md is generated from the selected operations; an unselected specialist index is not duplicated in the package.
+
+Paste PROJECT_INSTRUCTIONS.txt into the Project instruction field and attach the exported files. Use a fresh directory outside the source tree. The exporter validates required files, registered links, aliases, placeholders and the 8,000-character instruction-field limit before publishing the package. Selected references resolve to flat exported aliases. Inactive optional capabilities and examples resolve to OPTIONAL_INPUTS.md. Generated Skill entries and standalone exports recover these references through their registered resource IDs, so a later selected condition restores the corresponding packaged body. Activated mandatory references must resolve inside the package; a missing required rule reports its rule ID and originating operation and prevents publication. Unknown local references fail.
+
+Working source bytes are supported. Regenerate the local instruction package when needed input versions change.
+
+## Layout and generated index
+
+The canonical source layout is skills/, runtime/, harness/, registry/, profiles/ and references/repository-policy/. The deployment paths in registry/placements.json map these to .agents/skills/, .agents/runtime/, .agents/harness/, .agents/registry/, .agents/profiles/ and repository-root policy pointers. Generate a fresh deployment package with the command below. Each selected resource is written at its declared deployment path, relative links are calculated from its destination, and client entrances are generated for that package. This creates a new package; applying it to an existing project is a separate requested operation. Export an already installed tree with --layout installed; this reads the three registries under .agents/registry/ and each declared deployment path. The exporter never guesses the layout.
+
+```sh
+python scripts/export_project.py --task econ-writing --mode revise --format deployed --output /tmp/revision-deployed-new
+```
+
+Maintenance scripts run from the complete source distribution. They are optional inputs in operation snapshots; explicitly selecting them fails before publishing either format, because their source-layout configuration and imports are not a standalone runtime package. The requested local team-state helper is supported separately with its declared runtime dependencies.
+
+Both `--format flat` (the default) and `--format deployed` consume the same resolved operation and section selection. A deployed snapshot includes all three complete registries under `.agents/registry/` and the selected rule bodies. Installed input uses that metadata to resolve the retained bodies and rejects a whole-resource read when required sections are absent.
+
+Generate the repository operation index from the same registry:
+
+```sh
+python scripts/export_project.py --generate-index docs/ai/compiled_ai_skills.md
+```
+
+## Project additions and profiles
+
+The export-project:v1 JSON block in repo_context.md supports version, writing_profile and files. Each file entry contains a repository-relative path and unique flat output filename. The persistent writing_profile can be a registered profile ID or a repository-relative custom profile. --style-profile overrides it for this snapshot only; an absolute custom profile path is also supported. Existing configuration is not rewritten.
+
+English paper prose uses the [Top Five English profiles](../../profiles/top-five-en/PROFILE.md). Each complete body has a registered profile ID, an example ID and its own file. Select the example condition matching the field and passage function, or pass its registered profile ID to `--style-profile` when exporting and `--user-profile` when reading. For example, `python scripts/route_registry.py read econ-writing:compose --stage compose --condition example_top_five_en_empirical_strategy --format compact` reads the complete empirical-strategy example. `python scripts/export_project.py --task econ-writing:compose --style-profile top-five-en-field-econometrics --output /tmp/econometrics-writing` exports a snapshot using the econometrics profile. Each selection keeps the full adopted body. These adopted profiles are fictional: their bodies are never real source evidence for an output. Apply the writing and visual source policy above and ground every actual prose and visual element in corresponding real sources.
+
+Japanese prose uses the three adopted [Japanese economics profiles](../../profiles/academic-ja/PROFILE.md). Each complete sample is separately registered for profile selection and example reading. Select `academic-ja-childcare-employment`, `academic-ja-attention-plan-choice` or `academic-ja-equipment-subsidy` with `--style-profile` when exporting or `--user-profile` when reading.
+
+Use econ-writing:profile (or its econ-style compatibility alias) to create or revise a profile. Creating or saving a profile does not adopt it. Switch the persistent preference only when the user requests adoption.
+
+## Execution and handoff
+
+Select files_calculation_external_or_resume for ordinary execution, resumption_active for saved-state reuse, delegation_active for a worker assignment, and publication_requested for an authorized publication or move. Use econ-handoff for the Handoff section and existing result owner. Select other sections only when their pending operation needs them. Existing project records remain canonical. Local state is optional; select requested_local_state_helper_operation to package its implementation when needed. An exported state.py requires --root for the actual project root. No helper starts a model or research program.
+
+Use the actual selected generation and synchronization results to establish package and destination behavior. Preserve ownership, current source/index versions and rollback at the existing producers; do not maintain a separate distribution test suite.
+
+### Native configuration dependency and continuation
+
+`delegation_active` and `resumption_active` select the full TEAM contract. `requested_distribution_configuration_or_installation` selects the common distribution contract; select the destination's command section for the actual operation. Select `native_agent_configuration_requested` for native role configuration or template export; it loads TEAM, the five generic and three legacy agent templates, and the Codex example settings. The [configuration commands](config-templates/README.md#native-roles-and-model-selection) export flat aliases or `.codex/agents/` paths through the same resource closure.
+
+TEAM owns assignment and inherited authority; the selected host adapter supplies its native defaults. The exporter preserves executable and data-resource bytes. Configuration files enter the package through the selected installation condition.
+
+Installed-layout export consumes the same deployment mappings and complete registry versions. The [configuration generator](config-templates/README.md#native-roles-and-model-selection) supplies the generic inherited roles, explicit Codex presets and Claude, OpenCode and Gemini adapters from the canonical role templates.
+
+The shared source repositories retain canonical files only. An explicitly selected research destination can install a generated `.agents` tree. The source policy uses `quality/policy_manifest.json`; the deployed policy uses its registered `.agents/quality/policy_manifest.json` with repository-root deployment paths. Discovery matches the actual policy module against the installed placement before treating the nested registry as a source root. Each layout binds its own resources and policy manifest; a changed resource invalidates the corresponding manifest. Deployment adoption preserves canonical root documents and binds the actual adopted bytes through the deployed manifest and source snapshot.
+
+## Distribution contract
+
+For instruction maintenance, edit canonical owners and regenerate affected consumers once.
+
+Read this section only for requested export, installation, synchronization or configuration work. The [operation registry](../../registry/operations.json) defines modes and conditional rule selection, the [resource registry](../../registry/resources.json) defines logical resource IDs and rule dependencies, and the [placement registry](../../registry/placements.json) defines physical locations and export aliases. Use the registered resource IDs and the selected layout when exporting or synchronizing. Read the relevant command section and its supported options. Compare common inputs at batch boundaries and each destination immediately before writing; do not reread every unchanged input for each target.
+
+For an operation export, select CORE, the final operation and its activated support/resources. Include only sections needed by those operations. Short prose does not activate whole-paper instructions. Resolve every active mandatory reference inside a standalone package. An omitted optional capability becomes an additional input if later needed; do not turn it into an automatic remote-repository fetch. Resolve resource paths through the declared placement and export aliases. Check required files, references, unique output names and requested size limits before producing the complete package in a new destination.
+
+A plugin export uses `--format plugin`: native execution retains the runtime root, specialist resources remain in their own Skill, the knowledge collection is outside Skill directories, and project-work exposes common reading views plus one compressed cloud execution runtime. Entrances point directly to each owner's `instructions.md`; known resources need no intermediate main-entry/catalog read. Repository source retains its canonical layout. [Plugin publication](plugin-integration.md#publish-the-plugin) owns the complete package layout, account overlay and update procedure; CORE owns reading and bundle acquisition on a Skill-scoped host.
+
+The configuration interface defaults to a diff, changes only explicitly selected clients or adopted project targets, and rejects unknown arguments or incompatible modes before writing. Read every selected destination and required input, then assemble all intended changes. Include devcontainer only when selected. Resolve relative paths from the command's declared project root.
+
+Dev-container startup runs `bash scripts/setup_ide_mcp.sh --write --client codex --codex-hooks` after dependency synchronization. This writes project `.codex/hooks.json` and `.agents/state/mcp-generated.json`, initializes `.codex/config.toml` at an empty destination and retains its existing settings. The generator reads that configuration to check the hook layer. Lifecycle execution writes session data under `.agents/state/codex-hooks`. Existing model/provider settings and unrelated hook entries retain their ownership. Native trust controls govern hook activation.
+
+For each generated setting, compare the previous generated content, current content and proposed content. Update a setting only while its current value matches the previous generated value. Preserve manual changes and mark the item manually owned. Recheck content immediately before applying and preserve detected concurrent changes. The helper uses per-file atomic replacement with optimistic rereads. Coordinate other writers across the final read-to-replace interval. For a caught multi-file write failure, roll back only content still matching this operation's writes. A process crash requires inspection of the actual destinations before resumption. Legacy name-only ownership records do not establish content ownership; preserve those entries until their ownership is resolved.
+
+Reference secrets through existing environment or approved storage rather than embedding them. Required configuration or installation failures must propagate as failures with the affected targets. Preserve successful work, diagnose failed items and retry only the affected operation. Report the returned statuses; an instruction to perform an operation is not a successful operation result.
+
+
+## State migration
+
+Use explicit capacity, depth or attempt limits only when the user or runtime supplies them. Migration preserves saved outputs, bound check receipts, usage, holds and limit provenance. A legacy task lacking declared deliverables retains an unresolved completion contract; recover the request and use set-contract rather than infer requirements from whatever output exists. Previously completed tasks with an unresolved contract become blocked while their results remain saved. Legacy permission/user-hold reasons without an identifier receive an identified legacy hold. Perform missing required operations against preserved current results; migration does not rerun calculations.
+
+
+An old evaluating state maps to running; interrupted maps to blocked with blocked_reason=interrupted. Schema-v4 migration preserves outputs, check receipts, authority, holds, attempt counts and usage. Where recorded consumed inputs identify one parent output unambiguously, migrate to that explicit consumes edge. Otherwise retain the legacy dependency set as a compatibility group until the next relevant operation establishes its input contract; never erase it or guess a narrower dependency. Migration alone does not invalidate numerical results or rerun completed stages.

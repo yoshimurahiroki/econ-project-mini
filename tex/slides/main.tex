@@ -1,0 +1,89 @@
+% !TEX program = lualatex
+\documentclass[unicode, mathserif, t, 12pt, aspectratio=169, unknownkeysallowed]{beamer}
+%\includeonlyframes{current}
+
+\usepackage{color}
+\usepackage{luatexja}
+\usepackage{comment}
+\usepackage{natbib}
+
+\usepackage[haranoaji,deluxe]{luatexja-preset}
+\usepackage{appendixnumberbeamer}
+\renewcommand{\kanjifamilydefault}{\gtdefault}
+\renewcommand{\refname}{}
+\renewcommand{\bibsection}{}
+
+\usetheme[numbering=fraction]{metropolis}
+
+\definecolor{Waseda}{HTML}{922E41}
+\definecolor{Orange}{HTML}{CF4A30}
+\setbeamercolor{alerted text}{fg=Orange}
+\setbeamercolor{frametitle}{bg=Waseda}
+\geometry{paperwidth=960bp,paperheight=540bp}
+\setbeamersize{text margin left=54bp,text margin right=54bp}
+\newcommand{\ersbodyfontsize}{28}
+\makeatletter
+\renewcommand\normalsize{\@setfontsize\normalsize{\ersbodyfontsize}{35}}
+\makeatother
+\DeclareMathSizes{28}{28}{20}{14}
+\setbeamerfont{normal text}{size=\normalsize}
+\setbeamerfont{itemize/enumerate body}{size=\normalsize}
+\setbeamerfont{itemize/enumerate subbody}{size=\normalsize}
+\setbeamerfont{itemize/enumerate subsubbody}{size=\normalsize}
+\setbeamerfont{title}{size=\fontsize{40}{48}\selectfont}
+\setbeamerfont{subtitle}{size=\fontsize{28}{35}\selectfont}
+\setbeamerfont{frametitle}{size=\fontsize{32}{40}\selectfont,series=\bfseries}
+\setbeamerfont{author}{size=\normalsize}
+\setbeamerfont{institute}{size=\normalsize}
+\setbeamerfont{date}{size=\normalsize}
+\setbeamerfont{caption}{size=\normalsize}
+\setbeamerfont{footnote}{size=\normalsize}
+\AtBeginDocument{\normalsize}
+
+\title[Footer title]{TITLE}
+\subtitle{SUBTITLE}
+\author{Author}
+\institute{}
+\date{\today}
+
+%%%%% DOCUMENT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{amsmath}
+\begin{document}
+
+\begin{frame}[plain,b]
+ \titlepage
+\end{frame}
+
+\begin{comment}
+\begin{frame}{目次}
+    \tableofcontents
+\end{frame}
+\end{comment}
+
+
+\begin{frame}{}
+    \textbf{}
+    \begin{itemize}
+        \item
+        \item
+        \item
+    \end{itemize}
+\end{frame}
+
+
+
+\appendix
+
+
+
+\IfFileExists{../bibliography.bib}{
+\begin{frame}{References}
+    \normalsize
+    \bibliography{../bibliography}  % Bibliography file (usually '*.bib')
+    \bibliographystyle{../paper/ecta-fullname} % Style BST file
+
+    \nocite{*}
+\end{frame}
+}{}
+
+\end{document}

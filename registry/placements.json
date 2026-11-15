@@ -1,0 +1,1320 @@
+{
+  "schema_version": 2,
+  "resources": {
+    "core": {
+      "deployment_path": ".agents/runtime/CORE.md",
+      "export_alias": "CORE.md"
+    },
+    "prose": {
+      "deployment_path": ".agents/runtime/PROSE.md",
+      "export_alias": "PROSE.md"
+    },
+    "research": {
+      "deployment_path": ".agents/runtime/DECIDE.md",
+      "export_alias": "DECIDE.md"
+    },
+    "execution": {
+      "deployment_path": ".agents/runtime/EXECUTION.md",
+      "export_alias": "EXECUTION.md"
+    },
+    "team": {
+      "deployment_path": ".agents/runtime/TEAM.md",
+      "export_alias": "TEAM.md"
+    },
+    "econ-design": {
+      "deployment_path": ".agents/skills/econ-design/SKILL.md",
+      "export_alias": "ECON_DESIGN.md"
+    },
+    "econ-data": {
+      "deployment_path": ".agents/skills/econ-data/SKILL.md",
+      "export_alias": "ECON_DATA.md"
+    },
+    "econ-literature": {
+      "deployment_path": ".agents/skills/econ-literature/SKILL.md",
+      "export_alias": "ECON_LITERATURE.md"
+    },
+    "econ-writing": {
+      "deployment_path": ".agents/skills/econ-writing/SKILL.md",
+      "export_alias": "ECON_WRITING.md"
+    },
+    "econ-review": {
+      "deployment_path": ".agents/skills/econ-review/SKILL.md",
+      "export_alias": "ECON_REVIEW.md"
+    },
+    "design-methods": {
+      "deployment_path": ".agents/skills/econ-design/references/designs.md",
+      "export_alias": "DESIGN_METHODS.md"
+    },
+    "data-implementation": {
+      "deployment_path": ".agents/skills/econ-data/references/implementation.md",
+      "export_alias": "DATA_IMPLEMENTATION.md"
+    },
+    "data-results": {
+      "deployment_path": ".agents/skills/econ-data/references/reproducible-workflow.md",
+      "export_alias": "DATA_RESULTS.md"
+    },
+    "paper-workflow": {
+      "deployment_path": ".agents/skills/econ-writing/references/paper-workflow.md",
+      "export_alias": "PAPER_WORKFLOW.md"
+    },
+    "review-methods": {
+      "deployment_path": ".agents/skills/econ-review/references/oversight.md",
+      "export_alias": "REVIEW_METHODS.md"
+    },
+    "default-micro": {
+      "deployment_path": ".agents/profiles/default-micro/PROFILE.md",
+      "export_alias": "DEFAULT_MICRO.md"
+    },
+    "repository-policy": {
+      "deployment_path": ".cursorrules",
+      "export_alias": "REPOSITORY_POLICY.md"
+    },
+    "integration": {
+      "deployment_path": "docs/ai/integration.md",
+      "export_alias": "INTEGRATION.md"
+    },
+    "resource-guide": {
+      "deployment_path": "docs/ai/resources.md",
+      "export_alias": "RESOURCES.md"
+    },
+    "team-state-helper": {
+      "deployment_path": ".agents/harness/state.py",
+      "export_alias": "state.py"
+    },
+    "project-instructions": {
+      "deployment_path": "docs/ai/project_instructions.txt",
+      "export_alias": "PROJECT_INSTRUCTIONS.txt"
+    },
+    "native-index": {
+      "deployment_path": "docs/ai/compiled_ai_skills.md",
+      "export_alias": "NATIVE_INDEX.md"
+    },
+    "project-context": {
+      "deployment_path": "docs/ai/repo_context.md",
+      "export_alias": "REPO_CONTEXT.md"
+    },
+    "tool-export-project-py": {
+      "deployment_path": "scripts/export_project.py",
+      "export_alias": "TOOL_export_project.py"
+    },
+    "tool-route-registry-py": {
+      "deployment_path": ".agents/scripts/route_registry.py",
+      "export_alias": "TOOL_route_registry.py"
+    },
+    "tool-sync-common-core-py": {
+      "deployment_path": "scripts/sync_common_core.py",
+      "export_alias": "TOOL_sync_common_core.py"
+    },
+    "tool-pack-context-sh": {
+      "deployment_path": "scripts/pack_context.sh",
+      "export_alias": "TOOL_pack_context.sh"
+    },
+    "policy-agentsmd": {
+      "deployment_path": "AGENTS.md",
+      "export_alias": "POINTER_AGENTS_md.md"
+    },
+    "policy-codexmd": {
+      "deployment_path": "CODEX.md",
+      "export_alias": "POINTER_CODEX_md.md"
+    },
+    "policy-claudemd": {
+      "deployment_path": "CLAUDE.md",
+      "export_alias": "POINTER_CLAUDE_md.md"
+    },
+    "policy-clinerules": {
+      "deployment_path": ".clinerules",
+      "export_alias": "POINTER__clinerules.md"
+    },
+    "policy-windsurfrules": {
+      "deployment_path": ".windsurfrules",
+      "export_alias": "POINTER__windsurfrules.md"
+    },
+    "policy-antigravityrules": {
+      "deployment_path": ".antigravityrules",
+      "export_alias": "POINTER__antigravityrules.md"
+    },
+    "policy-agents-agentsmd": {
+      "deployment_path": ".agents/AGENTS.md",
+      "export_alias": "POINTER__agents_AGENTS_md.md"
+    },
+    "policy-claude-agentsmd": {
+      "deployment_path": ".claude/AGENTS.md",
+      "export_alias": "POINTER__claude_AGENTS_md.md"
+    },
+    "policy-cursor-rules-01_project_policymdc": {
+      "deployment_path": ".cursor/rules/01_project_policy.mdc",
+      "export_alias": "POINTER__cursor_rules_01_project_policy_mdc.md"
+    },
+    "policy-gemini-geminimd": {
+      "deployment_path": ".gemini/GEMINI.md",
+      "export_alias": "POINTER__gemini_GEMINI_md.md"
+    },
+    "policy-github-copilot-instructionsmd": {
+      "deployment_path": ".github/copilot-instructions.md",
+      "export_alias": "POINTER__github_copilot-instructions_md.md"
+    },
+    "writing-ui": {
+      "deployment_path": ".agents/skills/econ-writing/agents/openai.yaml",
+      "export_alias": "WRITING_UI.yaml"
+    },
+    "state-contract": {
+      "deployment_path": ".agents/harness/state.md",
+      "export_alias": "STATE.md"
+    },
+    "publication": {
+      "deployment_path": ".agents/harness/publication.md",
+      "export_alias": "PUBLICATION.md"
+    },
+    "tool-init": {
+      "deployment_path": "scripts/__init__.py",
+      "export_alias": "scripts_init.py"
+    },
+    "registry-operations": {
+      "deployment_path": ".agents/registry/operations.json",
+      "export_alias": "OPERATIONS.json"
+    },
+    "registry-resources": {
+      "deployment_path": ".agents/registry/resources.json",
+      "export_alias": "RESOURCES.json"
+    },
+    "registry-placements": {
+      "deployment_path": ".agents/registry/placements.json",
+      "export_alias": "PLACEMENTS.json"
+    },
+    "prose-check-guide": {
+      "deployment_path": ".agents/quality/prose_rules.md",
+      "export_alias": "PROSE_CHECK_GUIDE.md"
+    },
+    "prose-check-rules": {
+      "deployment_path": ".agents/quality/prose_rules.json",
+      "export_alias": "PROSE_CHECK_RULES.json"
+    },
+    "local-checks": {
+      "deployment_path": ".agents/harness/local_checks.py",
+      "export_alias": "LOCAL_CHECKS.py"
+    },
+    "local-checks-guide": {
+      "deployment_path": ".agents/harness/local_checks.md",
+      "export_alias": "LOCAL_CHECKS_GUIDE.md"
+    },
+    "requirements-check": {
+      "deployment_path": ".agents/harness/requirements_check.py",
+      "export_alias": "requirements_check.py"
+    },
+    "requirements-check-guide": {
+      "deployment_path": ".agents/harness/requirements_check.md",
+      "export_alias": "REQUIREMENTS_CHECK_GUIDE.md"
+    },
+    "native-check": {
+      "deployment_path": ".agents/harness/native_check.py",
+      "export_alias": "native_check.py"
+    },
+    "policy-assets": {
+      "deployment_path": ".agents/harness/policy_assets.py",
+      "export_alias": "policy_assets.py"
+    },
+    "policy-manifest": {
+      "deployment_path": ".agents/quality/policy_manifest.json",
+      "export_alias": "policy_manifest.json"
+    },
+    "codex-hooks": {
+      "deployment_path": ".agents/harness/codex_hooks.py",
+      "export_alias": "codex_hooks.py"
+    },
+    "tool-setup-ide-mcp-sh": {
+      "deployment_path": "scripts/setup_ide_mcp.sh",
+      "export_alias": "TOOL_setup_ide_mcp.sh"
+    },
+    "tool-setup-extensions-sh": {
+      "deployment_path": "scripts/setup_extensions.sh",
+      "export_alias": "TOOL_setup_extensions.sh"
+    },
+    "config-template-readme-md": {
+      "deployment_path": "docs/ai/config-templates/README.md",
+      "export_alias": "CONFIG_README.md"
+    },
+    "config-template-claude-mcp-example-json": {
+      "deployment_path": "docs/ai/config-templates/claude-mcp.example.json",
+      "export_alias": "CONFIG_claude-mcp.example.json"
+    },
+    "config-template-codex-example-toml": {
+      "deployment_path": "docs/ai/config-templates/codex.example.toml",
+      "export_alias": "CONFIG_codex.example.toml"
+    },
+    "config-template-mcp-example-json": {
+      "deployment_path": "docs/ai/config-templates/mcp.example.json",
+      "export_alias": "CONFIG_mcp.example.json"
+    },
+    "plugin-integration-guide": {
+      "deployment_path": "docs/ai/plugin-integration.md",
+      "export_alias": "PLUGIN_INTEGRATION.md"
+    },
+    "paragraph-workflow": {
+      "deployment_path": ".agents/skills/econ-writing/references/paragraph-workflow.md",
+      "export_alias": "PARAGRAPH_WORKFLOW.md"
+    },
+    "paragraph-engine": {
+      "deployment_path": ".agents/harness/paragraph.py",
+      "export_alias": "paragraph.py"
+    },
+    "argument-engine": {
+      "deployment_path": ".agents/harness/argument.py",
+      "export_alias": "argument.py"
+    },
+    "paragraph-schema": {
+      "deployment_path": ".agents/harness/paragraph.schema.json",
+      "export_alias": "paragraph.schema.json"
+    },
+    "argument-schema": {
+      "deployment_path": ".agents/harness/argument.schema.json",
+      "export_alias": "argument.schema.json"
+    },
+    "equity-guide": {
+      "deployment_path": ".agents/skills/econ-data/references/equity.md",
+      "export_alias": "EQUITY.md"
+    },
+    "equity-calculator": {
+      "deployment_path": ".agents/skills/econ-data/scripts/equity.py",
+      "export_alias": "equity.py"
+    },
+    "equity-sources": {
+      "deployment_path": ".agents/skills/econ-data/scripts/equity_sources.py",
+      "export_alias": "equity_sources.py"
+    },
+    "equity-dependencies": {
+      "deployment_path": ".agents/skills/econ-data/scripts/requirements-equity.txt",
+      "export_alias": "requirements-equity.txt"
+    },
+    "equity-models": {
+      "deployment_path": ".agents/skills/econ-data/references/equity-models.md",
+      "export_alias": "EQUITY_MODELS.md"
+    },
+    "equity-io": {
+      "deployment_path": ".agents/skills/econ-data/scripts/equity_io.py",
+      "export_alias": "equity_io.py"
+    },
+    "equity-airline-case": {
+      "deployment_path": ".agents/skills/econ-data/scripts/equity_airline_case.py",
+      "export_alias": "equity_airline_case.py"
+    },
+    "equity-company-case": {
+      "deployment_path": ".agents/skills/econ-data/scripts/equity_company_case.py",
+      "export_alias": "equity_company_case.py"
+    },
+    "policy-codex-agent-terra": {
+      "deployment_path": ".codex/agents/terra.toml",
+      "export_alias": "CODEX_AGENT_terra.toml"
+    },
+    "policy-codex-agent-luna": {
+      "deployment_path": ".codex/agents/luna.toml",
+      "export_alias": "CODEX_AGENT_luna.toml"
+    },
+    "policy-codex-agent-astra": {
+      "deployment_path": ".codex/agents/astra.toml",
+      "export_alias": "CODEX_AGENT_astra.toml"
+    },
+    "hook-wrapper": {
+      "deployment_path": ".agents/hooks/check.py",
+      "export_alias": "ECON_HOOK_CHECK.py"
+    },
+    "hook-registration": {
+      "deployment_path": ".agents/hooks/hooks.json",
+      "export_alias": "ECON_HOOKS.json"
+    },
+    "research-runner": {
+      "deployment_path": ".agents/harness/research.py",
+      "export_alias": "research.py"
+    },
+    "research-execution": {
+      "deployment_path": ".agents/harness/research.md",
+      "export_alias": "RESEARCH.md"
+    },
+    "research-estimator": {
+      "deployment_path": ".agents/skills/econ-data/scripts/research.py",
+      "export_alias": "research_estimator.py"
+    },
+    "research-dependencies": {
+      "deployment_path": ".agents/skills/econ-data/scripts/requirements-research.txt",
+      "export_alias": "requirements-research.txt"
+    },
+    "research-sources": {
+      "deployment_path": ".agents/skills/econ-literature/scripts/research_sources.py",
+      "export_alias": "research_sources.py"
+    },
+    "research-experience": {
+      "deployment_path": ".agents/harness/experience.py",
+      "export_alias": "experience.py"
+    },
+    "research-evidence": {
+      "deployment_path": ".agents/harness/research_evidence.py",
+      "export_alias": "research_evidence.py"
+    },
+    "research-design": {
+      "deployment_path": ".agents/skills/econ-design/scripts/research_design.py",
+      "export_alias": "research_design.py"
+    },
+    "research-macro": {
+      "deployment_path": ".agents/skills/econ-data/scripts/research_macro.py",
+      "export_alias": "research_macro.py"
+    },
+    "research-reproduction": {
+      "deployment_path": ".agents/harness/reproduction.py",
+      "export_alias": "reproduction.py"
+    },
+    "research-causal-dependencies": {
+      "deployment_path": ".agents/skills/econ-data/scripts/requirements-causal.txt",
+      "export_alias": "requirements-causal.txt"
+    },
+    "research-causal": {
+      "deployment_path": ".agents/skills/econ-data/scripts/research_causal.py",
+      "export_alias": "research_causal.py"
+    },
+    "example-subscription": {
+      "deployment_path": ".agents/skills/econ-data/examples/subscription/README.md",
+      "export_alias": "subscription-example.md"
+    },
+    "example-subscription-code": {
+      "deployment_path": ".agents/skills/econ-data/examples/subscription/run.py",
+      "export_alias": "subscription-example.py"
+    },
+    "example-subscription-specification": {
+      "deployment_path": ".agents/skills/econ-data/examples/subscription/specification.json",
+      "export_alias": "subscription-specification.json"
+    },
+    "example-subscription-materials": {
+      "deployment_path": ".agents/skills/econ-data/examples/subscription/materials.py",
+      "export_alias": "subscription-materials.py"
+    },
+    "example-equipment": {
+      "deployment_path": ".agents/skills/econ-data/examples/equipment/README.md",
+      "export_alias": "equipment-example.md"
+    },
+    "example-equipment-code": {
+      "deployment_path": ".agents/skills/econ-data/examples/equipment/run.py",
+      "export_alias": "equipment-example.py"
+    },
+    "example-equipment-specification": {
+      "deployment_path": ".agents/skills/econ-data/examples/equipment/specification.json",
+      "export_alias": "equipment-specification.json"
+    },
+    "example-equipment-materials": {
+      "deployment_path": ".agents/skills/econ-data/examples/equipment/materials.py",
+      "export_alias": "equipment-materials.py"
+    },
+    "example-housing": {
+      "deployment_path": ".agents/skills/econ-data/examples/housing/README.md",
+      "export_alias": "housing-example.md"
+    },
+    "example-housing-code": {
+      "deployment_path": ".agents/skills/econ-data/examples/housing/run.py",
+      "export_alias": "housing-example.py"
+    },
+    "example-housing-specification": {
+      "deployment_path": ".agents/skills/econ-data/examples/housing/specification.json",
+      "export_alias": "housing-specification.json"
+    },
+    "example-housing-materials": {
+      "deployment_path": ".agents/skills/econ-data/examples/housing/materials.py",
+      "export_alias": "housing-materials.py"
+    },
+    "example-charging": {
+      "deployment_path": ".agents/skills/econ-data/examples/charging/README.md",
+      "export_alias": "charging-example.md"
+    },
+    "example-charging-code": {
+      "deployment_path": ".agents/skills/econ-data/examples/charging/run.py",
+      "export_alias": "charging-example.py"
+    },
+    "example-charging-specification": {
+      "deployment_path": ".agents/skills/econ-data/examples/charging/specification.json",
+      "export_alias": "charging-specification.json"
+    },
+    "example-charging-materials": {
+      "deployment_path": ".agents/skills/econ-data/examples/charging/materials.py",
+      "export_alias": "charging-materials.py"
+    },
+    "example-commuting": {
+      "deployment_path": ".agents/skills/econ-data/examples/commuting/README.md",
+      "export_alias": "commuting-example.md"
+    },
+    "example-commuting-code": {
+      "deployment_path": ".agents/skills/econ-data/examples/commuting/run.py",
+      "export_alias": "commuting-example.py"
+    },
+    "example-commuting-specification": {
+      "deployment_path": ".agents/skills/econ-data/examples/commuting/specification.json",
+      "export_alias": "commuting-specification.json"
+    },
+    "example-commuting-materials": {
+      "deployment_path": ".agents/skills/econ-data/examples/commuting/materials.py",
+      "export_alias": "commuting-materials.py"
+    },
+    "research-rct": {
+      "deployment_path": ".agents/skills/econ-data/scripts/research_rct.R",
+      "export_alias": "research_rct.R"
+    },
+    "models-causal": {
+      "deployment_path": ".agents/skills/econ-design/references/causal-models.md",
+      "export_alias": "causal-models.md"
+    },
+    "research-markets-dependencies": {
+      "deployment_path": ".agents/skills/econ-data/scripts/requirements-markets.txt",
+      "export_alias": "requirements-markets.txt"
+    },
+    "research-markets": {
+      "deployment_path": ".agents/skills/econ-data/scripts/research_markets.py",
+      "export_alias": "research_markets.py"
+    },
+    "models-markets": {
+      "deployment_path": ".agents/skills/econ-design/references/market-models.md",
+      "export_alias": "market-models.md"
+    },
+    "research-dynamic-dependencies": {
+      "deployment_path": ".agents/skills/econ-data/scripts/requirements-dynamic.txt",
+      "export_alias": "requirements-dynamic.txt"
+    },
+    "research-dynamic": {
+      "deployment_path": ".agents/skills/econ-data/scripts/research_dynamic.py",
+      "export_alias": "research_dynamic.py"
+    },
+    "models-dynamic": {
+      "deployment_path": ".agents/skills/econ-design/references/dynamic-models.md",
+      "export_alias": "dynamic-models.md"
+    },
+    "research-numerics-dependencies": {
+      "deployment_path": ".agents/skills/econ-data/scripts/requirements-numerics.txt",
+      "export_alias": "requirements-numerics.txt"
+    },
+    "research-numerics": {
+      "deployment_path": ".agents/skills/econ-data/scripts/research_numerics.py",
+      "export_alias": "research_numerics.py"
+    },
+    "models-numerics": {
+      "deployment_path": ".agents/skills/econ-design/references/numerical-models.md",
+      "export_alias": "numerical-models.md"
+    },
+    "research-macro-dependencies": {
+      "deployment_path": ".agents/skills/econ-data/scripts/requirements-macro.txt",
+      "export_alias": "requirements-macro.txt"
+    },
+    "research-macro-extended": {
+      "deployment_path": ".agents/skills/econ-data/scripts/research_macro_extended.py",
+      "export_alias": "research_macro_extended.py"
+    },
+    "models-macro-extended": {
+      "deployment_path": ".agents/skills/econ-design/references/macro-models.md",
+      "export_alias": "macro-models.md"
+    },
+    "research-dsge": {
+      "deployment_path": ".agents/skills/econ-data/scripts/research_dsge.py",
+      "export_alias": "research_dsge.py"
+    },
+    "models-dsge": {
+      "deployment_path": ".agents/skills/econ-design/references/dsge-models.md",
+      "export_alias": "dsge-models.md"
+    },
+    "models-abm": {
+      "deployment_path": ".agents/skills/econ-design/references/agent-models.md",
+      "export_alias": "agent-models.md"
+    },
+    "research-search": {
+      "deployment_path": ".agents/skills/econ-literature/scripts/research_search.py",
+      "export_alias": "research_search.py"
+    },
+    "source-discovery": {
+      "deployment_path": ".agents/skills/econ-literature/references/source-discovery.md",
+      "export_alias": "source-discovery.md"
+    },
+    "research-data": {
+      "deployment_path": ".agents/skills/econ-data/scripts/research_data.py",
+      "export_alias": "research_data.py"
+    },
+    "research-data-guide": {
+      "deployment_path": ".agents/skills/econ-data/references/research-data.md",
+      "export_alias": "research-data.md"
+    },
+    "research-artifacts": {
+      "deployment_path": ".agents/harness/research_artifacts.py",
+      "export_alias": "research_artifacts.py"
+    },
+    "result-artifacts": {
+      "deployment_path": ".agents/skills/econ-writing/references/result-artifacts.md",
+      "export_alias": "result-artifacts.md"
+    },
+    "adaptive-research": {
+      "deployment_path": ".agents/skills/econ-design/references/adaptive-research.md",
+      "export_alias": "adaptive-research.md"
+    },
+    "research-causal-r-dependencies": {
+      "deployment_path": ".agents/skills/econ-data/scripts/requirements-causal-r.json",
+      "export_alias": "requirements-causal-r.json"
+    },
+    "econ-knowledge": {
+      "deployment_path": ".agents/skills/econ-knowledge/SKILL.md",
+      "export_alias": "KNOWLEDGE.md"
+    },
+    "knowledge-retrieval": {
+      "deployment_path": ".agents/skills/econ-knowledge/scripts/knowledge.py",
+      "export_alias": "knowledge.py"
+    },
+    "knowledge-catalog": {
+      "deployment_path": ".agents/skills/econ-knowledge/references/catalog.json",
+      "export_alias": "KNOWLEDGE_catalog.json"
+    },
+    "knowledge-chapter-01": {
+      "deployment_path": ".agents/skills/econ-knowledge/references/chapters/01-mathematics.md",
+      "export_alias": "KNOWLEDGE_chapter-01.md"
+    },
+    "knowledge-chapter-02": {
+      "deployment_path": ".agents/skills/econ-knowledge/references/chapters/02-probability-statistics.md",
+      "export_alias": "KNOWLEDGE_chapter-02.md"
+    },
+    "knowledge-chapter-03": {
+      "deployment_path": ".agents/skills/econ-knowledge/references/chapters/03-microeconomics.md",
+      "export_alias": "KNOWLEDGE_chapter-03.md"
+    },
+    "knowledge-chapter-04": {
+      "deployment_path": ".agents/skills/econ-knowledge/references/chapters/04-games.md",
+      "export_alias": "KNOWLEDGE_chapter-04.md"
+    },
+    "knowledge-chapter-05": {
+      "deployment_path": ".agents/skills/econ-knowledge/references/chapters/05-information-behavior.md",
+      "export_alias": "KNOWLEDGE_chapter-05.md"
+    },
+    "knowledge-chapter-06": {
+      "deployment_path": ".agents/skills/econ-knowledge/references/chapters/06-contracts-organization.md",
+      "export_alias": "KNOWLEDGE_chapter-06.md"
+    },
+    "knowledge-chapter-07": {
+      "deployment_path": ".agents/skills/econ-knowledge/references/chapters/07-market-design.md",
+      "export_alias": "KNOWLEDGE_chapter-07.md"
+    },
+    "knowledge-chapter-08": {
+      "deployment_path": ".agents/skills/econ-knowledge/references/chapters/08-networks.md",
+      "export_alias": "KNOWLEDGE_chapter-08.md"
+    },
+    "knowledge-chapter-09": {
+      "deployment_path": ".agents/skills/econ-knowledge/references/chapters/09-dynamic-computation.md",
+      "export_alias": "KNOWLEDGE_chapter-09.md"
+    },
+    "knowledge-chapter-10": {
+      "deployment_path": ".agents/skills/econ-knowledge/references/chapters/10-econometrics.md",
+      "export_alias": "KNOWLEDGE_chapter-10.md"
+    },
+    "knowledge-chapter-11": {
+      "deployment_path": ".agents/skills/econ-knowledge/references/chapters/11-causal-designs.md",
+      "export_alias": "KNOWLEDGE_chapter-11.md"
+    },
+    "knowledge-chapter-12": {
+      "deployment_path": ".agents/skills/econ-knowledge/references/chapters/12-causal-extensions.md",
+      "export_alias": "KNOWLEDGE_chapter-12.md"
+    },
+    "knowledge-chapter-13": {
+      "deployment_path": ".agents/skills/econ-knowledge/references/chapters/13-time-series.md",
+      "export_alias": "KNOWLEDGE_chapter-13.md"
+    },
+    "knowledge-chapter-14": {
+      "deployment_path": ".agents/skills/econ-knowledge/references/chapters/14-structural-estimation.md",
+      "export_alias": "KNOWLEDGE_chapter-14.md"
+    },
+    "knowledge-chapter-15": {
+      "deployment_path": ".agents/skills/econ-knowledge/references/chapters/15-demand-production.md",
+      "export_alias": "KNOWLEDGE_chapter-15.md"
+    },
+    "knowledge-chapter-16": {
+      "deployment_path": ".agents/skills/econ-knowledge/references/chapters/16-competition-platforms.md",
+      "export_alias": "KNOWLEDGE_chapter-16.md"
+    },
+    "knowledge-chapter-17": {
+      "deployment_path": ".agents/skills/econ-knowledge/references/chapters/17-growth-macro.md",
+      "export_alias": "KNOWLEDGE_chapter-17.md"
+    },
+    "knowledge-chapter-18": {
+      "deployment_path": ".agents/skills/econ-knowledge/references/chapters/18-monetary-open-macro.md",
+      "export_alias": "KNOWLEDGE_chapter-18.md"
+    },
+    "knowledge-chapter-19": {
+      "deployment_path": ".agents/skills/econ-knowledge/references/chapters/19-heterogeneous-macro.md",
+      "export_alias": "KNOWLEDGE_chapter-19.md"
+    },
+    "knowledge-chapter-20": {
+      "deployment_path": ".agents/skills/econ-knowledge/references/chapters/20-asset-pricing.md",
+      "export_alias": "KNOWLEDGE_chapter-20.md"
+    },
+    "knowledge-chapter-21": {
+      "deployment_path": ".agents/skills/econ-knowledge/references/chapters/21-corporate-banking.md",
+      "export_alias": "KNOWLEDGE_chapter-21.md"
+    },
+    "knowledge-chapter-22": {
+      "deployment_path": ".agents/skills/econ-knowledge/references/chapters/22-labor-demography.md",
+      "export_alias": "KNOWLEDGE_chapter-22.md"
+    },
+    "knowledge-chapter-23": {
+      "deployment_path": ".agents/skills/econ-knowledge/references/chapters/23-public-economics.md",
+      "export_alias": "KNOWLEDGE_chapter-23.md"
+    },
+    "knowledge-chapter-24": {
+      "deployment_path": ".agents/skills/econ-knowledge/references/chapters/24-spatial-housing-transport.md",
+      "export_alias": "KNOWLEDGE_chapter-24.md"
+    },
+    "knowledge-chapter-25": {
+      "deployment_path": ".agents/skills/econ-knowledge/references/chapters/25-trade-globalization.md",
+      "export_alias": "KNOWLEDGE_chapter-25.md"
+    },
+    "knowledge-chapter-26": {
+      "deployment_path": ".agents/skills/econ-knowledge/references/chapters/26-health-education.md",
+      "export_alias": "KNOWLEDGE_chapter-26.md"
+    },
+    "knowledge-chapter-27": {
+      "deployment_path": ".agents/skills/econ-knowledge/references/chapters/27-development-agriculture.md",
+      "export_alias": "KNOWLEDGE_chapter-27.md"
+    },
+    "knowledge-chapter-28": {
+      "deployment_path": ".agents/skills/econ-knowledge/references/chapters/28-environment-energy.md",
+      "export_alias": "KNOWLEDGE_chapter-28.md"
+    },
+    "knowledge-chapter-29": {
+      "deployment_path": ".agents/skills/econ-knowledge/references/chapters/29-political-law-institutions.md",
+      "export_alias": "KNOWLEDGE_chapter-29.md"
+    },
+    "knowledge-chapter-30": {
+      "deployment_path": ".agents/skills/econ-knowledge/references/chapters/30-innovation-history-marketing.md",
+      "export_alias": "KNOWLEDGE_chapter-30.md"
+    },
+    "knowledge-chapter-31": {
+      "deployment_path": ".agents/skills/econ-knowledge/references/chapters/31-forecasting-decisions.md",
+      "export_alias": "KNOWLEDGE_chapter-31.md"
+    },
+    "knowledge-chapter-32": {
+      "deployment_path": ".agents/skills/econ-knowledge/references/chapters/32-welfare-policy.md",
+      "export_alias": "KNOWLEDGE_chapter-32.md"
+    },
+    "knowledge-chapter-33": {
+      "deployment_path": ".agents/skills/econ-knowledge/references/chapters/33-numerical-simulation.md",
+      "export_alias": "KNOWLEDGE_chapter-33.md"
+    },
+    "knowledge-chapter-34": {
+      "deployment_path": ".agents/skills/econ-knowledge/references/chapters/34-integrated-cases.md",
+      "export_alias": "KNOWLEDGE_chapter-34.md"
+    },
+    "knowledge-chapter-35": {
+      "deployment_path": ".agents/skills/econ-knowledge/references/chapters/35-measurement-aggregation.md",
+      "export_alias": "KNOWLEDGE_chapter-35.md"
+    },
+    "latex-paper-template": {
+      "deployment_path": ".agents/tex/paper/ecta_template.tex",
+      "export_alias": "ecta_template.tex"
+    },
+    "latex-paper-class": {
+      "deployment_path": ".agents/tex/paper/econsocart.cls",
+      "export_alias": "econsocart.cls"
+    },
+    "latex-paper-config": {
+      "deployment_path": ".agents/tex/paper/econsocart.cfg",
+      "export_alias": "econsocart.cfg"
+    },
+    "latex-bibliography-style": {
+      "deployment_path": ".agents/tex/paper/ecta-fullname.bst",
+      "export_alias": "ecta-fullname.bst"
+    },
+    "latex-slides-template": {
+      "deployment_path": ".agents/tex/slides/main.tex",
+      "export_alias": "main.tex"
+    },
+    "latex-paper-pandoc": {
+      "deployment_path": ".agents/tex/paper/pandoc_template.latex",
+      "export_alias": "paper_pandoc_template.latex"
+    },
+    "latex-slides-pandoc": {
+      "deployment_path": ".agents/tex/slides/pandoc_template.latex",
+      "export_alias": "slides_pandoc_template.latex"
+    },
+    "latex-build-helper": {
+      "deployment_path": ".agents/scripts/build_latex.py",
+      "export_alias": "build_latex.py"
+    },
+    "latex-quarto-project": {
+      "deployment_path": ".agents/_quarto.yml",
+      "export_alias": "_quarto.yml"
+    },
+    "latex-paper-quarto": {
+      "deployment_path": ".agents/tex/paper/quarto_template.qmd",
+      "export_alias": "paper_quarto_template.qmd"
+    },
+    "latex-slides-quarto": {
+      "deployment_path": ".agents/tex/slides/quarto_template.qmd",
+      "export_alias": "slides_quarto_template.qmd"
+    },
+    "package-notices": {
+      "deployment_path": ".agents/THIRD_PARTY_NOTICES.md",
+      "export_alias": "THIRD_PARTY_NOTICES.md"
+    },
+    "knowledge-storage-requirements": {
+      "deployment_path": "scripts/requirements-knowledge-storage.txt",
+      "export_alias": "requirements-knowledge-storage.txt"
+    },
+    "project-work": {
+      "deployment_path": ".agents/skills/project-work/SKILL.md",
+      "export_alias": "PROJECT_WORK.md"
+    },
+    "project-practice": {
+      "deployment_path": ".agents/skills/project-work/references/practice.md",
+      "export_alias": "PROJECT_PRACTICE.md"
+    },
+    "vscode-extension-recommendations": {
+      "deployment_path": ".vscode/extensions.json",
+      "export_alias": "VSCODE_extensions.json"
+    },
+    "policy-codex-agent-lead": {
+      "deployment_path": ".codex/agents/lead.toml",
+      "export_alias": "CODEX_AGENT_lead.toml"
+    },
+    "policy-codex-agent-implementer": {
+      "deployment_path": ".codex/agents/implementer.toml",
+      "export_alias": "CODEX_AGENT_implementer.toml"
+    },
+    "policy-codex-agent-retriever": {
+      "deployment_path": ".codex/agents/retriever.toml",
+      "export_alias": "CODEX_AGENT_retriever.toml"
+    },
+    "policy-codex-agent-specialist": {
+      "deployment_path": ".codex/agents/specialist.toml",
+      "export_alias": "CODEX_AGENT_specialist.toml"
+    },
+    "policy-codex-agent-reviewer": {
+      "deployment_path": ".codex/agents/reviewer.toml",
+      "export_alias": "CODEX_AGENT_reviewer.toml"
+    },
+    "research-gallery": {
+      "deployment_path": ".agents/harness/research_gallery.py",
+      "export_alias": "research_gallery.py"
+    },
+    "research-meetings": {
+      "deployment_path": ".agents/harness/research_meetings.py",
+      "export_alias": "research_meetings.py"
+    },
+    "meeting-materials": {
+      "deployment_path": ".agents/harness/meetings.md",
+      "export_alias": "meetings.md"
+    },
+    "meeting-quarto-template": {
+      "deployment_path": ".agents/tex/slides/meeting_template.qmd",
+      "export_alias": "meeting_template.qmd"
+    },
+    "meeting-templates": {
+      "deployment_path": ".agents/tex/slides/meeting_templates.json",
+      "export_alias": "meeting_templates.json"
+    },
+    "meeting-cloud-workflow": {
+      "deployment_path": ".github/workflows/meetings.yml",
+      "export_alias": "meeting-workflow.yml"
+    },
+    "research-task-form": {
+      "deployment_path": ".github/ISSUE_TEMPLATE/research-task.yml",
+      "export_alias": "research-task.yml"
+    },
+    "economics-writing-comparison": {
+      "deployment_path": "docs/ai/economics-writing-comparison.md",
+      "export_alias": "ECONOMICS_WRITING_COMPARISON.md"
+    },
+    "research-respy-dependencies": {
+      "deployment_path": ".agents/skills/econ-data/scripts/requirements-respy.txt",
+      "export_alias": "requirements-respy.txt"
+    },
+    "research-lifecycle-dependencies": {
+      "deployment_path": ".agents/skills/econ-data/scripts/requirements-lifecycle.txt",
+      "export_alias": "requirements-lifecycle.txt"
+    },
+    "research-dolo-dependencies": {
+      "deployment_path": ".agents/skills/econ-data/scripts/requirements-dolo.txt",
+      "export_alias": "requirements-dolo.txt"
+    },
+    "literature-methods": {
+      "deployment_path": ".agents/skills/econ-literature/references/literature-methods.md",
+      "export_alias": "LITERATURE_METHODS.md"
+    },
+    "search-priority": {
+      "deployment_path": ".agents/skills/econ-literature/references/search-priority.md",
+      "export_alias": "SEARCH_PRIORITY.md"
+    },
+    "paper-reading": {
+      "deployment_path": ".agents/skills/econ-literature/references/paper-reading.md",
+      "export_alias": "PAPER_READING.md"
+    },
+    "writing-compose": {
+      "deployment_path": ".agents/skills/econ-writing/references/compose.md",
+      "export_alias": "WRITING_COMPOSE.md"
+    },
+    "writing-revise": {
+      "deployment_path": ".agents/skills/econ-writing/references/revise.md",
+      "export_alias": "WRITING_REVISE.md"
+    },
+    "writing-translate": {
+      "deployment_path": ".agents/skills/econ-writing/references/translate.md",
+      "export_alias": "WRITING_TRANSLATE.md"
+    },
+    "writing-convert": {
+      "deployment_path": ".agents/skills/econ-writing/references/convert.md",
+      "export_alias": "WRITING_CONVERT.md"
+    },
+    "writing-guidance": {
+      "deployment_path": ".agents/skills/econ-writing/references/guidance.md",
+      "export_alias": "WRITING_GUIDANCE.md"
+    },
+    "writing-explain": {
+      "deployment_path": ".agents/skills/econ-writing/references/explain.md",
+      "export_alias": "WRITING_EXPLAIN.md"
+    },
+    "writing-profile": {
+      "deployment_path": ".agents/skills/econ-writing/references/profile.md",
+      "export_alias": "WRITING_PROFILE.md"
+    },
+    "writing-artifacts": {
+      "deployment_path": ".agents/skills/econ-writing/references/artifact-writing.md",
+      "export_alias": "WRITING_ARTIFACTS.md"
+    },
+    "paper-empirical": {
+      "deployment_path": ".agents/skills/econ-literature/references/read-empirical.md",
+      "export_alias": "PAPER_EMPIRICAL.md"
+    },
+    "paper-theory": {
+      "deployment_path": ".agents/skills/econ-literature/references/read-theory.md",
+      "export_alias": "PAPER_THEORY.md"
+    },
+    "paper-structural": {
+      "deployment_path": ".agents/skills/econ-literature/references/read-structural.md",
+      "export_alias": "PAPER_STRUCTURAL.md"
+    },
+    "journal-priority": {
+      "deployment_path": ".agents/skills/econ-literature/references/journal-priority.json",
+      "export_alias": "journal-priority.json"
+    },
+    "research-causal-r": {
+      "deployment_path": ".agents/skills/econ-data/scripts/research_causal.R",
+      "export_alias": "research_causal.R"
+    },
+    "models-causal-basic": {
+      "deployment_path": ".agents/skills/econ-design/references/causal-models/basic.md",
+      "export_alias": "models-causal-basic.md"
+    },
+    "models-causal-contract": {
+      "deployment_path": ".agents/skills/econ-design/references/causal-models/contract.md",
+      "export_alias": "models-causal-contract.md"
+    },
+    "models-causal-policy": {
+      "deployment_path": ".agents/skills/econ-design/references/causal-models/policy.md",
+      "export_alias": "models-causal-policy.md"
+    },
+    "models-causal-randomization": {
+      "deployment_path": ".agents/skills/econ-design/references/causal-models/randomization.md",
+      "export_alias": "models-causal-randomization.md"
+    },
+    "models-causal-continuous-did": {
+      "deployment_path": ".agents/skills/econ-design/references/causal-models/continuous-did.md",
+      "export_alias": "models-causal-continuous-did.md"
+    },
+    "models-causal-outcomes": {
+      "deployment_path": ".agents/skills/econ-design/references/causal-models/outcomes.md",
+      "export_alias": "models-causal-outcomes.md"
+    },
+    "models-causal-heterogeneity": {
+      "deployment_path": ".agents/skills/econ-design/references/causal-models/heterogeneity.md",
+      "export_alias": "models-causal-heterogeneity.md"
+    },
+    "models-causal-contrasts": {
+      "deployment_path": ".agents/skills/econ-design/references/causal-models/contrasts.md",
+      "export_alias": "models-causal-contrasts.md"
+    },
+    "models-causal-networks": {
+      "deployment_path": ".agents/skills/econ-design/references/causal-models/networks.md",
+      "export_alias": "models-causal-networks.md"
+    },
+    "models-causal-inference": {
+      "deployment_path": ".agents/skills/econ-design/references/causal-models/inference.md",
+      "export_alias": "models-causal-inference.md"
+    },
+    "models-causal-implementation": {
+      "deployment_path": ".agents/skills/econ-design/references/causal-models/implementation.md",
+      "export_alias": "models-causal-implementation.md"
+    },
+    "models-causal-r-calls": {
+      "deployment_path": ".agents/skills/econ-design/references/causal-models/r-calls.md",
+      "export_alias": "models-causal-r-calls.md"
+    },
+    "models-causal-extensions": {
+      "deployment_path": ".agents/skills/econ-design/references/causal-models/extensions.md",
+      "export_alias": "models-causal-extensions.md"
+    },
+    "models-causal-native": {
+      "deployment_path": ".agents/skills/econ-design/references/causal-models/native.md",
+      "export_alias": "models-causal-native.md"
+    },
+    "models-dynamic-finite-horizon": {
+      "deployment_path": ".agents/skills/econ-design/references/dynamic-models/finite-horizon.md",
+      "export_alias": "models-dynamic-finite-horizon.md"
+    },
+    "models-dynamic-contract": {
+      "deployment_path": ".agents/skills/econ-design/references/dynamic-models/contract.md",
+      "export_alias": "models-dynamic-contract.md"
+    },
+    "models-dynamic-replacement": {
+      "deployment_path": ".agents/skills/econ-design/references/dynamic-models/replacement.md",
+      "export_alias": "models-dynamic-replacement.md"
+    },
+    "models-dynamic-games": {
+      "deployment_path": ".agents/skills/econ-design/references/dynamic-models/games.md",
+      "export_alias": "models-dynamic-games.md"
+    },
+    "models-dynamic-adoption": {
+      "deployment_path": ".agents/skills/econ-design/references/dynamic-models/adoption.md",
+      "export_alias": "models-dynamic-adoption.md"
+    },
+    "models-macro-extended-households": {
+      "deployment_path": ".agents/skills/econ-design/references/macro-models/households.md",
+      "export_alias": "models-macro-extended-households.md"
+    },
+    "models-macro-extended-equilibrium": {
+      "deployment_path": ".agents/skills/econ-design/references/macro-models/equilibrium.md",
+      "export_alias": "models-macro-extended-equilibrium.md"
+    },
+    "models-macro-extended-spatial": {
+      "deployment_path": ".agents/skills/econ-design/references/macro-models/spatial.md",
+      "export_alias": "models-macro-extended-spatial.md"
+    },
+    "data-workflow": {
+      "deployment_path": ".agents/skills/econ-data/references/workflow.md",
+      "export_alias": "DATA_WORKFLOW.md"
+    },
+    "design-workflow": {
+      "deployment_path": ".agents/skills/econ-design/references/workflow.md",
+      "export_alias": "DESIGN_WORKFLOW.md"
+    },
+    "knowledge-guide": {
+      "deployment_path": ".agents/skills/econ-knowledge/references/retrieval.md",
+      "export_alias": "KNOWLEDGE_GUIDE.md"
+    },
+    "data-source": {
+      "deployment_path": ".agents/skills/econ-data/references/implementation-data.md",
+      "export_alias": "DATA_SOURCE.md"
+    },
+    "data-descriptive": {
+      "deployment_path": ".agents/skills/econ-data/references/implementation-descriptive.md",
+      "export_alias": "DATA_DESCRIPTIVE.md"
+    },
+    "data-engine-selection": {
+      "deployment_path": ".agents/skills/econ-data/references/implementation-engines.md",
+      "export_alias": "DATA_ENGINE_SELECTION.md"
+    },
+    "data-native-calls": {
+      "deployment_path": ".agents/skills/econ-data/references/implementation-calls.md",
+      "export_alias": "DATA_NATIVE_CALLS.md"
+    },
+    "data-structural-execution": {
+      "deployment_path": ".agents/skills/econ-data/references/implementation-structural.md",
+      "export_alias": "DATA_STRUCTURAL_EXECUTION.md"
+    },
+    "data-numerical-execution": {
+      "deployment_path": ".agents/skills/econ-data/references/implementation-numerics.md",
+      "export_alias": "DATA_NUMERICAL_EXECUTION.md"
+    },
+    "data-worked-examples": {
+      "deployment_path": ".agents/skills/econ-data/references/implementation-examples.md",
+      "export_alias": "DATA_WORKED_EXAMPLES.md"
+    },
+    "review-procedure": {
+      "deployment_path": ".agents/skills/econ-review/references/review.md",
+      "export_alias": "REVIEW_PROCEDURE.md"
+    },
+    "top-five-en": {
+      "deployment_path": ".agents/profiles/top-five-en/PROFILE.md",
+      "export_alias": "TOP_FIVE_EN_PROFILE.md"
+    },
+    "top-five-en-abstract-labor-public": {
+      "deployment_path": ".agents/profiles/top-five-en/abstract-labor-public.md",
+      "export_alias": "TOP_FIVE_EN_ABSTRACT_LABOR_PUBLIC.md"
+    },
+    "top-five-en-abstract-micro-theory": {
+      "deployment_path": ".agents/profiles/top-five-en/abstract-micro-theory.md",
+      "export_alias": "TOP_FIVE_EN_ABSTRACT_MICRO_THEORY.md"
+    },
+    "top-five-en-abstract-io-identification": {
+      "deployment_path": ".agents/profiles/top-five-en/abstract-io-identification.md",
+      "export_alias": "TOP_FIVE_EN_ABSTRACT_IO_IDENTIFICATION.md"
+    },
+    "top-five-en-abstract-spatial": {
+      "deployment_path": ".agents/profiles/top-five-en/abstract-spatial.md",
+      "export_alias": "TOP_FIVE_EN_ABSTRACT_SPATIAL.md"
+    },
+    "top-five-en-abstract-econometrics": {
+      "deployment_path": ".agents/profiles/top-five-en/abstract-econometrics.md",
+      "export_alias": "TOP_FIVE_EN_ABSTRACT_ECONOMETRICS.md"
+    },
+    "top-five-en-abstract-field-experiment": {
+      "deployment_path": ".agents/profiles/top-five-en/abstract-field-experiment.md",
+      "export_alias": "TOP_FIVE_EN_ABSTRACT_FIELD_EXPERIMENT.md"
+    },
+    "top-five-en-abstract-macro-finance": {
+      "deployment_path": ".agents/profiles/top-five-en/abstract-macro-finance.md",
+      "export_alias": "TOP_FIVE_EN_ABSTRACT_MACRO_FINANCE.md"
+    },
+    "top-five-en-introduction-empirical": {
+      "deployment_path": ".agents/profiles/top-five-en/introduction-empirical.md",
+      "export_alias": "TOP_FIVE_EN_INTRODUCTION_EMPIRICAL.md"
+    },
+    "top-five-en-introduction-theory": {
+      "deployment_path": ".agents/profiles/top-five-en/introduction-theory.md",
+      "export_alias": "TOP_FIVE_EN_INTRODUCTION_THEORY.md"
+    },
+    "top-five-en-empirical-institution": {
+      "deployment_path": ".agents/profiles/top-five-en/empirical-institution.md",
+      "export_alias": "TOP_FIVE_EN_EMPIRICAL_INSTITUTION.md"
+    },
+    "top-five-en-empirical-data": {
+      "deployment_path": ".agents/profiles/top-five-en/empirical-data.md",
+      "export_alias": "TOP_FIVE_EN_EMPIRICAL_DATA.md"
+    },
+    "top-five-en-empirical-framework": {
+      "deployment_path": ".agents/profiles/top-five-en/empirical-framework.md",
+      "export_alias": "TOP_FIVE_EN_EMPIRICAL_FRAMEWORK.md"
+    },
+    "top-five-en-empirical-strategy": {
+      "deployment_path": ".agents/profiles/top-five-en/empirical-strategy.md",
+      "export_alias": "TOP_FIVE_EN_EMPIRICAL_STRATEGY.md"
+    },
+    "top-five-en-empirical-older-workers": {
+      "deployment_path": ".agents/profiles/top-five-en/empirical-older-workers.md",
+      "export_alias": "TOP_FIVE_EN_EMPIRICAL_OLDER_WORKERS.md"
+    },
+    "top-five-en-empirical-firms-younger-workers": {
+      "deployment_path": ".agents/profiles/top-five-en/empirical-firms-younger-workers.md",
+      "export_alias": "TOP_FIVE_EN_EMPIRICAL_FIRMS_YOUNGER_WORKERS.md"
+    },
+    "top-five-en-empirical-mechanisms": {
+      "deployment_path": ".agents/profiles/top-five-en/empirical-mechanisms.md",
+      "export_alias": "TOP_FIVE_EN_EMPIRICAL_MECHANISMS.md"
+    },
+    "top-five-en-empirical-conclusion": {
+      "deployment_path": ".agents/profiles/top-five-en/empirical-conclusion.md",
+      "export_alias": "TOP_FIVE_EN_EMPIRICAL_CONCLUSION.md"
+    },
+    "top-five-en-field-micro-theory": {
+      "deployment_path": ".agents/profiles/top-five-en/field-micro-theory.md",
+      "export_alias": "TOP_FIVE_EN_FIELD_MICRO_THEORY.md"
+    },
+    "top-five-en-field-io-demand": {
+      "deployment_path": ".agents/profiles/top-five-en/field-io-demand.md",
+      "export_alias": "TOP_FIVE_EN_FIELD_IO_DEMAND.md"
+    },
+    "top-five-en-field-econometrics": {
+      "deployment_path": ".agents/profiles/top-five-en/field-econometrics.md",
+      "export_alias": "TOP_FIVE_EN_FIELD_ECONOMETRICS.md"
+    },
+    "top-five-en-field-spatial": {
+      "deployment_path": ".agents/profiles/top-five-en/field-spatial.md",
+      "export_alias": "TOP_FIVE_EN_FIELD_SPATIAL.md"
+    },
+    "top-five-en-field-macro-finance": {
+      "deployment_path": ".agents/profiles/top-five-en/field-macro-finance.md",
+      "export_alias": "TOP_FIVE_EN_FIELD_MACRO_FINANCE.md"
+    },
+    "top-five-en-field-experiment": {
+      "deployment_path": ".agents/profiles/top-five-en/field-experiment.md",
+      "export_alias": "TOP_FIVE_EN_FIELD_EXPERIMENT.md"
+    },
+    "top-five-en-field-computation": {
+      "deployment_path": ".agents/profiles/top-five-en/field-computation.md",
+      "export_alias": "TOP_FIVE_EN_FIELD_COMPUTATION.md"
+    },
+    "top-five-en-field-history": {
+      "deployment_path": ".agents/profiles/top-five-en/field-history.md",
+      "export_alias": "TOP_FIVE_EN_FIELD_HISTORY.md"
+    },
+    "example-subscription-manuscript-en": {
+      "deployment_path": ".agents/skills/econ-data/examples/subscription/manuscript-en.md",
+      "export_alias": "SUBSCRIPTION_MANUSCRIPT_EN.md"
+    },
+    "academic-ja": {
+      "deployment_path": ".agents/profiles/academic-ja/PROFILE.md",
+      "export_alias": "ACADEMIC_JA_PROFILE.md"
+    },
+    "academic-ja-childcare-employment": {
+      "deployment_path": ".agents/profiles/academic-ja/childcare-employment.md",
+      "export_alias": "ACADEMIC_JA_CHILDCARE_EMPLOYMENT.md"
+    },
+    "academic-ja-attention-plan-choice": {
+      "deployment_path": ".agents/profiles/academic-ja/attention-plan-choice.md",
+      "export_alias": "ACADEMIC_JA_ATTENTION_PLAN_CHOICE.md"
+    },
+    "academic-ja-equipment-subsidy": {
+      "deployment_path": ".agents/profiles/academic-ja/equipment-subsidy.md",
+      "export_alias": "ACADEMIC_JA_EQUIPMENT_SUBSIDY.md"
+    }
+  },
+  "source": {
+    "skills_root": "skills",
+    "runtime_root": "runtime",
+    "profiles_root": "profiles",
+    "policy_root": "references/repository-policy"
+  },
+  "deployed": {
+    "skills_root": ".agents/skills",
+    "runtime_root": ".agents/runtime",
+    "profiles_root": ".agents/profiles",
+    "policy_root": "."
+  },
+  "project": {
+    "layout": "flat",
+    "path_field": "export_alias",
+    "mandatory_reference_policy": "resolve_within_selected_package",
+    "omitted_optional_policy": "request_additional_input_if_activated",
+    "remote_fallback": false
+  },
+  "policy_pointers": [
+    {
+      "resource_id": "repository-policy",
+      "template_id": "economics-task-entry"
+    },
+    {
+      "resource_id": "policy-agentsmd",
+      "template_id": "economics-task-entry"
+    },
+    {
+      "resource_id": "policy-codexmd",
+      "template_id": "economics-task-entry"
+    },
+    {
+      "resource_id": "policy-claudemd",
+      "template_id": "economics-task-entry"
+    },
+    {
+      "resource_id": "policy-clinerules",
+      "template_id": "economics-task-entry"
+    },
+    {
+      "resource_id": "policy-windsurfrules",
+      "template_id": "economics-task-entry"
+    },
+    {
+      "resource_id": "policy-antigravityrules",
+      "template_id": "economics-task-entry"
+    },
+    {
+      "resource_id": "policy-agents-agentsmd",
+      "template_id": "economics-task-entry"
+    },
+    {
+      "resource_id": "policy-claude-agentsmd",
+      "template_id": "economics-task-entry"
+    },
+    {
+      "resource_id": "policy-cursor-rules-01_project_policymdc",
+      "template_id": "economics-task-entry"
+    },
+    {
+      "resource_id": "policy-gemini-geminimd",
+      "template_id": "economics-task-entry"
+    },
+    {
+      "resource_id": "policy-github-copilot-instructionsmd",
+      "template_id": "economics-task-entry"
+    }
+  ],
+  "pointer_templates": {
+    "economics-task-entry": "# Economics task entry\n\nSelect the owner, mode and active conditions from the [operation index]({index}) when unresolved; go directly to a known operation. Before substantive work, read [CORE]({core}), [PROSE]({prose}), the complete selected Skill/mode and activated prerequisites. CORE owns authority, complete-body reading and reuse, and completion. Obtain the selected knowledge, source code and saved results through that operation. For every prose or visual expression being authored in any mode, including in prompts, short edits, single words, translation, formatting and existing drafts, first search real top-five economics journal papers or slides from 2020 onward, major economics handbooks, reviews or guides, economics textbooks, or economics course materials including lecture notes, course slides and handouts; read the relevant passage and surroundings or the actual pages, slides and exhibits. Map content selection, argument, wording, endings, connections, placement and visual style to those passages, borrow and imitate them, and make only the minimal adjustments required by the confirmed task facts, names, variables and symbols, affected subject, periods, numbers and units, citations, grammar, medium and 28pt slide body setting. Do not import a source study’s empirical conditions or conclusions into the task. Use corresponding Japanese originals for Japanese expression rather than newly translating English prose. If references are insufficient, continue searching and reading; do not invent, freely paraphrase, design from scratch or fill gaps without references. Record each source correspondence and adjustment in the existing source or work record, and compare every completed prose or visual element with the original. Preserve technical instructions, inputs, outputs and validation examples.\n"
+  },
+  "configuration": {
+    "clients": [
+      "cursor",
+      "cline",
+      "roo",
+      "windsurf",
+      "gemini",
+      "claude",
+      "codex",
+      "vscode",
+      "devcontainer",
+      "project",
+      "agents"
+    ],
+    "default_mode": "diff",
+    "write_requires": "explicit_client_selection",
+    "ownership": "previous_generated_current_proposed_content",
+    "relative_path_base": "declared_project_root",
+    "configuration_clients": {
+      "cursor": [
+        {
+          "path": ".cursor/mcp.json",
+          "format": "json"
+        }
+      ],
+      "cline": [
+        {
+          "path": ".vscode/cline_mcp_settings.json",
+          "format": "json"
+        }
+      ],
+      "roo": [
+        {
+          "path": ".vscode/roo_cline_mcp_settings.json",
+          "format": "json"
+        }
+      ],
+      "windsurf": [
+        {
+          "path": ".windsurf/mcp.json",
+          "format": "json"
+        }
+      ],
+      "gemini": [
+        {
+          "path": ".gemini/mcp.json",
+          "format": "json"
+        },
+        {
+          "path": ".gemini/mcp-configs/mcp-servers.json",
+          "format": "json"
+        }
+      ],
+      "claude": [
+        {
+          "path": ".mcp.json",
+          "format": "json"
+        },
+        {
+          "path": ".claude/mcp-configs/mcp-servers.json",
+          "format": "json"
+        }
+      ],
+      "codex": [
+        {
+          "path": ".codex/config.toml",
+          "format": "toml"
+        }
+      ],
+      "vscode": [
+        {
+          "path": ".vscode/settings.json",
+          "format": "json"
+        }
+      ],
+      "devcontainer": [
+        {
+          "path": ".devcontainer/devcontainer.json",
+          "format": "devcontainer"
+        }
+      ],
+      "project": [
+        {
+          "path": "mcp.json",
+          "format": "json"
+        }
+      ],
+      "agents": [
+        {
+          "path": ".agents/mcp.json",
+          "format": "json"
+        }
+      ]
+    }
+  }
+}
