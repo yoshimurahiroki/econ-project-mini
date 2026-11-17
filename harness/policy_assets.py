@@ -11,23 +11,23 @@ import stat
 import types
 
 POLICY_ID = 'economics-native-0.95.12'
-PRIMARY_EXPRESSION_RULE = ('1. Do not create prose or materials: borrow and imitate.\nBefore any writing, search for, obtain and read the relevant sections and surroundings, pages, slides and figures of actual sources: top-five economics journal papers and slides from 2020 onward (including 2020), major economics handbooks, reviews and guides, economics textbooks, and economics course materials including lecture notes, course slides and handouts. If matching sources are missing, search and read further.')
-PRIMARY_STYLE_RULE = ('2. Borrow and thoroughly imitate the matching actual content, argument, style, vocabulary, transitions, endings, placement, design and appearance for every element; adjust only as surgically necessary to fit the task’s established facts, names, variables, scope, numbers, citations, grammar and required medium or 28pt. Do not carry source claims or empirical conditions over to the task. For Japanese, borrow corresponding Japanese originals, not a new literal translation from English. '
-                      'Apply PROSE’s categorical prohibitions on disclaimers, reservations, concessions, qualifications, embellishment, caution, conservatism, ambiguity, verbosity, timidity, supplements, annotations and not-A / not-A-but-B and equivalent contrast rhetoric. Preserve scientific definitions, conditions, quantities, uncertainty and attribution without permitting that rhetoric. Avoid exaggeration and abstract value judgments; use natural, neutral academic economics expression. '
-                      '3. Record source-to-output correspondences and adjustments in the existing materials or work record, then compare every element of the completed artifact with its sources. Apply this without exceptions to English and Japanese prose, papers, materials, slides and Beamer, including short text, single words, translations, labels, formatting and existing drafts; do not fill gaps by free paraphrase, invented examples or independent composition. Deliver the result and actual destination.')
+PRIMARY_EXPRESSION_RULE = "1. Follow WRITING's source, expression and finish procedures for every user-visible element."
+PRIMARY_STYLE_RULE = ('2. Read the adopted WRITING body from the policy prose resource; compose from the '
+                      'economic worksheet and saved results.')
 # Retired transport prefixes are recognized only for removal, never reissued.
 LEGACY_PRIMARY_JAPANESE_RULE = '留保譲歩限定虚飾慎重保守曖昧冗長弱気補足注釈の例外なき全面禁止。'
 LEGACY_PRIMARY_RULES = (
+    '2. Borrow and thoroughly imitate the matching actual content, argument, style, vocabulary, transitions, endings, placement, design and appearance for every element; adjust only as surgically necessary to fit the task’s established facts, names, variables, scope, numbers, citations, grammar and required medium or 28pt. Do not carry source claims or empirical conditions over to the task. For Japanese, borrow corresponding Japanese originals, not a new literal translation from English. Apply WRITING’s categorical prohibitions on disclaimers, reservations, concessions, qualifications, embellishment, caution, conservatism, ambiguity, verbosity, timidity, supplements, annotations and not-A / not-A-but-B and equivalent contrast rhetoric. Preserve scientific definitions, conditions, quantities, uncertainty and attribution without permitting that rhetoric. Avoid exaggeration and abstract value judgments; use natural, neutral academic economics expression. 3. Record source-to-output correspondences and adjustments in the existing materials or work record, then compare every element of the completed artifact with its sources. Apply this without exceptions to English and Japanese prose, papers, materials, slides and Beamer, including short text, single words, translations, labels, formatting and existing drafts; do not fill gaps by free paraphrase, invented examples or independent composition. Deliver the result and actual destination.',
     '1. Do not create prose or materials: borrow and imitate.\nBefore any writing, search for, obtain and read the relevant sections and surroundings, pages, slides and figures of actual sources: top-five economics journal papers and slides from 2020 onward (including 2020), major economics handbooks, reviews and guides, economics textbooks, and economics course materials including lecture notes, course slides and handouts. If matching sources are missing, search and read further.',
     '2. Borrow and thoroughly imitate the matching actual content, argument, style, vocabulary, transitions, endings, placement, design and appearance for every element; adjust only as surgically necessary to fit the task’s established facts, names, variables, scope, numbers, citations, grammar and required medium or 28pt. Do not carry source claims or empirical conditions over to the task. For Japanese, borrow corresponding Japanese originals, not a new literal translation from English. 3. Record source-to-output correspondences and adjustments in the existing materials or work record, then compare every element of the completed artifact with its sources. Apply this without exceptions to English and Japanese prose, papers, materials, slides and Beamer, including short text, single words, translations, labels, formatting and existing drafts; do not fill gaps by free paraphrase, invented examples or independent composition. Deliver the result and actual destination.',
     '1. Route assumptions, conditions and diagnostics to the working record; pass supported affirmative claims to the draft.',
     '2. Write the economic answer with its decisive evidence and numerical uncertainty. '
-    '3. Inspect the saved artifact and final wording under PROSE; deliver the result and actual destination.',
-    "Apply PROSE's reporting and expression rules to every answer and generated artifact.",
+    '3. Inspect the saved artifact and final wording under WRITING; deliver the result and actual destination.',
+    "Apply WRITING's reporting and expression rules to every answer and generated artifact.",
     'Report statistical uncertainty only as numerical measures such as standard errors, intervals and p values; '
     'keep scientific conditions and qualitative evidence-strength judgments internal. '
     'Deliver the direct economic answer and actual operation result.',
-    "Apply PROSE's output prohibitions to every answer and generated artifact, without exception.",
+    "Apply WRITING's output prohibitions to every answer and generated artifact, without exception.",
     'Keep scientific conditions, statistical uncertainty and evidence-strength judgments internal; '
     'deliver the direct economic answer and actual operation result.',
     'Categorically prohibit any mention of uncertainty, without exception.',
@@ -60,8 +60,8 @@ PROFILE = {'id': 'research-full'}
 # scientific, state, writing and checking modules; ordinary answers need none.
 RUN_PATHS = {'policy_assets', 'registry_operations', 'registry_resources', 'registry_placements', 'route_registry'}
 BASE_RESOURCE_IDS = {
-    'prose-check-rules': 'dictionary', 'core': 'core', 'research': 'decide',
-    'execution': 'execution', 'team': 'team', 'prose': 'prose',
+    'prose-check-rules': 'dictionary', 'core': 'core',
+    'team': 'team', 'prose': 'prose',
     'codex-hooks': 'codex_hooks', 'native-check': 'native_check', 'requirements-check': 'requirements_check',
     'local-checks': 'local_checks',
     'policy-assets': 'policy_assets', 'team-state-helper': 'state',
@@ -725,7 +725,7 @@ def instruction_context(root=None, *, manifest=None, status=None, stage=None, ro
         reader = root / manifest['assets']['route_registry']['path']
         layout = ' --layout installed' if (root / '.agents/registry/resources.json').is_file() else ''
         short += (' Read for this stage: `python ' + shlex.quote(str(reader)) +
-                  ' --root ' + shlex.quote(str(root)) + layout + ' read ' + rule + ' --format compact`.')
+                  ' --root ' + shlex.quote(str(root)) + layout + ' read ' + rule + '`.')
     text = short + '\n\n' + text
     restoration = {'included': bool(restore)}
     if restore:

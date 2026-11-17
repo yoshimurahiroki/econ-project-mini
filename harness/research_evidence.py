@@ -552,8 +552,17 @@ def review(contract, root, *, claim_ids=None, writing=None):
             'evidence_sha256': state.content_hash({key: value for key, value in contract.items() if key != 'review'}),
             'source_knowledge': [{key: row[key] for key in ('document_id', 'paper_id', 'version', 'id',
                                    'kind', 'attribution', 'proposition_sha256')} for row in selected['propositions']] if selected else [],
-            'comparison': 'Compare each actual claim with its original conditions, identified object, inference and scope. '
-                          'Return the supported finding and its exact source; retain a correct claim when no defect follows.'}
+            'comparison': 'Strengthen the answer to the original economic question using its actual sources and results. '
+                          'Apply econ-review to derive the weakest sufficient premises and strongest supported conclusion '
+                          'for the same target and evidence. Record the strengthened interpretation and economic implications '
+                          'in the assessment rationale. Select public content as verdict, decisive economic reason and consequence; routine conditions, definitions and technical mappings are internal proof work. Lead with the substantive judgment and decisive economic reason '
+                          'in affirmative clauses under WRITING. Follow ECONOMIST Requested work for the delivered analysis; '
+                          'extra sensitivity analysis, assumption testing and routine procedure explanation serve explicit requests. '
+                          'Prioritize impact under ECONOMIST Economic priority: require revision '
+                          'only for evident errors established directly by the theorem, calculation or original source; '
+                          'disregard conjectural doubts. For choice claims follow ECONOMIST Selecting an action: '
+                          'derive contrasting economic settings, responses and preferred actions, then choose one. '
+                          'Omit self-evident premises and objective-restatement boundaries.'}
     if contract.get('coverage', {}).get('claims') is True:
         packet['claim_coverage'] = claim_coverage(manuscript, claims, contract['coverage'])
     if claim_ids is None:

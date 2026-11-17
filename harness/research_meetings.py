@@ -322,6 +322,21 @@ def edit_section(bundle, section_id, changes, *, expected_revision, body=None):
     return {"source_revision": load_meeting(bundle)[2], "analysis_executed": False}
 
 
+def fold_into_exhibit(bundle, source_id, exhibit_id, *, layout="stack"):
+    """Move a prose section onto the exhibit it explains and hide the prose-only page.
+
+    The exhibit page takes the prose section's heading and body, so the claim and
+    its table or figure share one page.
+    """
+    meeting, bodies, revision = load_meeting(bundle)
+    source = next((row for row in meeting["sections"] if row["id"] == source_id), None)
+    if source is None:
+        raise ValueError("Unknown section: " + source_id)
+    edit_section(bundle, exhibit_id, {"title": source["title"], "layout": layout},
+                 body=bodies.get(source_id, ""), expected_revision=revision)
+    edit_section(bundle, source_id, {"visible": False}, expected_revision=load_meeting(bundle)[2])
+
+
 def change_sections(bundle, *, expected_revision, order=None, add=None, remove=None):
     meeting, bodies, revision = load_meeting(bundle)
     if revision != expected_revision:
@@ -523,6 +538,13 @@ def render_bundle(root, bundle, output, *, quarto="quarto", output_format="html"
     output.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix=".ers-meeting-render-", dir=output.parent) as temporary:
         stage = Path(temporary)
+        if meeting.get("document_type") == "article" and output_format == "pdf":
+            # econsocart defines none of the caption names Babel's language setup reads; luatexja-fontspec
+            # sets the Japanese text, so the PDF article omits the Babel language.
+            source = re.sub(r"^lang:.*\n", "", source, count=1, flags=re.MULTILINE)
+        # Japanese documents and decks take the Japanese caption names and slide type sizes.
+        if str(meeting.get("language", "ja")).startswith("ja") and source.startswith("---\n"):
+            source = "---\njapanese: true\n" + source[4:]
         (stage / "index.qmd").write_text(source, encoding="utf-8")
         # An isolated document root prevents repository render hooks and engines
         # from participating in a saved-exhibit render.
@@ -640,7 +662,7 @@ def native_slides_requests(bundle, *, asset_base_url=None):
     meeting, bodies, revision = load_meeting(bundle)
     requests, notes, images = [], {}, []
     prefix = "ers_" + revision[:12] + "_"
-    body_size = 28
+    body_size = 32 if str(meeting.get("language", "ja")).startswith("ja") else 28
 
     def text_height(text, width, size):
         if not text:
@@ -713,9 +735,9 @@ def native_slides_requests(bundle, *, asset_base_url=None):
         if entries and image_height < 80:
             raise ValueError("Section text fills its exhibit area; shorten the body or select a side layout: " + section["id"])
         if text_height(body, body_width, body_size) > body_height:
-            raise ValueError("Section text fills its slide at 28 pt; split the section: " + section["id"])
+            raise ValueError(f"Section text fills its slide at {body_size} pt; split the section: " + section["id"])
         if caption_height > 390 - content_y:
-            raise ValueError("Section caption fills its slide at 28 pt; split the section: " + section["id"])
+            raise ValueError(f"Section caption fills its slide at {body_size} pt; split the section: " + section["id"])
         body_id = box(page, "body_" + str(index), body, body_x, content_y, body_width, body_height, body_size)
         for text_range in bullet_ranges:
             requests.append({"createParagraphBullets": {"objectId": body_id, "textRange": text_range, "bulletPreset": "BULLET_DISC_CIRCLE_SQUARE"}})
@@ -731,11 +753,11 @@ def native_slides_requests(bundle, *, asset_base_url=None):
                 values = [*headers, *rows]
                 cell_width = (tile_width - 12) / column_count
                 if cell_width <= 16:
-                    raise ValueError("Section table columns are too narrow at 28 pt; split the table: " + section["id"])
+                    raise ValueError(f"Section table columns are too narrow at {body_size} pt; split the table: " + section["id"])
                 required_row_height = max(text_height("—" if value is None else str(value), cell_width, body_size)
                                           for values_row in values for value in values_row)
                 if required_row_height * len(values) > image_height:
-                    raise ValueError("Section table fills its slide at 28 pt; split the table or its section: " + section["id"])
+                    raise ValueError(f"Section table fills its slide at {body_size} pt; split the table or its section: " + section["id"])
                 identity = prefix + "table_" + str(index) + "_" + str(number)
                 requests.append({"createTable": {"objectId": identity, "rows": len(values), "columns": column_count, "elementProperties": {
                     "pageObjectId": page, "size": {"width": {"magnitude": tile_width - 12, "unit": "PT"}, "height": {"magnitude": image_height, "unit": "PT"}},

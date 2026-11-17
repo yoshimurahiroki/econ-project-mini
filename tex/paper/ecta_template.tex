@@ -1,148 +1,195 @@
 % !TEX program = lualatex
-
-% Template for the submission to:
-%   Econometrica   [ecta]
-%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% In this template, the places where you   %%
-%% need to fill in your information are     %%
-%% indicated by '???'.                      %%
-%%                                          %%
-%% Please do not use \input{...} to include %%
-%% other tex files. Submit your LaTeX       %%
-%% manuscript as one .tex document.         %%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-% use option [draft] for initial submission
-%            [final] for the prepublication
+% Econometrica manuscript on the Econometric Society class (econsocart.cls,
+% econsocart.cfg, ecta-fullname.bst). Option [draft] typesets the submission
+% version; [final] the prepublication version. Grey angle-bracket slots mark
+% the content each sentence carries.
 \documentclass[ecta,nameyear,draft]{econsocart}
-%
-%
 
 \RequirePackage[colorlinks,citecolor=blue,linkcolor=blue,urlcolor=blue,pagebackref]{hyperref}
-
-% 日本語対応のためのパッケージ
-% \usepackage{luatexja}
 \usepackage{luatexja-fontspec}
+\usepackage{xcolor}
+\usepackage{amssymb}
+\usepackage{bm}
 \usepackage{float}
 \usepackage{booktabs}
 \usepackage{longtable}
+\usepackage{threeparttable}
+\ifdefined\abovecaptionskip\else\newlength{\abovecaptionskip}\fi
+\usepackage{graphicx}
 \newcommand{\hiddenlabel}[1]{\refstepcounter{equation}\label{#1}}
 \newcommand{\hiddenfiglabel}[1]{\refstepcounter{figure}\label{#1}}
 \newcommand{\hiddentablabel}[1]{\refstepcounter{table}\label{#1}}
 
 \startlocaldefs
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%                                          %%
-%% Uncomment next line to change            %%
-%% the type of equation numbering           %%
-%%                                          %%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%\numberwithin{equation}{section}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%                                          %%
-%% For Assumption, Axiom, Claim, Corollary, %%
-%% Lemma, Theorem, Proposition, Hypothezis, %%
-%% Fact                                     %%
-%% use \theoremstyle{plain}                 %%
-%%                                          %%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%\theoremstyle{plain}
-%\newtheorem{???}{???}
-%\newtheorem*{???}{???}
-%\newtheorem{???}{???}[???]
-%\newtheorem{???}[???]{???}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%                                          %%
-%% For Definition, Example, Remark,         %%
-%% Notation, Property                       %%
-%% use \theoremstyle{remark}                %%
-%%                                          %%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%\theoremstyle{remark}
-%\newtheorem{???}{???}
-%\newtheorem*{???}{???}
-%\newtheorem{???}{???}[???]
-%\newtheorem{???}[???]{???}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Please put your definitions here:        %%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
+\newcommand{\econtheorem}[3]{\ifcsname #1\endcsname\else\theoremstyle{#2}\newtheorem{#1}{#3}\fi}
+\econtheorem{assumption}{plain}{Assumption}
+\econtheorem{proposition}{plain}{Proposition}
+\econtheorem{lemma}{plain}{Lemma}
+\econtheorem{corollary}{plain}{Corollary}
+\econtheorem{definition}{remark}{Definition}
+\econtheorem{example}{remark}{Example}
+\ifdefined\slot\else\DeclareRobustCommand{\slot}[1]{{\color{gray}\itshape\ensuremath{\langle}#1\ensuremath{\rangle}}}\fi
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Var}{\operatorname{Var}}
 \endlocaldefs
 
 \begin{document}
 
 \begin{frontmatter}
 
-\title{???}
-\runtitle{???}
+%% BEGIN TITLE
+\title{\slot{Title}}
+\runtitle{\slot{Running title}}
+%% END TITLE
 
 \begin{aug}
-% use \particle for den|der|de|van|von (only lc!)
-% [id=?,addressref=?,corref]{\fnms{}~\snm{}\ead[label=e?]{}\thanksref{}}
-%
-%% e-mail is mandatory for each author
-%
-%%% initials in fnms (if any) with spaces
-%
-\author[id=au1,addressref={add1}]{\fnms{}~\snm{}\ead[label=e1]{}}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Addresses                                %%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\address[id=add1]{}
+%% BEGIN AUTHORS
+\author[id=au1,addressref={add1}]{\fnms{First}~\snm{Author}\ead[label=e1]{author@university.edu}}
+\address[id=add1]{\orgdiv{Department of Economics}, \orgname{University}}
+%% END AUTHORS
 
-\support{}
+%% BEGIN SUPPORT
+\support{\slot{Acknowledgments and funding, as supplied by the authors.}}
+%% END SUPPORT
 
-%% Put support info here.  Reminder: do not thank the handling coeditor anonymously or by name
-%% \support{We thank ???.}
-%
+%% BEGIN ABSTRACT
 \begin{abstract}
-???
+\slot{Moves of the exemplar abstract: question; data or model; identifying variation or model operation; main saved result with its unit and numerical uncertainty; mechanism or welfare consequence.}
 \end{abstract}
+%% END ABSTRACT
 
+%% BEGIN KEYWORDS
 \begin{keyword}
-\kwd{???}
-\kwd{???}
+\kwd{\slot{Keyword}}
 \end{keyword}
+%% END KEYWORDS
 
 \end{aug}
 
 \end{frontmatter}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%% Main text entry area:
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{???}
-???
+%% BEGIN BODY
+% Fill slots from the adopted worksheet and saved results under runtime/WRITING.md.
+% profiles/ fixes form; remove unused sections and exhibits.
+\section{Introduction}\label{sec:introduction}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Single Appendix:            %%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%\begin{appendix}
-%\section*{???} %% if no title is needed, leave empty \section*{}.
-%\end{appendix}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Multiple Appendixes:        %%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%\begin{appendix}
-%\section{???}
-%
-%\section{???}
-%\end{appendix}
+\slot{The decision or fact that makes the question matter, with its magnitude (worksheet 1).}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Bibliography:                            %%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% IMPORTANT: References in the bibliography should be complete,
-%% including the first and last names, and date of publication.
+\slot{The question and the economic mechanism at stake: actors, choices and the competing predictions (worksheet 2--3).}
 
-%% If your bibliography is in bibtex format, uncomment commands:
-\bibliographystyle{ecta-fullname} % Style BST file
-\bibliography{../bibliography}  % Bibliography file (usually '*.bib')
+\slot{Setting, data and the comparison that separates the predictions (worksheet 4).}
 
+\slot{Main results, one paragraph each: estimate with interval and unit, and the mechanism it supports (worksheet 6).}
 
+\slot{The economic magnitude or decision the results imply (worksheet 6).}
+
+\slot{Contribution: for each literature, its benchmark estimate or result and what this paper changes.}
+
+\section{Institutional Setting}\label{sec:setting}
+
+\slot{The rule, its timing, the agents it reaches and the margin of choice it moves.}
+
+\section{Data}\label{sec:data}
+
+\slot{Sources, linkage, unit of observation, period, sample rules and outcome construction.} Table~\ref{tab:summary} reports summary statistics.
+
+\begin{table}[t]
+\centering
+\caption{\slot{Title}}\label{tab:summary}
+\begin{threeparttable}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+ & \slot{Group} & \slot{Group} & \slot{Group} \\
+ & (1) & (2) & (3) \\
+\midrule
+\slot{Variable} & \slot{mean} & \slot{mean} & \slot{mean} \\
+ & [\slot{sd}] & [\slot{sd}] & [\slot{sd}] \\
+\midrule
+\textit{N} & \slot{n} & \slot{n} & \slot{n} \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]\footnotesize
+\item \textit{Notes.} \slot{What the columns report, with the unit.}
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\section{Conceptual Framework}\label{sec:framework}
+
+\slot{Agents, objectives, choice sets, information and equilibrium; the competing mechanisms and the prediction that separates them (worksheet 3).}
+
+\begin{proposition}\label{prop:main}
+\slot{Prediction.}
+\end{proposition}
+
+\section{Empirical Strategy}\label{sec:strategy}
+
+\slot{Estimand in the framework's terms, the identifying variation and the comparison group (worksheet 4).}
+
+\begin{equation}\label{eq:main}
+\text{\slot{Estimating equation of the chosen method, as written on its method card}}
+\end{equation}
+
+\slot{Definitions of the symbols that are specific to this paper; inference and the level of clustering.}
+
+\section{Results}\label{sec:results}
+
+\slot{Main result: estimate, interval, unit, population and period; the prediction it supports and the one it rejects.}
+
+\begin{figure}[t]
+\centering
+\IfFileExists{figures/main.pdf}{\includegraphics[width=0.85\textwidth]{figures/main.pdf}}{\fbox{\parbox[c][0.32\textwidth][c]{0.85\textwidth}{\centering figures/main.pdf}}}
+\caption{\slot{Title}}\label{fig:main}
+\begin{minipage}{0.85\textwidth}\footnotesize
+\slot{Interval level and type.}
+\end{minipage}
+\end{figure}
+
+\begin{table}[t]
+\centering
+\caption{\slot{Title}}\label{tab:main}
+\begin{threeparttable}
+\begin{tabular}{@{}lcc@{}}
+\toprule
+ & (1) & (2) \\
+\midrule
+\slot{Regressor} & \slot{estimate} & \slot{estimate} \\
+ & (\slot{se}) & (\slot{se}) \\
+\midrule
+\textit{N} & \slot{n} & \slot{n} \\
+\slot{Fixed effects or controls} & \slot{X} & \slot{X} \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]\footnotesize
+\item \textit{Notes.} \slot{Estimator by column and standard-error type.}
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\section{Mechanisms}\label{sec:mechanisms}
+
+\slot{The test of Proposition~\ref{prop:main}; the counterfactual, incidence or welfare calculation.}
+
+\section{Conclusion}\label{sec:conclusion}
+
+\slot{The answer, its magnitude and the decision it informs.}
+
+\begin{appendix}
+\section{Proofs}\label{app:proofs}
+
+\begin{proof}[Proof of Proposition~\ref{prop:main}]
+\slot{Proof.}
+\end{proof}
+
+\section{Additional Results}\label{app:additional}
+
+\slot{Additional tables and figures.}
+\end{appendix}
+%% END BODY
+
+%% BEGIN BIBLIOGRAPHY
+\bibliographystyle{ecta-fullname}
+\bibliography{../bibliography}
+%% END BIBLIOGRAPHY
 
 \end{document}

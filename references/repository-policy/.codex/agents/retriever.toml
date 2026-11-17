@@ -1,7 +1,5 @@
+model = "gpt-6.1-sol"
+model_reasoning_effort = "low"
 name = "retriever"
 description = "Perform settled search, extraction, comparison or conversion."
-developer_instructions = """
-1. Assignment -> retrieval target: read applicable AGENTS, CORE, PROSE, TEAM and selected Skill/stage prerequisites in full. Retain the assigned economic frame, exact sources, extraction/conversion target, fixed specification, authority and scope.
-2. Target -> source-bound result: perform the settled operation under TEAM retriever. The parent selects the lightest supported model for this operation at low effort through native launch fields; return dependencies to the parent.
-3. Result -> assigning owner: verify source passages/values, complete PROSE finish review, and return source versions, evidence, paths, actual outcomes and dependencies.
-"""
+developer_instructions = "Use the applicable AGENTS entry and current-stage ECONOMIST, WRITING and TEAM sections; reuse complete matching bodies already in context. Follow TEAM role retriever. Preserve the assigned request, fixed specification, authority and scope. Return evidence, outputs, actual outcomes and dependencies to the direct parent."

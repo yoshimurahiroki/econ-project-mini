@@ -5,9 +5,9 @@ Text matches use NFKC/casefold views mapped to raw source coordinates. Snapshot 
 stage exact bytes before an atomic no-overwrite directory rename.
 """
 import argparse
+from bisect import bisect_right
 import ctypes
 import errno
-import codecs
 import hashlib
 import html
 import importlib
@@ -180,37 +180,6 @@ class FileSnapshot(io.BufferedIOBase):
     def strip(self, *args):
         require(self.size <= MAX_BYTES, 'text body exceeds byte budget')
         return b''.join(self.chunks()).strip(*args)
-
-
-class UTF8Text:
-    """Character-coordinate access to a large fixed original with bounded slices."""
-    def __init__(self, data):
-        self.data, self.length = data, 0
-        for text in self._chunks():
-            self.length += len(text)
-
-    def _chunks(self):
-        decoder = codecs.getincrementaldecoder('utf-8')('strict')
-        for raw in self.data.chunks():
-            yield decoder.decode(raw)
-        yield decoder.decode(b'', final=True)
-
-    def __len__(self):
-        return self.length
-
-    def __getitem__(self, key):
-        require(isinstance(key, slice) and key.step in (None, 1), 'text access requires a character range')
-        start, end, _ = key.indices(self.length)
-        parts, position, size = [], 0, 0
-        for text in self._chunks():
-            left, right = max(0, start - position), min(len(text), end - position)
-            if right > left:
-                part = text[left:right]
-                size += len(part.encode('utf-8'))
-                require(size <= MAX_BYTES, 'selected original text exceeds inspection byte budget')
-                parts.append(part)
-            position += len(text)
-        return ''.join(parts)
 
 
 def _open_regular(path):
@@ -727,14 +696,25 @@ def main(argv=None):
         dictionary_raw = regular_bytes(args.dictionary)
         dictionary = parse_json(dictionary_raw)
         hits = scan({path.name: data}, dictionary)
+        sentences = list(re.finditer(r'.+?(?:[。．!?！？]|\.(?=\s|$)|\n|$)', decoded, re.S))
+        starts = [sentence.start() for sentence in sentences]
+        rules = {rule['id']: rule for rule in dictionary['rules']}
+        for hit in hits:
+            sentence = sentences[max(0, bisect_right(starts, hit['start']) - 1)]
+            hit['sentence'] = sentence.group().strip()
+            category = rules[hit['rule_id']].get('category')
+            hit['repair'] = dictionary.get('categories', {}).get(category, {}).get(
+                'repair', 'Apply WRITING section 3 to the marked sentence.')
         status = ('blocked' if hits else 'lexical-clean') if args.require_clean else 'scanned'
         print(json.dumps({'status': status,
                           'dictionary_version': dictionary['version'],
                           'scan_complete': True, 'hit_count': len(hits),
                           'semantic_review': 'not-performed',
+                          'next_action': 'Read the whole draft under WRITING section 3, including unflagged recommendations and deferrals. '
+                                         'State the adopted action in affirmative clauses, preserve evidence and save the complete body through write-answer.',
                           'coordinate_system': 'raw-source-characters',
                           'hits': [{key: hit[key] for key in
-                                    ('rule_id', 'start', 'end', 'character_spans')}
+                                    ('rule_id', 'start', 'end', 'character_spans', 'matched_text', 'sentence', 'repair')}
                                    for hit in hits]}, ensure_ascii=False))
         return int(args.require_clean and bool(hits))
     except (GateError, OSError, ValueError, TypeError, KeyError, OverflowError, RecursionError) as exc:

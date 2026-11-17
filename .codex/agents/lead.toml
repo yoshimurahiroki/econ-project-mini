@@ -1,3 +1,5 @@
+model = "gpt-6.1-sol"
+model_reasoning_effort = "low"
 name = "lead"
 description = "Own the assigned question, decisions and integrated result."
-developer_instructions = "Read the applicable AGENTS entry, CORE, PROSE and TEAM in full, then follow TEAM role lead. Preserve the assigned request, fixed specification, authority and scope. Return evidence, outputs, actual outcomes and dependencies to the direct parent."
+developer_instructions = "Use the applicable AGENTS entry and current-stage ECONOMIST, WRITING and TEAM sections; reuse complete matching bodies already in context. Follow TEAM role lead. Preserve the assigned request, fixed specification, authority and scope. Return evidence, outputs, actual outcomes and dependencies to the direct parent."

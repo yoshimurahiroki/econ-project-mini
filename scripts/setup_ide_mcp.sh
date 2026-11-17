@@ -197,7 +197,7 @@ def toml_team(text, settings):
         lines[first_table - 1] += '\n'
     lines[first_table:first_table] = insertions['']
     result = ''.join(lines)
-    if insertions['agents']:
+    if insertions.get('agents'):
         if table_seen:
             header = re.search(r'^\s*\[agents\][ \t]*(?:#[^\n]*)?(?:\n|$)', result, re.M)
             result = result[:header.end()] + ''.join(insertions['agents']) + result[header.end():]
@@ -366,7 +366,7 @@ def main():
                         raise ValueError('Codex agents capacity aliases cannot both be set')
                     capacity_key = capacity_keys[0] if capacity_keys else 'max_concurrent_threads_per_session'
                     settings = {'': {}, 'agents': {'enabled': True}}
-                    for key, limit in ((capacity_key, 3), ('max_depth', 2)):
+                    for key, limit in ((capacity_key, template['agents']['max_concurrent_threads_per_session']), ('max_depth', 2)):
                         value = agents.get(key, limit)
                         if type(value) is not int or (key == capacity_key and value < 1) or (key == 'max_depth' and not -(2**31) <= value < 2**31):
                             raise ValueError('Invalid Codex agents ' + key)
@@ -380,8 +380,8 @@ def main():
                         value = v2[capacity_field]
                         if type(value) is not int or value < 1:
                             raise ValueError('Invalid Codex V2 session capacity')
-                        if value > 4:
-                            settings['features.multi_agent_v2'] = {capacity_field: 4}
+                        if value > 2:
+                            settings['features.multi_agent_v2'] = {capacity_field: 2}
                     if args.openai_preset:
                         root_keys = ('model', 'model_reasoning_effort', 'forced_login_method')
                         if args.scope == 'user':
@@ -436,14 +436,22 @@ def main():
         if args.openai_preset:
             # Explicit selection owns these native fields; ordinary setup inherits.
             role_presets = {
-                'lead': (template['model'], 'high'),
-                'implementer': (template['model'], 'medium'),
-                'retriever': ('gpt-6-luna', 'low'),
-                'specialist': (template['model'], 'ultra'),
-                'reviewer': (template['model'], 'high'),
+                'lead': (template['model'], template['model_reasoning_effort']),
+                'implementer': (template['model'], template['model_reasoning_effort']),
+                'retriever': (template['model'], template['model_reasoning_effort']),
+                'specialist': (template['model'], template['model_reasoning_effort']),
+                'reviewer': (template['model'], template['model_reasoning_effort']),
             }
         if client == 'codex':
-            roles += ('terra', 'luna', 'astra')
+            roles += ('sol', 'luna', 'astra')
+            retired = f'{"agents" if args.scope == "user" else ".codex/agents"}/terra.toml'
+            retired_path = target_root / retired
+            retired_bytes = read(retired_path)
+            if retired_bytes is not None:
+                retired_role = tomllib.loads(retired_bytes.decode())
+                if retired_role.get('name') == 'terra' and 'terra' in retired_role.get('model', ''):
+                    plan[retired_path] = (retired_bytes, None)
+                    next_state.pop(retired, None)
         for role in roles:
             source = ROOT / 'references/repository-policy/.codex/agents' / (role + '.toml')
             source_bytes = read(source)
@@ -458,8 +466,7 @@ def main():
                 content = source_bytes.decode()
                 if role in role_presets:
                     model, effort = role_presets[role]
-                    content = ('model = ' + json.dumps(model) + '\n' +
-                               'model_reasoning_effort = ' + json.dumps(effort) + '\n' + content)
+                    content = toml_team(content, {'': {'model': model, 'model_reasoning_effort': effort}})
                     tomllib.loads(content)
             else:
                 relative = f'.{client}/agents/{role}.md'
@@ -505,6 +512,7 @@ def main():
             raise ValueError('Invalid Codex hooks configuration')
         configured = document['hooks']
         expected = json.loads(template_bytes)['hooks']
+        expected.pop('PreToolUse', None)
         data_path = target_root / '.agents/state/codex-hooks'
         for event, entries in expected.items():
             for item in entries:
@@ -515,6 +523,13 @@ def main():
         prior = state.get(relative, {})
         owned = prior.get('owned', {}) if isinstance(prior, dict) else {}
         updated_owned = {}
+        for event, old in owned.items():
+            if event not in expected:
+                current = configured.get(event, [])
+                if old in current:
+                    current.remove(old)
+                    if not current:
+                        configured.pop(event, None)
         for event, entries in expected.items():
             current = configured.setdefault(event, [])
             if not isinstance(current, list) or len(entries) != 1:

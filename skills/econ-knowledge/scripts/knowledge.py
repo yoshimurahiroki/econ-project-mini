@@ -1426,6 +1426,7 @@ def main():
     rel = sub.add_parser('relations'); rel.add_argument('ids', nargs='+'); rel.add_argument('--type', action='append', default=[]); rel.add_argument('--context', action='append', default=[])
     plan = sub.add_parser('plan'); plan.add_argument('ids', nargs='+'); plan.add_argument('--context', action='append', default=[])
     plan.add_argument('--read', action='store_true', help='Return the full bodies of the resolved required IDs in dependency order')
+    plan.add_argument('--focus', action='store_true', help='With --read, display selected unit bodies and retain prerequisite locators')
     method = sub.add_parser('method', help='Read selected-method knowledge for the pending stage')
     method.add_argument('--method', required=True)
     method.add_argument('--design', required=True)
@@ -1493,6 +1494,11 @@ def main():
                 else:
                     result['units'] = reader.units(result['required_ids'])['units']
                     result.update(reader.report())
+                    if a.focus:
+                        focused = [unit for unit in result['units'] if unit['id'] in a.ids]
+                        if focused:
+                            result['prerequisite_ids'] = [unit['id'] for unit in result['units'] if unit['id'] not in a.ids]
+                            result['units'] = focused
         else:
             restore = a.restore or a.as_sources
             if task and not restore and task['status'] != 'running':

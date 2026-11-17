@@ -1,8 +1,10 @@
 # econ-project-mini
 
-Economics Research Skills（ERS）の研究スキル、経済学知識、実行・成果物管理を保守する正本。研究質問と識別条件の整理から、データ取得、推定・均衡計算、図表、論文・スライドまでを同じ採用仕様と保存結果でつなぐ。
+Economics Research Skills（ERS）の研究スキル、経済学知識、実行・成果物管理を保守する正本。研究質問と識別条件の整理から、データ取得、推定・均衡計算、図表、論文・スライドまでを、同じ採用仕様と保存結果から一貫して作成する。
 
 Python・R・Jupyter・Quarto・TinyTeXの基盤を備え、分析パッケージは研究ごとに選ぶ。広いPython・R分析環境とlockファイルをまとめて使う場合は、[econ-project](https://github.com/yoshimurahiroki/econ-project)を選ぶ。
+
+既定モデルは `gpt-6.1-sol`、思考レベルは `low`。主担当・実装・専門担当・査読と自己改善評価に適用する。自己改善評価は同時実行数1で行う。役割設定は[TEAM](runtime/TEAM.md)、配置は[設定ガイド](docs/ai/config-templates/README.md)に従う。
 
 ## 使い始める
 
@@ -11,7 +13,7 @@ git clone https://github.com/yoshimurahiroki/econ-project-mini.git
 cd econ-project-mini
 ```
 
-コーディングエージェントの作業場所をこのフォルダーにし、[AGENTS.md](AGENTS.md)を入口にする。依頼には、研究上の問い、対象データ・資料、欲しい成果物、変更する範囲を添える。操作が決まっている場合はその担当Skillとモードへ進み、担当を探す場合は[操作一覧](docs/ai/compiled_ai_skills.md)を使う。必要な本文の取得と実行・完了の共通規則は[CORE](runtime/CORE.md)、表現は[PROSE](runtime/PROSE.md)にある。
+コーディングエージェントの作業場所をこのフォルダーにし、[AGENTS.md](AGENTS.md)を入口にする。依頼には、研究上の問い、対象データ・資料、欲しい成果物、変更する範囲を添える。作業は[経済学者の手順](runtime/ECONOMIST.md)に沿って、状況と利害、問い、機構と予測、推定対象と識別、実行、解釈、表現の順に進み、各段階の結果を`work/<topic>.md`に残す。文章・スライドは[WRITING](runtime/WRITING.md)に従う。
 
 | Skill | 担当する作業 |
 | --- | --- |
@@ -22,6 +24,17 @@ cd econ-project-mini
 | [econ-review](skills/econ-review/SKILL.md) | 主張・計算・成果物の評価と指定範囲の修正 |
 | [econ-knowledge](skills/econ-knowledge/SKILL.md) | 主担当が必要とする理論・モデル・判断条件の参照 |
 | [project-work](skills/project-work/SKILL.md) | 要件・作業方針、実行プロンプト、案件への参加・運営 |
+
+## 手本ライブラリーを用意する
+
+論構成は英語の論文・報告スライドから、日本語の語彙・接続表現・文末・リズムは日本語の講義資料・教科書・ディスカッションペーパーから借りる。手持ちのPDFを各自のライブラリーに登録する。ライブラリーはリポジトリの外（`$ERS_EXEMPLARS`または利用者のデータディレクトリ）に置く。
+
+```sh
+python3 skills/econ-writing/scripts/exemplars.py add ~/papers ~/lectures
+python3 skills/econ-writing/scripts/exemplars.py outline --lang en --function introduction --query "minimum wage"
+python3 skills/econ-writing/scripts/exemplars.py find --lang ja --kind prose --query "需要 均衡"
+python3 skills/econ-writing/scripts/exemplars.py style --lang ja --kind slide
+```
 
 ## 計算・文書作成の環境
 
@@ -80,7 +93,7 @@ python3 harness/research.py --root . research.json
 
 ## 保存結果から成果物を作る
 
-[結果の登録と図表・本文](skills/econ-writing/references/result-artifacts.md)では、推定結果の数量、単位、定義と生成元を結ぶ。同じ保存結果から表・図・Quarto・LaTeX・HTML・PDFを作り、[結果ギャラリー](harness/research_gallery.py)で表示を編集する。自分の研究で登録したギャラリーを指定して開く。
+[結果の登録と図表・本文](skills/econ-writing/references/result-artifacts.md)では、推定結果の数量に単位、定義、生成元を対応させる。同じ保存結果から表・図・Quarto・LaTeX・HTML・PDFを作り、[結果ギャラリー](harness/research_gallery.py)で表示を編集する。自分の研究で登録したギャラリーを指定して開く。
 
 ```sh
 pixi run research-ui -- --root . --registry path/to/research/gallery.json

@@ -1,12 +1,24 @@
 # Executable causal and empirical models
 
-## Causal scope
+`skills/econ-data/scripts/research_causal.py` runs a finite set of causal and empirical specifications. The target, population, assignment mechanism, identifying restrictions and inference belong to the adopted design ([design methods](designs.md)); the runner executes them and saves the result.
 
-`skills/econ-data/scripts/research_causal.py` implements the following finite set of specifications. The target, population, assignment mechanism, identifying restrictions and inference convention belong to the adopted specification. A fitted coefficient has a causal interpretation when those restrictions establish the stated target.
+## How to run
 
-## Method selection
+1. **Pick the method** from the table below by the design adopted in the worksheet.
+2. **Select:** write a design file (`question`, `estimand`, `identification`, `design`, `outcome_scale`, `data_structure`, `treatment_pattern`, `dependence`, proposed `options`) and run `python3 skills/econ-data/scripts/research_causal.py select DESIGN.json --output SELECTION.json` ([selection contract](causal-models/implementation.md#select-the-implementing-function)). The output names the method, engine and execution specification, and lists excluded candidates with the reason.
+3. **Run:** `python3 skills/econ-data/scripts/research_causal.py run SPEC.json --output RESULT.json` with the shared specification fields ([specification and result](causal-models/contract.md#specification-and-result)) and the method's options from its file.
+4. **Record** the method, engine version, estimate, covariance, fitted sample counts and diagnostics from RESULT.json in worksheet section 5.
 
-Select the adopted method through the [method index](causal-models.md#select-a-method). Read its complete body and the prerequisite rules returned by the operation registry. The family-wide condition selects this index and the common specification; the named method condition selects its complete body.
+## Which method
+
+| Adopted design | Method names | File |
+| --- | --- | --- |
+| Regression discontinuity, IV, experiments, shift-share, cluster and multiple-outcome inference (choice table and method cards) | `rdd_sharp`, `rdd_fuzzy`, `rdd_localrand`, `rdrobust_r`, `rddensity`, `rdpower`, `iv_gmm`, `iv_ar`, `iv_ar_robust`, `rct`, `rct_design`, `shift_share`, `shift_share_inference`, `wild_cluster_bootstrap`, `club_sandwich`, `spatial_conley`, `romano_wolf`, `holm` | [RD, IV, experiments and inference](causal-models/rd-iv-experiments.md); runner details in [basic](causal-models/basic.md), [randomization](causal-models/randomization.md), [R calls](causal-models/r-calls.md), [inference](causal-models/inference.md) |
+| Difference-in-differences, event studies, synthetic control (choice table and method cards) | `staggered_did`, `sunab`, `did2s`, `did_imputation`, `drdid_*`, `did_multiplegt_dyn`, `continuous_did`, `honest_did`, `synthdid`, `synthetic_control`, `generalized_synth` and more | [DiD and synthetic control](causal-models/did.md); runner details in [R calls](causal-models/r-calls.md), [extensions](causal-models/extensions.md), [continuous DID](causal-models/continuous-did.md) |
+| Orthogonal scores (DML), forests, meta-learners, TMLE, treatment rules, post-estimation quantities (choice table and method cards) | `dml_*`, `grf`, `grf_*`, `causal_forest`, `metalearner`, `tmle`, `policy_tree` (with `options.policy` for multi-arm policy learning), `marginaleffects` | [ML, heterogeneity and policy](causal-models/ml-heterogeneity.md); runner details in [heterogeneity](causal-models/heterogeneity.md), [policy](causal-models/policy.md), [extensions](causal-models/extensions.md) |
+| Quantile DID, changes-in-changes, saved-fit contrasts (runner details) | `quantile_did`, `changes_in_changes`, `marginaleffects` calls | [contrasts](causal-models/contrasts.md) |
+| Selection, censoring, duration, decompositions, bunching, distributional effects, bounds, networks and space, sensitivity, mediation, specification curves (choice table and method cards) | `heckman`, `tobit`, `survival`, `survival_aft`, `survival_km`, `oaxaca`, `dfl`, `kitagawa`, `gelbach`, `bunching`, `qte`, `qtt`, `quantile`, `distribution_effect`, `manski_bounds`, `lee_bounds`, `balke_pearl`, `network_exposure`, `network_spillover`, `spatial_lag`, `sensitivity_cinelli`, `sensitivity_oster`, `sensitivity_evalue`, `mediation`, `specification_curve` | [Outcomes, bounds and sensitivity](causal-models/outcomes-bounds-sensitivity.md); runner details in [outcomes](causal-models/outcomes.md), [extensions](causal-models/extensions.md), [contrasts](causal-models/contrasts.md), [networks](causal-models/networks.md), [inference](causal-models/inference.md) |
+| Regression foundations: GLS, logit, Poisson, negative binomial, OLS and fixed-effects regressions, static and dynamic panels, Bayesian project models (choice table and method cards) | `gls`, `logit`, `poisson`, `negative_binomial_r`, `ols_r`, `fixest_ols`, `fixest_ppml`, `hdfe`, `fixed_effects_julia`, `panel_fe`, `dynamic_panel`, `bayesian_model` | [Regression foundations and engines](causal-models/regression-engines.md); runner details in [basic](causal-models/basic.md), [R calls](causal-models/r-calls.md), [native](causal-models/native.md) |
 
 <!-- BEGIN GENERATED METHOD INDEX -->
 ## Select a method

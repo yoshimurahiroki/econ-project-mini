@@ -1,5 +1,5 @@
 % !TEX program = lualatex
-\documentclass[unicode, mathserif, t, 12pt, aspectratio=169, unknownkeysallowed]{beamer}
+\documentclass[unicode, t, 12pt, aspectratio=169, unknownkeysallowed]{beamer}
 %\includeonlyframes{current}
 
 \usepackage{color}
@@ -7,13 +7,14 @@
 \usepackage{comment}
 \usepackage{natbib}
 
-\usepackage[haranoaji,deluxe]{luatexja-preset}
+\usepackage[haranoaji,deluxe,scale=1]{luatexja-preset}
 \usepackage{appendixnumberbeamer}
 \renewcommand{\kanjifamilydefault}{\gtdefault}
 \renewcommand{\refname}{}
 \renewcommand{\bibsection}{}
 
 \usetheme[numbering=fraction]{metropolis}
+\usefonttheme[onlymath]{serif}
 
 \definecolor{Waseda}{HTML}{922E41}
 \definecolor{Orange}{HTML}{CF4A30}
@@ -21,18 +22,32 @@
 \setbeamercolor{frametitle}{bg=Waseda}
 \geometry{paperwidth=960bp,paperheight=540bp}
 \setbeamersize{text margin left=54bp,text margin right=54bp}
-\newcommand{\ersbodyfontsize}{28}
+%% BEGIN LANGUAGE
+% Japanese decks set larger type: a Japanese character carries more content than a Latin one.
+\newif\ifersjapanese
+%\ersjapanesetrue
+%% END LANGUAGE
+\ifersjapanese
+  \newcommand{\ersbodyfontsize}{32}\newcommand{\ersbodyleading}{40}
+  \newcommand{\ersframetitlefont}{\fontsize{36}{44}\selectfont}
+  \newcommand{\erstitlefont}{\fontsize{44}{54}\selectfont}
+  \DeclareMathSizes{32}{32}{22}{16}
+\else
+  \newcommand{\ersbodyfontsize}{28}\newcommand{\ersbodyleading}{35}
+  \newcommand{\ersframetitlefont}{\fontsize{32}{40}\selectfont}
+  \newcommand{\erstitlefont}{\fontsize{40}{48}\selectfont}
+  \DeclareMathSizes{28}{28}{20}{14}
+\fi
 \makeatletter
-\renewcommand\normalsize{\@setfontsize\normalsize{\ersbodyfontsize}{35}}
+\renewcommand\normalsize{\@setfontsize\normalsize{\ersbodyfontsize}{\ersbodyleading}}
 \makeatother
-\DeclareMathSizes{28}{28}{20}{14}
 \setbeamerfont{normal text}{size=\normalsize}
 \setbeamerfont{itemize/enumerate body}{size=\normalsize}
 \setbeamerfont{itemize/enumerate subbody}{size=\normalsize}
 \setbeamerfont{itemize/enumerate subsubbody}{size=\normalsize}
-\setbeamerfont{title}{size=\fontsize{40}{48}\selectfont}
-\setbeamerfont{subtitle}{size=\fontsize{28}{35}\selectfont}
-\setbeamerfont{frametitle}{size=\fontsize{32}{40}\selectfont,series=\bfseries}
+\setbeamerfont{title}{size=\erstitlefont}
+\setbeamerfont{subtitle}{size=\normalsize}
+\setbeamerfont{frametitle}{size=\ersframetitlefont,series=\bfseries}
 \setbeamerfont{author}{size=\normalsize}
 \setbeamerfont{institute}{size=\normalsize}
 \setbeamerfont{date}{size=\normalsize}
@@ -40,12 +55,16 @@
 \setbeamerfont{footnote}{size=\normalsize}
 \AtBeginDocument{\normalsize}
 
-\title[Footer title]{TITLE}
-\subtitle{SUBTITLE}
+%% BEGIN TITLE
+\title{Title}
+\subtitle{Subtitle}
 \author{Author}
-\institute{}
+\institute{University}
 \date{\today}
+%% END TITLE
 
+%%%%% SLOTS
+\providecommand{\slot}[1]{{\color{gray}\itshape\ensuremath{\langle}#1\ensuremath{\rangle}}}
 %%%%% DOCUMENT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \usepackage{amsmath}
 \begin{document}
@@ -54,36 +73,83 @@
  \titlepage
 \end{frame}
 
-\begin{comment}
-\begin{frame}{目次}
-    \tableofcontents
-\end{frame}
-\end{comment}
-
-
-\begin{frame}{}
-    \textbf{}
+%% BEGIN BODY
+% Fill slots from the adopted worksheet and saved results under runtime/WRITING.md.
+% profiles/ fixes form; one claim and its quantitative reading per slide; remove unused frames.
+\begin{frame}{\slot{Question and stake}}
     \begin{itemize}
-        \item
-        \item
-        \item
+        \item \slot{The decision or fact that makes the question matter, with its magnitude}
+        \item \slot{The question: who chooses what, and the change under study}
     \end{itemize}
 \end{frame}
 
+\begin{frame}{\slot{Answer}}
+    \begin{itemize}
+        \item \slot{Main saved result, unit, population, period and saved numerical uncertainty}
+        \item \slot{The adopted action and the determining economic result}
+    \end{itemize}
+\end{frame}
 
+\begin{frame}{\slot{Mechanism}}
+    \begin{itemize}
+        \item \slot{Competing mechanisms and their predictions for the same change}
+        \item \slot{The observation that separates them}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{\slot{Setting and data}}
+    \begin{itemize}
+        \item \slot{The rule or shock, its timing and the agents it reaches}
+        \item \slot{Sources, unit of observation, sample and period}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{\slot{Identifying comparison}}
+    \begin{itemize}
+        \item \slot{Estimand, the variation that identifies it and the comparison group}
+        \item \slot{The method}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{\slot{Main result}}
+    \centering
+    \IfFileExists{figures/main.pdf}{\includegraphics[height=0.66\textheight]{figures/main.pdf}}{\fbox{\parbox[c][0.55\textheight][c]{0.8\textwidth}{\centering figures/main.pdf}}}
+
+    \raggedright
+    \slot{One-line reading: the estimate and the prediction it supports}
+\end{frame}
+
+\begin{frame}{\slot{Magnitude and decision}}
+    \begin{itemize}
+        \item \slot{The estimate converted to the decision's unit: per yen, per worker, elasticity or welfare}
+        \item \slot{The decision and its economic intuition}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{\slot{Mechanism evidence}}
+    \begin{itemize}
+        \item \slot{The test of the separating prediction and its result}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{\slot{Conclusion}}
+    \begin{itemize}
+        \item \slot{The answer, its magnitude and the decision it informs}
+    \end{itemize}
+\end{frame}
+%% END BODY
 
 \appendix
 
-
-
+%% BEGIN BIBLIOGRAPHY
 \IfFileExists{../bibliography.bib}{
 \begin{frame}{References}
     \normalsize
     \bibliography{../bibliography}  % Bibliography file (usually '*.bib')
     \bibliographystyle{../paper/ecta-fullname} % Style BST file
 
-    \nocite{*}
 \end{frame}
 }{}
+%% END BIBLIOGRAPHY
 
 \end{document}

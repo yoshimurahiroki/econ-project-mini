@@ -32,6 +32,8 @@ PLOT_TYPES = ('table', 'bar', 'line', 'scatter', 'step', 'area', 'coefficient', 
               'att_gt', 'cohort_event', 'parallel_trends', 'rdd', 'iv_first_stage', 'iv_reduced_form',
               'iv_confidence_set', 'scm', 'scm_gap', 'scm_placebo', 'binned_scatter', 'smd', 'structural', 'geo')
 GALLERY_RENDER_VERSION = 22
+JAPANESE_FONT_FAMILIES = ('Noto Sans CJK JP', 'Noto Sans JP', 'Source Han Sans JP', 'IPAexGothic', 'IPAGothic', 'IPAPGothic',
+                         'TakaoPGothic', 'TakaoGothic', 'BIZ UDPGothic', 'Yu Gothic', 'Meiryo', 'Hiragino Sans', 'MS Gothic')
 DISPLAY_FIELDS = {'title', 'column_order', 'column_labels', 'formats', 'row_order',
                   'sort_by', 'ascending', 'notes', 'plot_type', 'x', 'y', 'lower', 'upper',
                   'series', 'visible_series', 'selected_result_ids', 'x_label', 'y_label',
@@ -1428,11 +1430,12 @@ def gallery_presentation(presentation, markdown=False):
              '.econ-table thead{border-bottom:1px solid #65717e;}.econ-table tfoot{border-top:1px solid #65717e;}'
              '.econ-table .panel th{font-weight:600;padding-top:14px;border-top:1px solid #aab2ba;}'
              '.econ-table .se td,.econ-table .ci td,.econ-table .p td{padding-top:0;color:#46505c;}'
-             '.econ-table .coefficient td{padding-bottom:2px;}.econ-table.meeting{font-size:28pt;}</style>')
+             '.econ-table .coefficient td{padding-bottom:2px;}.econ-table.meeting,.econ-prose.meeting{font-size:28pt;}'
+             'html[lang|="ja"] .econ-table.meeting,html[lang|="ja"] .econ-prose.meeting{font-size:32pt;}</style>')
     font = presentation.get('font_size')
     font_style = ' style="font-size:' + str(font) + 'pt"' if type(font) in (int, float) else ''
-    prose_style = font_style or (' style="font-size:28pt"' if presentation.get('preset') == 'meeting' else '')
-    prose = ''.join('<p' + prose_style + '>' + html.escape(text) + '</p>' for text in presentation.get('public_text', []))
+    prose_class = ' class="econ-prose ' + presentation.get('preset', 'paper') + '"'
+    prose = ''.join('<p' + prose_class + font_style + '>' + html.escape(text) + '</p>' for text in presentation.get('public_text', []))
     return style + prose + '<table class="econ-table ' + presentation.get('preset', 'paper') + '"' + font_style + '><thead>' + headers + '</thead><tbody>' + ''.join(rows) + '</tbody><tfoot>' + footer + '</tfoot></table>'
 
 
@@ -1722,7 +1725,7 @@ def gallery_plot_panel(axis, rows, display, metadata, columns, family, font_size
                     positions = xs if histogram else [x + (index - (len(groups) - 1) / 2) * width for x in xs]
                     (axis.barh if horizontal else axis.bar)(positions, ys, **({'height': width} if horizontal else {'width': width}), alpha=.65 if histogram else 1, **kwargs)
                 elif point:
-                    axis.scatter(ys if horizontal else xs, xs if horizontal else ys, s=32, **kwargs)
+                    axis.scatter(ys if horizontal else xs, xs if horizontal else ys, s=max(32, 2.5 * font_size), **kwargs)
                     label_key = display.get('point_label')
                     if label_key:
                         for x, y, row in zip(xs, ys, segment):
@@ -1792,6 +1795,9 @@ def gallery_plot_panel(axis, rows, display, metadata, columns, family, font_size
     for reference in metadata.get('reference_lines', []):
         if reference.get('axis') in ('x', 'y') and type(reference.get('value')) in (int, float):
             (axis.axvline if reference['axis'] == 'x' else axis.axhline)(reference['value'], color='#73808c', linestyle=':', linewidth=.8, label=reference.get('label'))
+        elif reference.get('axis') == 'identity':
+            # The 45-degree line of calibration and fit plots: predicted equals observed.
+            axis.axline((0, 0), slope=1, color='#73808c', linestyle='--', linewidth=.8, label=reference.get('label'))
     for name in ('x', 'y'):
         if display.get(name + '_limits') is not None:
             getattr(axis, 'set_' + name + 'lim')(*display[name + '_limits'])
@@ -1827,7 +1833,9 @@ def gallery_plot(item):
             if Path(path).name == 'NotoSansCJK-Regular.ttc':
                 font_manager.fontManager.addfont(path)
         font_names = {font.name for font in font_manager.fontManager.ttflist}
-    family = next((name for name in ('Noto Sans CJK JP', 'Noto Sans JP', 'IPAexGothic') if name in font_names), 'DejaVu Sans')
+    family = next((name for name in JAPANESE_FONT_FAMILIES if name in font_names), 'DejaVu Sans')
+    if family == 'DejaVu Sans' and re.search(r'[\u3040-\u30ff\u3400-\u9fff\uff00-\uffef]', json.dumps({key: item.get(key) for key in ('title', 'columns', 'rows', 'display')}, ensure_ascii=False)):
+        raise ValueError('Japanese exhibit text needs an installed Japanese font such as Noto Sans CJK JP or IPAexGothic')
     meeting = display.get('preset') == 'meeting' or display.get('style') == 'presentation'
     font_size = gallery_font_size(display)
     plot_type = display.get('plot_type', 'table')
@@ -2093,42 +2101,43 @@ def latex_adapter(source, kind):
     def replace_once(body, old, new):
         if body.count(old)!=1: raise ValueError('LaTeX template slot changed: '+kind)
         return body.replace(old,new,1)
+    def replace_region(body, name, new):
+        """Replace the lines between %% BEGIN NAME and %% END NAME, markers included."""
+        start,end='%% BEGIN '+name+'\n','%% END '+name+'\n'
+        if body.count(start)!=1 or body.count(end)!=1: raise ValueError('LaTeX template region changed: '+kind+' '+name)
+        i=body.index(start); j=body.index(end,i)
+        return body[:i]+new+'\n'+body[j+len(end):]
     common=('$if(bibliography)$$else$\\let\\econbibstyle\\bibliographystyle\n'
             '\\renewcommand{\\bibliographystyle}[1]{}\n$endif$'
             '$common.latex()$\n$if(bibliography)$$else$\\let\\bibliographystyle\\econbibstyle\n$endif$'
-            '$for(header-includes)$\n$header-includes$\n$endfor$\n')
+            # Quarto's common.latex already emits header-includes; Pandoc's partial leaves them to the template.
+            '$if(standalone-renderer)$$for(header-includes)$\n$header-includes$\n$endfor$\n$endif$')
     if kind=='paper':
-        common += '\\raggedbottom\n\\AtBeginEnvironment{longtable}{\\def\\_{\\textunderscore\\allowbreak}}\n'
+        common += '$if(japanese)$\n\\AtBeginDocument{\\renewcommand{\\tablename}{表}\\renewcommand{\\figurename}{図}\\renewcommand{\\thetable}{\\arabic{table}}\\renewcommand{\\thefigure}{\\arabic{figure}}}\n$endif$\n\\raggedbottom\n\\AtBeginEnvironment{longtable}{\\def\\_{\\textunderscore\\allowbreak}}\n'
         source=replace_once(source,'\\documentclass[ecta,nameyear,draft]{econsocart}', '\\RequirePackage{fontspec}\n\\def\\econselectedclass{$documentclass$}\n\\def\\econjournalclass{econsocart}\n\\ifx\\econselectedclass\\econjournalclass\n\\documentclass[ecta,nameyear,draft]{econsocart}\n\\else\n\\documentclass[$for(classoption)$$classoption$$sep$,$endfor$]{$documentclass$}\n\\fi')
         source=replace_once(source,'\\documentclass[ecta,nameyear,draft]{econsocart}', '\\documentclass[ecta,nameyear,$if(classoption)$$for(classoption)$$classoption$$sep$,$endfor$$else$final$endif$]{econsocart}')
-        source=replace_once(source,'\\support{}', '$if(support)$\\support{$support$}$endif$')
         source=replace_once(source,'\\startlocaldefs',common+'\\newcounter{pandocauthor}\n\\newcommand{\\pandocauthor}[1]{\\stepcounter{pandocauthor}\\author[id=au\\arabic{pandocauthor},addressref={add1}]{\\fnms{}~\\snm{#1}\\ead[label=e\\arabic{pandocauthor}]{}}}\n\\ifx\\econselectedclass\\econjournalclass\n\\startlocaldefs')
         source=replace_once(source,'\\endlocaldefs','\\endlocaldefs\n\\fi')
         source=replace_once(source,'\\begin{frontmatter}','\\ifx\\econselectedclass\\econjournalclass\n\\begin{frontmatter}')
         source=replace_once(source,'\\end{frontmatter}', '\\end{frontmatter}\n\\else\n$if(title)$\\title{$title$}$endif$\n\\author{$for(author)$$author$$sep$ \\and $endfor$}\n$if(date)$\\date{$date$}$endif$\n$if(title)$\\maketitle$endif$\n$if(abstract)$\\begin{abstract}$abstract$\\end{abstract}$endif$\n$if(keywords)$\\noindent\\textbf{Keywords:} $for(keywords)$$keywords$$sep$, $endfor$$endif$\n\\fi')
-        source=replace_once(source,'\\title{???}\n\\runtitle{???}', '$if(title)$\\title{$title$}\n\\runtitle{$title$}$endif$')
-        source=replace_once(source,'\\author[id=au1,addressref={add1}]{\\fnms{}~\\snm{}\\ead[label=e1]{}}', '$for(author)$\\pandocauthor{$author$}\n$endfor$')
-        source=replace_once(source,'\\begin{abstract}\n???\n\\end{abstract}', '$if(abstract)$\\begin{abstract}\n$abstract$\n\\end{abstract}$endif$')
-        source=replace_once(source,'\\begin{keyword}\n\\kwd{???}\n\\kwd{???}\n\\end{keyword}', '$if(keywords)$\\begin{keyword}\n$for(keywords)$\\kwd{$keywords$}\n$endfor$\\end{keyword}$endif$')
-        source=replace_once(source,'\\section{???}\n???', '$body$')
-        source=replace_once(source,'\\bibliographystyle{ecta-fullname} % Style BST file', '% Bibliography style is set to ecta-fullname by the renderer.')
-        source=replace_once(source,'\\bibliography{../bibliography}  % Bibliography file (usually \'*.bib\')', '$if(bibliography)$\\bibliography{$for(bibliography)$$bibliography$$sep$,$endfor$}$endif$')
+        regions={'TITLE':'$if(title)$\\title{$title$}\n\\runtitle{$title$}$endif$',
+                 'AUTHORS':'$for(author)$\\pandocauthor{$author$}\n$endfor$\\address[id=add1]{}',
+                 'SUPPORT':'$if(support)$\\support{$support$}$endif$',
+                 'ABSTRACT':'$if(abstract)$\\begin{abstract}\n$abstract$\n\\end{abstract}$endif$',
+                 'KEYWORDS':'$if(keywords)$\\begin{keyword}\n$for(keywords)$\\kwd{$keywords$}\n$endfor$\\end{keyword}$endif$',
+                 'BODY':'$body$',
+                 'BIBLIOGRAPHY':'% Bibliography style is set to ecta-fullname by the renderer.\n$if(bibliography)$\\bibliography{$for(bibliography)$$bibliography$$sep$,$endfor$}$endif$'}
+        for name,content in regions.items(): source=replace_region(source,name,content)
     elif kind=='slides':
         # Pandoc's common preamble selects Babel's locale through the class option.
-        source=replace_once(source,'\\documentclass[unicode, mathserif, t, 12pt, aspectratio=169, unknownkeysallowed]{beamer}', '\\documentclass[unicode, mathserif, t, 12pt, unknownkeysallowed$if(babel-lang)$,$babel-lang$$endif$,aspectratio=$if(aspectratio)$$aspectratio$$else$169$endif$]{beamer}')
+        source=replace_once(source,'\\documentclass[unicode, t, 12pt, aspectratio=169, unknownkeysallowed]{beamer}', '\\documentclass[unicode, t, 12pt, unknownkeysallowed$if(babel-lang)$,$babel-lang$$endif$,aspectratio=$if(aspectratio)$$aspectratio$$else$169$endif$]{beamer}')
         source=replace_once(source,'\\usetheme[numbering=fraction]{metropolis}', '$if(theme)$\\usetheme{$theme$}$else$\\usetheme[numbering=fraction]{metropolis}$endif$')
-        source=replace_once(source,'\\title[Footer title]{TITLE}\n\\subtitle{SUBTITLE}\n\\author{Author}\n\\institute{}\n\\date{\\today}', '$if(title)$\\title{$title$}$endif$\n$if(subtitle)$\\subtitle{$subtitle$}$endif$\n\\author{$for(author)$$author$$sep$ \\and $endfor$}\n$if(institute)$\\institute{$institute$}$endif$\n\\date{$if(date)$$date$$else$\\today$endif$}')
         source=replace_once(source,'\\usepackage{amsmath}\n\\begin{document}', '\\usepackage{amsmath}\n'+common+'\\AtBeginEnvironment{longtable}{\\normalsize\\setlength{\\tabcolsep}{8pt}\\renewcommand{\\arraystretch}{1.25}}\n\\begin{document}')
-        start=source.index('\\begin{frame}{}'); end=source.index('\\appendix',start)
-        source=source[:start]+'$body$\n\n'+source[end:]
-        guard='\\IfFileExists{../bibliography.bib}{\n'
-        if guard in source:
-            source=replace_once(source,guard+'\\begin{frame}{References}','\\begin{frame}{References}')
-            source=replace_once(source,'\\end{frame}\n}{}\n\n\\end{document}','\\end{frame}\n\n\\end{document}')
-        source=replace_once(source,'\\begin{frame}{References}', '$if(bibliography)$\\begin{frame}{References}')
-        source=replace_once(source,'\\bibliography{../bibliography}  % Bibliography file (usually \'*.bib\')', '\\bibliography{$for(bibliography)$$bibliography$$sep$,$endfor$}')
-        source=replace_once(source,'\\end{frame}\n\n\\end{document}', '\\end{frame}$endif$\n\n\\end{document}')
-        source=replace_once(source,'\\bibliographystyle{../paper/ecta-fullname} % Style BST file', '% Bibliography style is set to ecta-fullname by the renderer.')
+        regions={'LANGUAGE':'\\newif\\ifersjapanese\n$if(japanese)$\\ersjapanesetrue$endif$',
+                 'TITLE':'$if(title)$\\title{$title$}$endif$\n$if(subtitle)$\\subtitle{$subtitle$}$endif$\n\\author{$for(author)$$author$$sep$ \\and $endfor$}\n$if(institute)$\\institute{$institute$}$endif$\n\\date{$if(date)$$date$$else$\\today$endif$}',
+                 'BODY':'$body$',
+                 'BIBLIOGRAPHY':'$if(bibliography)$\\begin{frame}{References}\n    \\normalsize\n    \\bibliography{$for(bibliography)$$bibliography$$sep$,$endfor$}\n    % Bibliography style is set to ecta-fullname by the renderer.\n\\end{frame}$endif$'}
+        for name,content in regions.items(): source=replace_region(source,name,content)
     else: raise ValueError('Unknown LaTeX template kind')
     return source
 

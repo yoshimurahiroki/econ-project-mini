@@ -1,31 +1,37 @@
 {
   "version": "2.0",
   "owner": "prose.common-output",
-  "purpose": "Recurring locators for source-grounded semantic review under PROSE; inspect every element against read sources, preserve scientific definitions, conditions, quantities, uncertainty and attribution, and exclude the rhetoric prohibited by Common output.",
+  "purpose": "Recurring locators for source-grounded semantic review under WRITING; inspect every element against read sources, preserve scientific definitions, conditions, quantities, uncertainty and attribution, and exclude the rhetoric prohibited by Common output.",
   "categories": {
     "uncertainty": {
       "rule_id": "prose.common-output",
-      "step": 2
+      "step": 2,
+      "repair": "State the supported finding directly; retain saved standard errors, intervals or p values."
     },
     "negative-contrast": {
       "rule_id": "prose.common-output",
-      "step": 3
+      "step": 3,
+      "repair": "Write the adopted action, identified quantity or corrected specification in affirmative clauses. Preserve estimates, intervals and actual evidence."
     },
     "defensive-framing": {
       "rule_id": "prose.common-output",
-      "step": 4
+      "step": 4,
+      "repair": "State the adopted comparison, exact specification and economic consequence directly. Keep the actual sufficient restriction in its scientific role and omit prerequisite announcements or added-premise plans."
     },
     "disclaimer": {
       "rule_id": "prose.common-output",
-      "step": 4
+      "step": 4,
+      "repair": "Delete the disclaimer sentence and retain the supported action or result."
     },
     "supplement": {
       "rule_id": "prose.common-output",
-      "step": 4
+      "step": 4,
+      "repair": "Give the actual saved value or requested comparison. Keep routine reporting and computation arrangements in the worksheet."
     },
     "ornament": {
       "rule_id": "prose.common-output",
-      "step": 4
+      "step": 4,
+      "repair": "Replace the value judgment with the actor, action and saved quantitative result."
     }
   },
   "rules": [
@@ -48,27 +54,27 @@
       "language": "en",
       "category": "negative-contrast",
       "pattern": "\\b(?:not|never|neither|cannot|distinguish(?:es|ed|ing)?|differ(?:s|ed)? from)\\b",
-      "action": "review"
+      "action": "block"
     },
     {
       "id": "ja-negative-contrast",
       "language": "ja",
       "category": "negative-contrast",
       "pattern": "ではな|でなく|区別|異な|違う|見られな|認められな",
-      "action": "review"
+      "action": "block"
     },
     {
       "id": "en-defensive-framing",
       "language": "en",
       "category": "defensive-framing",
-      "pattern": "\\b(?:however|although|admittedly|cautio(?:n|us)|conservative|subject to|it depends|in my opinion)\\b",
+      "pattern": "\\b(?:however|although|admittedly|cautio(?:n|us)|conservative|subject to|it depends|in my opinion)\\b|\\b(?:would recommend|you could|consider doing)\\b",
       "action": "review"
     },
     {
       "id": "ja-defensive-framing",
       "language": "ja",
       "category": "defensive-framing",
-      "pattern": "ただし|とはいえ|もちろん|留保|慎重|保守的|注意|一概に|個人的には",
+      "pattern": "ただし|とはいえ|もちろん|留保|慎重|保守的|注意|一概に|個人的には|かもしれな|と考えられ|可能性があ|示唆|留意|注意が必要|限界があ|断定(?:する)?(?:の)?(?:は|を)?(?:避け|控え)|断言でき|確定(?:した|的な)?[^。]{0,12}では(?:な|あり)|(?:特定|識別|分離|区別)(?:でき|は困難|が難し)|一概に|慎重に|保留(?:し|する|します|にする)|様子見|見送|必ずしも|暫定|当面の|出発点|参考値|未(?:だ|推定|検証|確認|確定)|まだ[^。]{0,15}(?:ない|ません)|して(?:い)?ません|していな(?:い|く)|(?:意味|示唆)し(?:ません|ない)|(?:答え|結論|判断)を左右|(?:重要|大事)(?:です|である|だ)|重要なの|区別する|異なる|分け(?:る|て)|仮に|とする|とすれば|とした場合|としたとき|もし|仮定|想定(?:する|し|の下)|(?i:\\bif\\b|\\bsuppos(?:e|ing)\\b|\\bassum(?:e|es|ed|ing|ption|ptions)\\b)|(?:答え|結論|判断|推奨|最適価格|価格の幅|値下げ幅)[^。]{0,35}(?:で|により|によって)(?:大きく)?変わ|(?:提案|結論|推奨|断言|因果効果)[^。]{0,35}(?:には|するには)[^。]{0,40}必要|\\bmight\\b|\\bpossibly\\b|\\bpotentially\\b|\\bsuggests?\\b|\\bcaveat|\\bnot\\b|\\blimitations?\\b|cannot be (?:identified|separated)|\\bnot causal\\b|\\brather than\\b|勧め(?:ません|ない)|おすすめ(?:しません|できません)|推奨(?:しません|できません|しない)",
       "action": "review"
     },
     {
@@ -112,6 +118,209 @@
       "category": "ornament",
       "pattern": "画期的|飛躍的|極めて重要|示唆に富む|素晴らしい質問|以上を踏まえると|お役に立てれば",
       "action": "review"
+    },
+    {
+      "id": "ja-affirmative-predicate",
+      "language": "ja",
+      "category": "negative-contrast",
+      "pattern": "ない|なかった|なく|ません|(?:せ|ら|わ|え|か|け|め|れ|こ|さ)ず(?:に|[、，。．！？\\s])|不可能|不十分|不適切|不成立|不足|不能|不可|無理|無効|困難|難しい",
+      "action": "block"
+    },
+    {
+      "id": "en-affirmative-predicate",
+      "language": "en",
+      "category": "negative-contrast",
+      "pattern": "\\b(?:not|no|never|neither|nor|cannot|can['’]t|couldn['’]t|won['’]t|wouldn['’]t|shouldn['’]t|isn['’]t|aren['’]t|wasn['’]t|weren['’]t|doesn['’]t|don['’]t|didn['’]t|hasn['’]t|haven['’]t|hadn['’]t|without|impossible|insufficient|infeasible|inadequate|unable|unidentifi(?:ed|able)|fails?|failure|lacks?|lacking)\\b",
+      "action": "block"
+    },
+    {
+      "id": "ja-prerequisite-deferral",
+      "language": "ja",
+      "category": "defensive-framing",
+      "pattern": "左右(?:する|し|され)|(?:鍵|かぎ|カギ)を握|(?:答え|結論|判断|推奨|識別|因果解釈|解釈|評価|採否|可否|成否|妥当性)[^。．！？\\n]{0,35}(?:次第|依存|規定され|決まる|決まり|決定づけ|変わる|変わり)|(?:仮定|前提|条件|制約)[^。．！？\\n]{0,24}(?:追加|付加|上乗せ|加え|補う|補っ|増や|導入)|(?:追加|付加|上乗せ|導入|加え)[^。．！？\\n]{0,18}(?:仮定|前提|条件|制約)|必要|不可欠|必須|要する|要し|要る|要り|欠かせ|要求され|求められ",
+      "action": "block"
+    },
+    {
+      "id": "en-prerequisite-deferral",
+      "language": "en",
+      "category": "defensive-framing",
+      "pattern": "\\b(?:requires?|required|needs?|needed|necessary|essential|indispensable|prerequisites?|necessitat(?:e|es|ed))\\b|\\b(?:add(?:s|ed|ing)?|additional|extra|further)\\b[^.!?\\n]{0,40}\\b(?:assumptions?|premises?|conditions?|restrictions?)\\b|\\b(?:answer|conclusion|identification|interpretation|recommendation|verdict)\\b[^.!?\\n]{0,40}\\b(?:depends?|hinges?|is determined|are determined)\\b",
+      "action": "block"
+    },
+    {
+      "id": "ja-reporting-announcement",
+      "language": "ja",
+      "category": "supplement",
+      "pattern": "(?:信頼区間|区間|標準誤差|p\\s*値|推定値)[^。．！？\\n]{0,55}(?:報告|併記|提示|示し|示す|付け|付す|添え|計算|算出)",
+      "action": "block"
+    },
+    {
+      "id": "en-reporting-announcement",
+      "language": "en",
+      "category": "supplement",
+      "pattern": "\\b(?:will|shall|should|must)\\s+(?:report|present|show|provide|compute|calculate|include|add)\\b[^.!?\\n]{0,60}\\b(?:confidence intervals?|standard errors?|p[- ]values?|estimates?)\\b|\\b(?:confidence intervals?|standard errors?|p[- ]values?|estimates?)\\b[^.!?\\n]{0,60}\\b(?:will be|shall be|should be|must be|are to be)\\b",
+      "action": "block"
+    },
+    {
+      "id": "ja-vague-centrality",
+      "language": "ja",
+      "category": "ornament",
+      "pattern": "中心|核心|中核|本質|根幹|根本|基幹|骨子|要旨|要点|焦点|主眼|要諦|肝心|肝要|要所|急所|決め手|(?:肝|かなめ|鍵|かぎ|カギ)(?:は|が|を|に|と)",
+      "action": "block"
+    },
+    {
+      "id": "en-vague-centrality",
+      "language": "en",
+      "category": "ornament",
+      "pattern": "\\b(?:cent(?:er|re|ral)|core|crux|essence|essential point|focal point|heart|linchpin|key point)\\b",
+      "action": "block"
+    },
+    {
+      "id": "ja-linking-expression",
+      "language": "ja",
+      "category": "ornament",
+      "pattern": "結(?:ぶ|び|ば|べ|ぼ|ん)|(?:紐|ひも|関連|関係|対応)(?:付|づ)け|つな(?:ぐ|ぎ|が|げ|い)|繋(?:ぐ|ぎ|が|げ|い)|連結|接続|結合|連関|連動|橋渡し",
+      "action": "block"
+    },
+    {
+      "id": "en-linking-expression",
+      "language": "en",
+      "category": "ornament",
+      "pattern": "\\b(?:connect(?:s|ed|ing|ion|ions)?|link(?:s|ed|ing|age|ages)?|tie(?:s|d)?|tying|bind(?:s|ing)?|bound to|coupl(?:e|es|ed|ing)|relat(?:e|es|ed|ing) to|associat(?:e|es|ed|ing) with|bridge(?:s|d)?|bridging)\\b",
+      "action": "block"
+    },
+    {
+      "id": "ja-retention-expression",
+      "language": "ja",
+      "category": "ornament",
+      "pattern": "残(?:す|し|さ|せ|そ|る|り|ら|れ|ろ|っ)|保持|維持|保存|温存|保留|存続|存置|残存|残留|据え置|据置|引き継|引継|継承|保(?:つ|ち|た|て|と)|留(?:め|ま)|とど(?:め|ま)",
+      "action": "block"
+    },
+    {
+      "id": "en-retention-expression",
+      "language": "en",
+      "category": "ornament",
+      "pattern": "\\b(?:remain(?:s|ed|ing)?|retain(?:s|ed|ing)?|preserv(?:e|es|ed|ing)|maintain(?:s|ed|ing)?|keep(?:s|ing)?|kept|leave(?:s)?|leaving|left over|carry forward|carried forward|hold onto)\\b",
+      "action": "block"
+    },
+    {
+      "id": "ja-linear-response-expression",
+      "language": "ja",
+      "category": "ornament",
+      "pattern": "線形(?:的な|的に)?(?:反応|応答)|リニア(?:な)?(?:反応|応答)",
+      "action": "block"
+    },
+    {
+      "id": "en-linear-response-expression",
+      "language": "en",
+      "category": "ornament",
+      "pattern": "\\blinear(?:ly)?\\s+(?:response(?:s)?|reaction(?:s)?|respond(?:s|ed|ing)?)\\b",
+      "action": "block"
+    },
+    {
+      "id": "ja-separate-classification",
+      "language": "ja",
+      "category": "negative-contrast",
+      "pattern": "別の|別と|別物|別個|別枠|別々|別途|別扱|別建て|切り分け|切分け|区分け|(?:切り|切)離(?:す|し|さ)|独立(?:した|の)(?:対象|問題|論点|推定対象|扱い)",
+      "action": "block"
+    },
+    {
+      "id": "en-separate-classification",
+      "language": "en",
+      "category": "negative-contrast",
+      "pattern": "\\b(?:different|distinct|separat(?:e|es|ed|ing|ely|ion)|another|other|stand[- ]alone)\\b",
+      "action": "block"
+    },
+    {
+      "id": "ja-interpretive-treatment",
+      "language": "ja",
+      "category": "defensive-framing",
+      "pattern": "扱(?:う|い|っ|わ|え|お)|取り扱|とりあつか|(?:見|み)な(?:す|し|さ)|見做|看做|捉(?:え|える)|とらえ|位置(?:付|づ)け|(?:と|に)(?:定義|解釈|整理|分類|区分|認定|認識|設定|評価|考え)|とする|とすれ|とします|としました|とし[、，]|として(?:採用|想定|設定|定義|解釈|整理|分類|区分|認定|認識|評価|考え|みな|見な|捉|とら|位置)",
+      "action": "block"
+    },
+    {
+      "id": "en-interpretive-treatment",
+      "language": "en",
+      "category": "defensive-framing",
+      "pattern": "\\b(?:treat(?:s|ed|ing)?|regard(?:s|ed|ing)?|view(?:s|ed|ing)?|consider(?:s|ed|ing)?|classif(?:y|ies|ied|ying)|defin(?:e|es|ed|ing)|interpret(?:s|ed|ing)?|label(?:s|ed|led|ing|ling)?|characteri[sz](?:e|es|ed|ing)|frame(?:s|d)?|framing|constru(?:e|es|ed|ing))\\b[^.!?\\n]{0,55}\\bas\\b|\\b(?:assume|suppose|posit|stipulate)(?:s|d|ed|ing)?\\b",
+      "action": "block"
+    },
+    {
+      "id": "ja-causal-interpretation-support",
+      "language": "ja",
+      "category": "defensive-framing",
+      "pattern": "(?:因果|解釈|識別)[^。．！？\\n]{0,75}(?:支え|支える|裏付|裏づ|根拠|基礎|土台|担保|保証|保障|正当化|成立|成り立|可能に|依拠)|(?:支え|支える|裏付|裏づ|根拠|基礎|土台|担保|保証|保障|正当化|成立させ|可能に|依拠)[^。．！？\\n]{0,55}(?:因果|解釈|識別)",
+      "action": "block"
+    },
+    {
+      "id": "en-causal-interpretation-support",
+      "language": "en",
+      "category": "defensive-framing",
+      "pattern": "\\b(?:causal(?:ity)?|interpretation|identification)\\b[^.!?\\n]{0,85}\\b(?:support\\w*|underpin\\w*|underl(?:ie|ies|ay|ying)|justif\\w*|warrant\\w*|ground\\w*|validat\\w*|enabl\\w*|ensur\\w*|guarantee\\w*|establish\\w*|basis|foundation\\w*)\\b|\\b(?:support\\w*|underpin\\w*|underl(?:ie|ies|ay|ying)|justif\\w*|warrant\\w*|ground\\w*|validat\\w*|enabl\\w*|ensur\\w*|guarantee\\w*|establish\\w*|basis|foundation\\w*)\\b[^.!?\\n]{0,85}\\b(?:causal(?:ity)?|interpretation|identification)\\b",
+      "action": "block"
+    },
+    {
+      "id": "ja-vague-aim",
+      "language": "ja",
+      "category": "ornament",
+      "pattern": "狙(?:う|い|っ|わ|え|お)",
+      "action": "block"
+    },
+    {
+      "id": "ja-estimation-role",
+      "language": "ja",
+      "category": "ornament",
+      "pattern": "(?:推定|識別)[^。．！？\\n]{0,20}担(?:う|い|っ|わ|え|お)",
+      "action": "block"
+    },
+    {
+      "id": "ja-identification-dispute",
+      "language": "ja",
+      "category": "defensive-framing",
+      "pattern": "識別(?:上|における)(?:の)?(?:争点|論点)",
+      "action": "block"
+    },
+    {
+      "id": "ja-placement-predicate",
+      "language": "ja",
+      "category": "ornament",
+      "pattern": "置(?:く|き|か|け|こ|い)",
+      "action": "block"
+    },
+    {
+      "id": "ja-entry-predicate",
+      "language": "ja",
+      "category": "ornament",
+      "pattern": "入(?:る|り|ら|れ|ろ|っ)",
+      "action": "block"
+    },
+    {
+      "id": "ja-specification-label",
+      "language": "ja",
+      "category": "ornament",
+      "pattern": "具体化",
+      "action": "block"
+    },
+    {
+      "id": "ja-explicitness-label",
+      "language": "ja",
+      "category": "ornament",
+      "pattern": "明示",
+      "action": "block"
+    },
+    {
+      "id": "ja-causal-comparison-label",
+      "language": "ja",
+      "category": "defensive-framing",
+      "pattern": "因果(?:的(?:な)?)?比較",
+      "action": "block"
+    },
+    {
+      "id": "ja-inclusion-predicate",
+      "language": "ja",
+      "category": "ornament",
+      "pattern": "含(?:む|み|ま|め|も|ん)",
+      "action": "block"
     }
   ]
 }

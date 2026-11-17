@@ -1,23 +1,17 @@
 ---
 name: econ-review
-description: Judge a requested economics claim or artifact by comparing its claims with the cited passages and calculations, including structural identification, equation-to-code correspondence, numerical equilibrium, counterfactuals and welfare.
+description: Strengthen economics claims, designs and interpretations by deriving the weakest sufficient premises and strongest supported conclusion from theorems and evidence; repair evident errors under ECONOMIST Economic priority.
 ---
 
 # Research review
 
-## Purpose and input
-
-1. **Output: review target; consumer: assessment.** Recover the named claim/artifact, scope, reader, cited sources and saved calculations. Select `assess` for findings or `assess+repair` for authorized repairs.
-2. **Output: applicable procedure; consumer: reviewer.** Read the selected review rules; activate writing/profile conditions for editorial assessment and writing's compose procedure for reconstruction.
+1. Recover the user's actual claims and proposed operations with their source locations. Preserve the original question, fixed specifications and evidence. Critique those submitted claims; use assistant-selected methods as constructive proposals. Use [review R1–R2](references/review.md) to recover the determining argument in compact worksheet entries. Read the theorem or method-card section carrying that argument; implementation contracts serve requested execution.
+2. Apply ECONOMIST Economic priority through R2–R3: weaken the premises carrying the conclusion and derive the strongest economically meaningful answer from the adopted premises and evidence. Identification follows the same objective. Record the decisive strengthening and its derivation; reuse saved work under Requested work.
+3. Lead with the strengthened substantive judgment and its economic reason through [WRITING](../../runtime/WRITING.md). Select details by their contribution to that judgment. `assess` returns the completed answer and proposed wording; `assess+repair` also revises the authorized artifact. Correct evident errors under ECONOMIST Economic priority; keep routine conditions, definitions and technical mappings internal.
 
 <!-- BEGIN GENERATED MODES -->
 ## Registered operations
 
-- `assess`: Assess the specified claim or artifact and return findings and proposed repairs.
-- `assess+repair`: Assess the specified target and repair it within the requested change scope.
+- `assess`: Derive the strongest economically meaningful answer to the original question under the weakest sufficient premises; correct evident errors under ECONOMIST Economic priority.
+- `assess+repair`: Strengthen and complete the original economic answer under the weakest sufficient premises; repair evident errors within the authorized artifact.
 <!-- END GENERATED MODES -->
-
-
-## Output
-
-1. **Output: evidence-backed assessment; consumer: user or repair owner.** Deliver the [requested assessment](references/review.md#deliver-the-assessment) and authorized revised target through PROSE's final wording procedure.

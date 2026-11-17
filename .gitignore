@@ -112,7 +112,7 @@ tmp/
 
 # Local AI and reference state
 .agent_state/
-.agents/
+.agents/*
 .codex/
 !/.codex/
 /.codex/*
@@ -122,7 +122,8 @@ tmp/
 !/.codex/agents/implementer.toml
 !/.codex/agents/retriever.toml
 !/.codex/agents/specialist.toml
-!/.codex/agents/terra.toml
+!/.codex/agents/reviewer.toml
+!/.codex/agents/sol.toml
 !/.codex/agents/luna.toml
 !/.codex/agents/astra.toml
 !references/repository-policy/.codex/
@@ -134,10 +135,13 @@ references/repository-policy/.codex/agents/*
 !references/repository-policy/.codex/agents/retriever.toml
 !references/repository-policy/.codex/agents/specialist.toml
 !references/repository-policy/.codex/agents/reviewer.toml
-!references/repository-policy/.codex/agents/terra.toml
+!references/repository-policy/.codex/agents/sol.toml
 !references/repository-policy/.codex/agents/luna.toml
 !references/repository-policy/.codex/agents/astra.toml
-.claude/
+.claude/*
+!.claude/settings.json
+!.claude/AGENTS.md
+!.claude/settings.json
 .cursor/
 .gemini/
 .opencode/
@@ -162,3 +166,10 @@ mcp.json
 # Local marimo editor state.
 **/__marimo__/
 skills/*/references/bundle/
+
+# Economist worksheets (task notes)
+/work/
+
+# Locally installed development support
+/.agents/skills/
+/.github/agent-plugins/

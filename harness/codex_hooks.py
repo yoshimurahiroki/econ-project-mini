@@ -1624,12 +1624,24 @@ def _verify_completion_contract(directory, bound, message, observed):
     gate.require(not missing, 'required outputs or actual operations are incomplete: ' + json.dumps(missing))
 
 
+REVIEW_MIN_CHARACTERS = 200
+REVIEW_ARTIFACT_SUFFIXES = re.compile(r'\.(?:md|tex|qmd|txt|html|docx|pptx|pdf|bib)\b')
+
+
+def _has_user_facing_prose(message):
+    """A turn needs prose review when its answer is substantive or names a prose artifact."""
+    text = unicodedata.normalize('NFKC', message).strip()
+    return len(text) >= REVIEW_MIN_CHARACTERS or bool(REVIEW_ARTIFACT_SUFFIXES.search(text))
+
+
 def _review_final_prose(event, root, directory, *, session_record=None):
-    """Request one final revision, then always allow Stop re-entry."""
+    """Request one final revision on turns with user-facing prose, then always allow Stop re-entry."""
     if event.get('stop_hook_active') is True:
         return None
     message = event.get('last_assistant_message')
     gate.require(isinstance(message, str) and message.strip(), 'host assistant message is unavailable')
+    if not _has_user_facing_prose(message):
+        return None
     turn = event.get('turn_id')
     gate.require(isinstance(turn, str) and turn.strip(), 'missing host turn_id for prose review')
     if session_record is not None:
@@ -1660,30 +1672,16 @@ def _review_final_prose(event, root, directory, *, session_record=None):
     reader = root / ('.agents/scripts/route_registry.py' if installed else 'scripts/route_registry.py')
     read_command = ('python ' + shlex.quote(str(reader)) + ' --root ' + shlex.quote(str(root)) +
                     (' --layout installed' if installed else '') +
-                    ' read prose.finish-the-passage --format compact')
+                    ' read prose.finish-the-passage')
     return {'decision': 'block', 'reason': (
         'Perform one final review this turn.\n'
         '1. Output: review assignment -> one fresh native subagent. Supply the actual request, complete '
-        'proposed final answer, paths of all created/materially edited user-facing artifacts, CORE and PROSE. '
+        'proposed final answer, paths of all created/materially edited user-facing artifacts, ECONOMIST and WRITING. '
         'Read `' + read_command + '`.\n'
-        '2. Output: reviewed answer and saved artifacts -> lead. For English and Japanese prose, papers, '
-        'materials, slides and Beamer, including short text, single words, translations, existing drafts '
-        'and labels, first search for, obtain and read the actual relevant sections and surrounding text, '
-        'pages, slides and figures of 2020-or-later top-five journal papers and slides, major economics '
-        'handbooks, reviews and guides, economics textbooks, and economics course materials including '
-        'lecture notes, course slides and handouts. Borrow and thoroughly imitate the '
-        'corresponding actual content selection, argument structure, style, vocabulary, transitions, '
-        'sentence endings, placement, design and appearance; do not create prose or visual material. '
-        'Make only surgically minimal adjustments for established target facts, names, variables, symbols, '
-        'scope, period, numbers, units, citations, grammatical agreement and the specified medium and '
-        '28pt. Do not import the source’s empirical conditions or conclusions. Borrow Japanese expressions '
-        'from corresponding Japanese originals rather than newly translating English drafts literally. '
-        'Record source-to-output correspondences and necessary changes in existing materials or work '
-        'records; compare the actual originals with every element of the completed answer and artifacts, '
-        'including tables, slides, captions and labels. If relevant source passages are insufficient, '
-        'continue searching and reading; do not fill gaps with free paraphrase, invented examples or '
-        'unreferenced composition. Apply this without exceptions for size, mode or medium. Judge meaning, '
-        'evidence, logic and rhetorical function under CORE and PROSE. Route internal conditions/diagnostics '
+        '2. Output: reviewed answer and saved artifacts -> lead. Apply WRITING to every element '
+        'of the completed answer and artifacts, including tables, slides, captions and labels; compare the '
+        'actual originals with each element. Judge meaning, '
+        'evidence, logic and rhetorical function under ECONOMIST and WRITING. Route internal conditions/diagnostics '
         'to the working record; retain accurate affirmative claims and numerical uncertainty. Confirm '
         'durable internal items in their existing destinations. Repair saved passages once; for generated '
         'artifacts repair the producer, regenerate and inspect affected output. Preserve data, equations, '
@@ -1712,7 +1710,7 @@ def _verify_ordinary_stop(event, root, directory):
         gate.require(not _pending_task_holds(directory, None), 'unresolved task hold requires continuation')
         completion = _completion_task(directory, root)
         if completion is None:
-            # Read-only answers use the retained request and CORE's integrated
+            # Read-only answers use the retained request and ECONOMIST's integrated
             # judgment. Modifying calls still require preflight authority.
             gate.require(not observed, 'modifying operations require their original task contract')
             return 'completed'
@@ -2903,8 +2901,11 @@ def _budget_result(event, result, expected_event):
     save_text(packet, text)
     first = text.splitlines()[0]
     command = packet_command(root, event['cwd'], packet, digest)
-    recovery = ('Read the complete saved instruction packet:\n' + command +
-                '\nRepeat with each next_offset and the same sha256 through null.')
+    recovery = ('Read the complete saved instruction packet:\n' + command)
+    if len(text) > 16000:
+        recovery += '\nContinue with each next_offset and the same sha256 through null.'
+    if first.startswith('[Kernel '):
+        recovery += '\nThis packet carries ECONOMIST and WRITING; add `--kernel-delivered` to the entry `read`.'
     destination, key = ((result, 'reason') if result.get('decision') == 'block' else populated[0])
     for container, name in populated:
         del container[name]
@@ -2956,7 +2957,7 @@ def parse_control_args(argv=None):
     packet.add_argument('--path', required=True, type=Path)
     packet.add_argument('--sha256', required=True)
     packet.add_argument('--offset', type=int, default=0)
-    packet.add_argument('--limit', type=int, default=4000)
+    packet.add_argument('--limit', type=int, default=16000)
     research = sub.add_parser('focus-research')
     research.add_argument('task_id')
     research.add_argument('--view', choices=['selected', 'log'], default='selected')

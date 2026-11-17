@@ -72,7 +72,6 @@
       "required_rules": [
         "kernel.all",
         "econ-literature.all",
-        "research.investigate-source-claims",
         "prose.select-the-economic-argument",
         "prose.connect-the-explanation",
         "prose.revise-for-the-requested-language",
@@ -85,7 +84,7 @@
       "id": "econ-writing:compose",
       "owner_skill": "econ-writing",
       "mode": "compose",
-      "trigger": "Compose academic prose and research materials from the adopted sources. For every element, including short edits, single words, translation, formatting and existing drafts, first search real top-five economics journal papers or slides from 2020 onward, major economics handbooks, reviews or guides, economics textbooks, or economics course materials including lecture notes, course slides and handouts; read the relevant passage and surroundings or the actual pages, slides and exhibits. Map content selection, argument, wording, endings, connections, placement and visual style to those passages, borrow and imitate them, and make only the minimal adjustments required by the confirmed task facts, names, variables and symbols, affected subject, periods, numbers and units, citations, grammar, medium and 28pt slide body setting. Do not import a source study’s empirical conditions or conclusions into the task. Use corresponding Japanese originals for Japanese expression rather than newly translating English prose. If references are insufficient, continue searching and reading; do not invent, freely paraphrase, design from scratch or fill gaps without references. Record each source correspondence and adjustment in the existing source or work record, and compare every completed element with the original.",
+      "trigger": "Compose academic prose and research materials from the adopted sources.",
       "required_rules": [
         "kernel.all",
         "econ-writing.compose",
@@ -102,7 +101,7 @@
       "id": "econ-writing:revise",
       "owner_skill": "econ-writing",
       "mode": "revise",
-      "trigger": "Revise supplied prose, including natural Japanese, spoken explanations and requests such as 自然な日本語に, 何を言いたいの, 直訳っぽい, 口頭で説明して and わかりやすく短く. For every element, including short edits, single words, translation, formatting and existing drafts, first search real top-five economics journal papers or slides from 2020 onward, major economics handbooks, reviews or guides, economics textbooks, or economics course materials including lecture notes, course slides and handouts; read the relevant passage and surroundings or the actual pages, slides and exhibits. Map content selection, argument, wording, endings, connections, placement and visual style to those passages, borrow and imitate them, and make only the minimal adjustments required by the confirmed task facts, names, variables and symbols, affected subject, periods, numbers and units, citations, grammar, medium and 28pt slide body setting. Do not import a source study’s empirical conditions or conclusions into the task. Use corresponding Japanese originals for Japanese expression rather than newly translating English prose. If references are insufficient, continue searching and reading; do not invent, freely paraphrase, design from scratch or fill gaps without references. Record each source correspondence and adjustment in the existing source or work record, and compare every completed element with the original.",
+      "trigger": "Revise supplied prose, including natural Japanese, spoken explanations and requests such as 自然な日本語に, 何を言いたいの, 直訳っぽい, 口頭で説明して and わかりやすく短く.",
       "required_rules": [
         "kernel.all",
         "econ-writing.revise",
@@ -118,7 +117,7 @@
       "id": "econ-writing:translate",
       "owner_skill": "econ-writing",
       "mode": "translate",
-      "trigger": "Translate supplied prose into natural Japanese or English with source attribution under PROSE. For every element, including short edits, single words, translation, formatting and existing drafts, first search real top-five economics journal papers or slides from 2020 onward, major economics handbooks, reviews or guides, economics textbooks, or economics course materials including lecture notes, course slides and handouts; read the relevant passage and surroundings or the actual pages, slides and exhibits. Map content selection, argument, wording, endings, connections, placement and visual style to those passages, borrow and imitate them, and make only the minimal adjustments required by the confirmed task facts, names, variables and symbols, affected subject, periods, numbers and units, citations, grammar, medium and 28pt slide body setting. Do not import a source study’s empirical conditions or conclusions into the task. Use corresponding Japanese originals for Japanese expression rather than newly translating English prose. If references are insufficient, continue searching and reading; do not invent, freely paraphrase, design from scratch or fill gaps without references. Record each source correspondence and adjustment in the existing source or work record, and compare every completed element with the original.",
+      "trigger": "Translate supplied prose into natural Japanese or English with source attribution under WRITING.",
       "required_rules": [
         "kernel.all",
         "econ-writing.translate",
@@ -134,7 +133,7 @@
       "id": "econ-writing:convert",
       "owner_skill": "econ-writing",
       "mode": "convert",
-      "trigger": "Convert adopted content into a paper, slides, research site or requested format. For every element, including short edits, single words, translation, formatting and existing drafts, first search real top-five economics journal papers or slides from 2020 onward, major economics handbooks, reviews or guides, economics textbooks, or economics course materials including lecture notes, course slides and handouts; read the relevant passage and surroundings or the actual pages, slides and exhibits. Map content selection, argument, wording, endings, connections, placement and visual style to those passages, borrow and imitate them, and make only the minimal adjustments required by the confirmed task facts, names, variables and symbols, affected subject, periods, numbers and units, citations, grammar, medium and 28pt slide body setting. Do not import a source study’s empirical conditions or conclusions into the task. Use corresponding Japanese originals for Japanese expression rather than newly translating English prose. If references are insufficient, continue searching and reading; do not invent, freely paraphrase, design from scratch or fill gaps without references. Record each source correspondence and adjustment in the existing source or work record, and compare every completed element with the original.",
+      "trigger": "Convert adopted content into a paper, slides, research site or requested format.",
       "required_rules": [
         "kernel.all",
         "econ-writing.convert",
@@ -150,7 +149,7 @@
       "id": "econ-writing:guidance",
       "owner_skill": "econ-writing",
       "mode": "guidance",
-      "trigger": "Explain a concrete writing decision and show the needed revision. For every element, including short edits, single words, translation, formatting and existing drafts, first search real top-five economics journal papers or slides from 2020 onward, major economics handbooks, reviews or guides, economics textbooks, or economics course materials including lecture notes, course slides and handouts; read the relevant passage and surroundings or the actual pages, slides and exhibits. Map content selection, argument, wording, endings, connections, placement and visual style to those passages, borrow and imitate them, and make only the minimal adjustments required by the confirmed task facts, names, variables and symbols, affected subject, periods, numbers and units, citations, grammar, medium and 28pt slide body setting. Do not import a source study’s empirical conditions or conclusions into the task. Use corresponding Japanese originals for Japanese expression rather than newly translating English prose. If references are insufficient, continue searching and reading; do not invent, freely paraphrase, design from scratch or fill gaps without references. Record each source correspondence and adjustment in the existing source or work record, and compare every completed element with the original.",
+      "trigger": "Explain a concrete writing decision and show the needed revision.",
       "required_rules": [
         "kernel.all",
         "econ-writing.guidance",
@@ -167,7 +166,7 @@
       "id": "econ-writing:explain",
       "owner_skill": "econ-writing",
       "mode": "explain",
-      "trigger": "Explain a paper, theory, institution, method or result through its question, mechanism, evidence and answer. For every element, including short edits, single words, translation, formatting and existing drafts, first search real top-five economics journal papers or slides from 2020 onward, major economics handbooks, reviews or guides, economics textbooks, or economics course materials including lecture notes, course slides and handouts; read the relevant passage and surroundings or the actual pages, slides and exhibits. Map content selection, argument, wording, endings, connections, placement and visual style to those passages, borrow and imitate them, and make only the minimal adjustments required by the confirmed task facts, names, variables and symbols, affected subject, periods, numbers and units, citations, grammar, medium and 28pt slide body setting. Do not import a source study’s empirical conditions or conclusions into the task. Use corresponding Japanese originals for Japanese expression rather than newly translating English prose. If references are insufficient, continue searching and reading; do not invent, freely paraphrase, design from scratch or fill gaps without references. Record each source correspondence and adjustment in the existing source or work record, and compare every completed element with the original.",
+      "trigger": "Explain a paper, theory, institution, method or result through its question, mechanism, evidence and answer.",
       "required_rules": [
         "kernel.all",
         "econ-writing.explain",
@@ -183,7 +182,7 @@
       "id": "econ-writing:profile",
       "owner_skill": "econ-writing",
       "mode": "profile",
-      "trigger": "Create or revise a reusable writing profile only when explicitly requested. For every element, including short edits, single words, translation, formatting and existing drafts, first search real top-five economics journal papers or slides from 2020 onward, major economics handbooks, reviews or guides, economics textbooks, or economics course materials including lecture notes, course slides and handouts; read the relevant passage and surroundings or the actual pages, slides and exhibits. Map content selection, argument, wording, endings, connections, placement and visual style to those passages, borrow and imitate them, and make only the minimal adjustments required by the confirmed task facts, names, variables and symbols, affected subject, periods, numbers and units, citations, grammar, medium and 28pt slide body setting. Do not import a source study’s empirical conditions or conclusions into the task. Use corresponding Japanese originals for Japanese expression rather than newly translating English prose. If references are insufficient, continue searching and reading; do not invent, freely paraphrase, design from scratch or fill gaps without references. Record each source correspondence and adjustment in the existing source or work record, and compare every completed element with the original.",
+      "trigger": "Create or revise a reusable writing profile only when explicitly requested.",
       "required_rules": [
         "kernel.all",
         "econ-writing.profile",
@@ -199,7 +198,7 @@
       "id": "econ-review:assess",
       "owner_skill": "econ-review",
       "mode": "assess",
-      "trigger": "Assess the specified claim or artifact and return findings and proposed repairs.",
+      "trigger": "Derive the strongest economically meaningful answer to the original question under the weakest sufficient premises; correct evident errors under ECONOMIST Economic priority.",
       "required_rules": [
         "kernel.all",
         "econ-review.all",
@@ -215,7 +214,7 @@
       "id": "econ-review:assess+repair",
       "owner_skill": "econ-review",
       "mode": "assess+repair",
-      "trigger": "Assess the specified target and repair it within the requested change scope.",
+      "trigger": "Strengthen and complete the original economic answer under the weakest sufficient premises; repair evident errors within the authorized artifact.",
       "required_rules": [
         "kernel.all",
         "econ-review.all",
@@ -301,7 +300,7 @@
       "id": "project-work:prompt",
       "owner_skill": "project-work",
       "mode": "prompt",
-      "trigger": "Create, rewrite or improve a ready-to-execute prompt from the user request or supplied draft; do not substitute prompt drafting for an ordinary execution request. For every prose or visual expression being authored in any mode, including in prompts, short edits, single words, translation, formatting and existing drafts, first search real top-five economics journal papers or slides from 2020 onward, major economics handbooks, reviews or guides, economics textbooks, or economics course materials including lecture notes, course slides and handouts; read the relevant passage and surroundings or the actual pages, slides and exhibits. Map content selection, argument, wording, endings, connections, placement and visual style to those passages, borrow and imitate them, and make only the minimal adjustments required by the confirmed task facts, names, variables and symbols, affected subject, periods, numbers and units, citations, grammar, medium and 28pt slide body setting. Do not import a source study’s empirical conditions or conclusions into the task. Use corresponding Japanese originals for Japanese expression rather than newly translating English prose. If references are insufficient, continue searching and reading; do not invent, freely paraphrase, design from scratch or fill gaps without references. Record each source correspondence and adjustment in the existing source or work record, and compare every completed prose or visual element with the original. Preserve technical instructions, inputs, outputs and validation examples.",
+      "trigger": "Create, rewrite or improve a ready-to-execute prompt from the user request or supplied draft; do not substitute prompt drafting for an ordinary execution request. Preserve technical instructions, inputs, outputs and validation examples.",
       "required_rules": [
         "kernel.all",
         "project-work.all",
@@ -316,18 +315,10 @@
     }
   ],
   "conditions": {
-    "formulation_or_choice_unresolved": {
-      "required_rules": [
-        "research.select-a-feasible-action",
-        "research.source-integration-and-method-selection"
-      ],
-      "applies_to": "*"
-    },
     "economic_method_needed": {
       "required_rules": [
         "design-methods.choose-the-estimand-and-method",
-        "design-methods.select-the-needed-section",
-        "research.source-integration-and-method-selection"
+        "design-methods.select-the-needed-section"
       ],
       "applies_to": "*"
     },
@@ -338,25 +329,9 @@
       ],
       "applies_to": "*"
     },
-    "files_calculation_external_or_resume": {
-      "required_rules": [
-        "execution.select-the-operation-and-working-area",
-        "execution.compare-changed-outputs",
-        "execution.complete-outputs-and-failure-propagation"
-      ],
-      "applies_to": "*"
-    },
-    "source_comparison_or_method_choice_unresolved": {
-      "required_rules": [
-        "research.separate-explanations-with-a-comparison",
-        "research.source-integration-and-method-selection"
-      ],
-      "applies_to": "*"
-    },
     "source_derivation_requires_economic_method": {
       "required_rules": [
-        "design-methods.select-the-needed-section",
-        "research.source-integration-and-method-selection"
+        "design-methods.select-the-needed-section"
       ],
       "applies_to": "*"
     },
@@ -365,7 +340,7 @@
         "paper-workflow.establish-the-argument-from-the-research",
         "paper-workflow.design-the-papers-argument",
         "paper-workflow.compose-the-requested-section",
-        "prose.hierarchical-argument-and-paragraph-composition"
+        "prose.select-the-economic-argument"
       ],
       "applies_to": "*"
     },
@@ -379,14 +354,7 @@
       "required_rules": [
         "paper-workflow.establish-the-argument-from-the-research",
         "paper-workflow.design-the-papers-argument",
-        "prose.hierarchical-argument-and-paragraph-composition"
-      ],
-      "applies_to": "*"
-    },
-    "file_output_or_format_rendering": {
-      "required_rules": [
-        "execution.select-the-operation-and-working-area",
-        "execution.complete-outputs-and-failure-propagation"
+        "prose.select-the-economic-argument"
       ],
       "applies_to": "*"
     },
@@ -417,12 +385,6 @@
       ],
       "applies_to": "*"
     },
-    "english_cumulative_multiparagraph_logic_needed": {
-      "optional_examples": [
-        "top-five-en.introduction-empirical"
-      ],
-      "applies_to": "*"
-    },
     "requested_distribution_configuration_or_installation": {
       "required_rules": [
         "integration.distribution-and-settings-contract"
@@ -437,7 +399,7 @@
         "policy-codex-agent-retriever.all",
         "policy-codex-agent-specialist.all",
         "policy-codex-agent-reviewer.all",
-        "policy-codex-agent-terra.all",
+        "policy-codex-agent-sol.all",
         "policy-codex-agent-luna.all",
         "policy-codex-agent-astra.all",
         "config-template-codex-example-toml.all"
@@ -457,8 +419,6 @@
         "data-implementation.acquisition",
         "data-implementation.data-contracts-and-joins",
         "data-implementation.computation",
-        "execution.select-the-operation-and-working-area",
-        "execution.complete-outputs-and-failure-propagation",
         "econ-data.map-the-object-to-the-existing-execution-path",
         "econ-data.construct-a-requested-data-design",
         "data-implementation.shared-tables-and-language-handoff"
@@ -587,8 +547,7 @@
       "required_rules": [
         "team.native-model-roles",
         "team.shared-work",
-        "team.return-and-integration",
-        "research.resolve-dependencies-and-integrate-findings"
+        "team.return-and-integration"
       ],
       "applies_to": "*"
     },
@@ -601,14 +560,6 @@
     "handoff_active": {
       "required_rules": [
         "team.resumption"
-      ],
-      "applies_to": "*"
-    },
-    "dependency_order_unresolved": {
-      "required_rules": [
-        "research.turn-the-question-into-an-operation",
-        "research.select-a-feasible-action",
-        "research.resolve-dependencies-and-integrate-findings"
       ],
       "applies_to": "*"
     },
@@ -715,48 +666,6 @@
       ],
       "applies_to": "*"
     },
-    "example_en_conclusion_comparison": {
-      "optional_examples": [
-        "top-five-en.empirical-conclusion"
-      ],
-      "applies_to": "*"
-    },
-    "example_en_institution_mechanism": {
-      "optional_examples": [
-        "top-five-en.empirical-mechanisms"
-      ],
-      "applies_to": "*"
-    },
-    "example_en_quantity_relation": {
-      "optional_examples": [
-        "top-five-en.empirical-older-workers"
-      ],
-      "applies_to": "*"
-    },
-    "example_en_revision_translation": {
-      "optional_examples": [
-        "top-five-en.introduction-empirical"
-      ],
-      "applies_to": "*"
-    },
-    "example_en_abstract": {
-      "optional_examples": [
-        "top-five-en.abstract-labor-public"
-      ],
-      "applies_to": "*"
-    },
-    "example_en_introduction_opening": {
-      "optional_examples": [
-        "top-five-en.introduction-empirical"
-      ],
-      "applies_to": "*"
-    },
-    "example_en_assignment_comparison": {
-      "optional_examples": [
-        "top-five-en.empirical-strategy"
-      ],
-      "applies_to": "*"
-    },
     "talk_requested": {
       "required_rules": [
         "econ-writing.compose-a-talk"
@@ -775,25 +684,6 @@
       ],
       "applies_to": "*"
     },
-    "source_investigation_active": {
-      "required_rules": [
-        "research.investigate-source-claims"
-      ],
-      "applies_to": "*"
-    },
-    "requested_artifact_files": {
-      "required_rules": [
-        "execution.select-the-operation-and-working-area",
-        "execution.complete-outputs-and-failure-propagation"
-      ],
-      "applies_to": "*"
-    },
-    "operational_plan_requested": {
-      "required_rules": [
-        "research.operational-plans"
-      ],
-      "applies_to": "*"
-    },
     "paragraph_execution_requested": {
       "required_rules": [
         "paragraph-workflow.all",
@@ -801,16 +691,13 @@
         "argument-engine.all",
         "paragraph-schema.all",
         "argument-schema.all",
-        "prose.hierarchical-argument-and-paragraph-composition"
+        "prose.select-the-economic-argument"
       ],
       "applies_to": "*"
     },
     "data_code_change": {
       "required_rules": [
-        "econ-data.implement-at-the-existing-owner",
-        "execution.select-the-operation-and-working-area",
-        "execution.complete-outputs-and-failure-propagation",
-        "research.resolve-dependencies-and-integrate-findings"
+        "econ-data.implement-at-the-existing-owner"
       ],
       "applies_to": [
         "econ-design:design",
@@ -831,8 +718,7 @@
       "required_rules": [
         "design-methods.select-the-needed-section",
         "design-methods.choose-the-estimand-and-method",
-        "design-methods.outcome-scale-and-conditional-mean",
-        "research.interpret-a-consequential-result"
+        "design-methods.outcome-scale-and-conditional-mean"
       ],
       "applies_to": "*"
     },
@@ -840,8 +726,7 @@
       "required_rules": [
         "design-methods.select-the-needed-section",
         "design-methods.choose-the-estimand-and-method",
-        "design-methods.orthogonal-scores-and-heterogeneous-effects",
-        "research.interpret-a-consequential-result"
+        "design-methods.orthogonal-scores-and-heterogeneous-effects"
       ],
       "applies_to": "*"
     },
@@ -985,8 +870,7 @@
     },
     "method_agent_simulation": {
       "required_rules": [
-        "models-abm.all",
-        "research.interpret-a-consequential-result"
+        "models-abm.all"
       ],
       "applies_to": "*"
     },
@@ -1399,61 +1283,6 @@
         "models-causal.grf-heterogeneous-treatment-effects"
       ],
       "applies_to": "*"
-    },
-    "example_subscription_allocation": {
-      "required_rules": [
-        "example-subscription.all"
-      ],
-      "applies_to": [
-        "econ-data:execute",
-        "econ-design:design",
-        "econ-review:assess",
-        "econ-writing:compose"
-      ]
-    },
-    "example_equipment_renewal": {
-      "required_rules": [
-        "example-equipment.all"
-      ],
-      "applies_to": [
-        "econ-data:execute",
-        "econ-design:design",
-        "econ-review:assess",
-        "econ-writing:compose"
-      ]
-    },
-    "example_housing_transport": {
-      "required_rules": [
-        "example-housing.all"
-      ],
-      "applies_to": [
-        "econ-data:execute",
-        "econ-design:design",
-        "econ-review:assess",
-        "econ-writing:compose"
-      ]
-    },
-    "example_charging_market": {
-      "required_rules": [
-        "example-charging.all"
-      ],
-      "applies_to": [
-        "econ-data:execute",
-        "econ-design:design",
-        "econ-review:assess",
-        "econ-writing:compose"
-      ]
-    },
-    "example_commuting_market": {
-      "required_rules": [
-        "example-commuting.all"
-      ],
-      "applies_to": [
-        "econ-data:execute",
-        "econ-design:design",
-        "econ-review:assess",
-        "econ-writing:compose"
-      ]
     },
     "method_rct_design": {
       "required_rules": [
@@ -2201,18 +2030,6 @@
         "MC-business-allocation"
       ]
     },
-    "research_problem_deepening": {
-      "required_rules": [
-        "research.deepen-a-consequential-research-problem"
-      ],
-      "applies_to": "*"
-    },
-    "consequential_result_interpretation": {
-      "required_rules": [
-        "research.interpret-a-consequential-result"
-      ],
-      "applies_to": "*"
-    },
     "project_github_operations": {
       "required_rules": [
         "state-contract.github-issues-and-projects",
@@ -2822,174 +2639,6 @@
         "econ-review:assess",
         "econ-review:assess+repair"
       ]
-    },
-    "example_top_five_en_abstract_labor_public": {
-      "optional_examples": [
-        "top-five-en.abstract-labor-public"
-      ],
-      "applies_to": "*"
-    },
-    "example_top_five_en_abstract_micro_theory": {
-      "optional_examples": [
-        "top-five-en.abstract-micro-theory"
-      ],
-      "applies_to": "*"
-    },
-    "example_top_five_en_abstract_io_identification": {
-      "optional_examples": [
-        "top-five-en.abstract-io-identification"
-      ],
-      "applies_to": "*"
-    },
-    "example_top_five_en_abstract_spatial": {
-      "optional_examples": [
-        "top-five-en.abstract-spatial"
-      ],
-      "applies_to": "*"
-    },
-    "example_top_five_en_abstract_econometrics": {
-      "optional_examples": [
-        "top-five-en.abstract-econometrics"
-      ],
-      "applies_to": "*"
-    },
-    "example_top_five_en_abstract_field_experiment": {
-      "optional_examples": [
-        "top-five-en.abstract-field-experiment"
-      ],
-      "applies_to": "*"
-    },
-    "example_top_five_en_abstract_macro_finance": {
-      "optional_examples": [
-        "top-five-en.abstract-macro-finance"
-      ],
-      "applies_to": "*"
-    },
-    "example_top_five_en_introduction_empirical": {
-      "optional_examples": [
-        "top-five-en.introduction-empirical"
-      ],
-      "applies_to": "*"
-    },
-    "example_top_five_en_introduction_theory": {
-      "optional_examples": [
-        "top-five-en.introduction-theory"
-      ],
-      "applies_to": "*"
-    },
-    "example_top_five_en_empirical_institution": {
-      "optional_examples": [
-        "top-five-en.empirical-institution"
-      ],
-      "applies_to": "*"
-    },
-    "example_top_five_en_empirical_data": {
-      "optional_examples": [
-        "top-five-en.empirical-data"
-      ],
-      "applies_to": "*"
-    },
-    "example_top_five_en_empirical_framework": {
-      "optional_examples": [
-        "top-five-en.empirical-framework"
-      ],
-      "applies_to": "*"
-    },
-    "example_top_five_en_empirical_strategy": {
-      "optional_examples": [
-        "top-five-en.empirical-strategy"
-      ],
-      "applies_to": "*"
-    },
-    "example_top_five_en_empirical_older_workers": {
-      "optional_examples": [
-        "top-five-en.empirical-older-workers"
-      ],
-      "applies_to": "*"
-    },
-    "example_top_five_en_empirical_firms_younger_workers": {
-      "optional_examples": [
-        "top-five-en.empirical-firms-younger-workers"
-      ],
-      "applies_to": "*"
-    },
-    "example_top_five_en_empirical_mechanisms": {
-      "optional_examples": [
-        "top-five-en.empirical-mechanisms"
-      ],
-      "applies_to": "*"
-    },
-    "example_top_five_en_empirical_conclusion": {
-      "optional_examples": [
-        "top-five-en.empirical-conclusion"
-      ],
-      "applies_to": "*"
-    },
-    "example_top_five_en_field_micro_theory": {
-      "optional_examples": [
-        "top-five-en.field-micro-theory"
-      ],
-      "applies_to": "*"
-    },
-    "example_top_five_en_field_io_demand": {
-      "optional_examples": [
-        "top-five-en.field-io-demand"
-      ],
-      "applies_to": "*"
-    },
-    "example_top_five_en_field_econometrics": {
-      "optional_examples": [
-        "top-five-en.field-econometrics"
-      ],
-      "applies_to": "*"
-    },
-    "example_top_five_en_field_spatial": {
-      "optional_examples": [
-        "top-five-en.field-spatial"
-      ],
-      "applies_to": "*"
-    },
-    "example_top_five_en_field_macro_finance": {
-      "optional_examples": [
-        "top-five-en.field-macro-finance"
-      ],
-      "applies_to": "*"
-    },
-    "example_top_five_en_field_experiment": {
-      "optional_examples": [
-        "top-five-en.field-experiment"
-      ],
-      "applies_to": "*"
-    },
-    "example_top_five_en_field_computation": {
-      "optional_examples": [
-        "top-five-en.field-computation"
-      ],
-      "applies_to": "*"
-    },
-    "example_top_five_en_field_history": {
-      "optional_examples": [
-        "top-five-en.field-history"
-      ],
-      "applies_to": "*"
-    },
-    "example_academic_ja_childcare_employment": {
-      "optional_examples": [
-        "academic-ja.childcare-employment"
-      ],
-      "applies_to": "*"
-    },
-    "example_academic_ja_attention_plan_choice": {
-      "optional_examples": [
-        "academic-ja.attention-plan-choice"
-      ],
-      "applies_to": "*"
-    },
-    "example_academic_ja_equipment_subsidy": {
-      "optional_examples": [
-        "academic-ja.equipment-subsidy"
-      ],
-      "applies_to": "*"
     }
   },
   "aliases": {

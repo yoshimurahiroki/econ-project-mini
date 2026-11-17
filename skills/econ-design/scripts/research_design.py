@@ -7,7 +7,6 @@ import inspect
 from decimal import Decimal, InvalidOperation
 import hashlib
 import json
-import os
 from pathlib import Path
 import sys
 import tempfile
@@ -1755,7 +1754,7 @@ def _select_method(request, *, spec_path=None):
             'pretreatment covariates','independent units or one cluster partition']
     elif design == 'did':
         if facts.get('parallel_trends') is False:
-            raise ValueError('DID requires the adopted parallel-trend restriction; use saved-event-study sensitivity for a bounded departure')
+            raise ValueError('Set the adopted identifying comparison in the method specification')
         estimator = facts.get('estimator', 'group_time')
         if pattern == 'absorbing_staggered':
             candidates = {'group_time':'staggered_did','cohort_interaction':'sunab',

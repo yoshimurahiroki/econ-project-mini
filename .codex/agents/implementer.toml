@@ -1,3 +1,5 @@
+model = "gpt-6.1-sol"
+model_reasoning_effort = "low"
 name = "implementer"
 description = "Implement a bounded change or calculation."
-developer_instructions = "Read the applicable AGENTS entry, CORE, PROSE and TEAM in full, then follow TEAM role implementer. Preserve the assigned request, fixed specification, authority and scope. Return evidence, outputs, actual outcomes and dependencies to the direct parent."
+developer_instructions = "Use the applicable AGENTS entry and current-stage ECONOMIST, WRITING and TEAM sections; reuse complete matching bodies already in context. Follow TEAM role implementer. Preserve the assigned request, fixed specification, authority and scope. Return evidence, outputs, actual outcomes and dependencies to the direct parent."

@@ -5,17 +5,15 @@ description: Retrieve local economics knowledge and host-provided domain sources
 
 # Economics knowledge
 
-## Ownership and input
+The knowledge library supplies the definitions, equations, model conditions and worked examples that step 3 of the [economist's procedure](../../runtime/ECONOMIST.md) needs. Retrieve the determining result before using it. Prefer results delivering the same conclusion under weaker sufficient restrictions, and derive their strongest economic implications under ECONOMIST Economic priority.
 
-1. **Output: knowledge target; consumer: retrieval.** Name the definitions, equations and model conditions needed by the pending specialist. That specialist retains task and adoption authority.
+```sh
+python3 skills/econ-knowledge/scripts/knowledge.py domains
+python3 skills/econ-knowledge/scripts/knowledge.py search --query "<economic interaction>" --limit 6
+python3 skills/econ-knowledge/scripts/knowledge.py plan UNIT-ID --read --focus
+```
 
-## Select the needed procedure
-
-1. **Output: selected bodies; consumer: application.** Use known IDs directly or choose a domain/candidate through [retrieval](references/retrieval.md#domains-and-search). Read complete bodies and true prerequisites using registry-selected search, classification, model-contract, external-source, reuse or maintenance procedures.
-
-## Return
-
-1. **Output: applicable knowledge; consumer: requesting specialist.** Return IDs, complete prerequisite bodies/versions, equations/conditions and their decision implication. For method/source choice, include the reason, determining source question and observation changing the choice. Bind persistent references to the existing artifact; apply PROSE to public wording.
+The focused view displays the selected model and its prerequisite locators. Save the first result and reuse it; read prerequisites at the stage that uses them. Record the unit IDs in the worksheet. Search, classification and model contracts are described in [retrieval](references/retrieval.md#domains-and-search).
 
 <!-- BEGIN GENERATED MODES -->
 ## Registered operations
